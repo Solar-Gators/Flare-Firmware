@@ -1,21 +1,16 @@
-#include "test.hpp"
-
 #include "cmsis_os2.h"  // this works cause cmsis_os includes cmsis_os2 so u could write either
 #include "main.h"
 #include "stm32l4xx_hal.h"
-#include "main.h"
 
-#include <atomic>
-
-class fart {
-
-};
+#include "test.hpp"
+#include "CanDriver.hpp"
 
 void StartDefaultTask_user(void *argument) {
-    std::atomic<int> t;
+
+    CANDevice& device = CANDevice::getInstance();
+
     for (;;) {
-        volatile fart f;
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // blink led
         osDelay(500);
     }
 }

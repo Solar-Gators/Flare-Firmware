@@ -40,7 +40,8 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${USER_DIR}/inc)
+    ${USER_DIR}/inc
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include)
 
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
@@ -52,13 +53,24 @@ file(GLOB STM32CUBEMX_SOURCES
     ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
-    ${USER_DIR}/src/*.c)
+    ${USER_DIR}/src/*.c
+    ${RESOURCES_DUR}/Drivers/SG_Drivers/CAN/Src/*.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}
     ${STM32CUBEMX_SOURCES} 
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
+
+# Strict warnings only for user sources
+set_source_files_properties(${PROJECT_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Wsuggest-override;-Wno-unused-parameter;-Wno-pedantic"
+)
+
+# Relaxed / suppressed for Cube/HAL
+set_source_files_properties(${STM32CUBEMX_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-w"
+)
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -73,11 +85,6 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # Supresses warnings fro
 # Compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wno-unused-parameter
-    -Wno-pedantic
     $<$<COMPILE_LANGUAGE:CXX>:
         -Wno-volatile
         -Wold-style-cast
