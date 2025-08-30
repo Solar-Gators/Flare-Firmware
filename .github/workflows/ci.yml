@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset: [gcc-arm-none-eabi-debug, gcc-arm-none-eabi-release]
+        preset: [debug, release]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
