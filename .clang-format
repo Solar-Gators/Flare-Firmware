@@ -2,18 +2,20 @@
 ---
 Language: Cpp
 BasedOnStyle: Google
-AccessModifierOffset: -1
-AlignAfterOpenBracket: Align
-AlignOperands: Align
-AlignTrailingComments: true
-AllowShortBlocksOnASingleLine: Never
-AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterReturnType: None
-AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: false
-BinPackParameters: false
+
+# General layout
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+PointerAlignment: Left
+ContinuationIndentWidth: 4
+ReflowComments: true
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Braces / wrapping
+BreakBeforeBraces: Allman
 BraceWrapping:
   AfterFunction: true
   AfterClass: true
@@ -25,38 +27,52 @@ BraceWrapping:
   BeforeCatch: true
   BeforeWhile: true
   IndentBraces: false
-BreakBeforeBraces: Allman
-BreakBeforeBinaryOperators: None
-BreakBeforeTernaryOperators: true
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
 BreakConstructorInitializers: BeforeColon
-ColumnLimit: 100
-CompactNamespaces: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-ContinuationIndentWidth: 4
-Cpp11BracedListStyle: true
-FixNamespaceComments: true
-IncludeBlocks: Regroup
-IncludeCategories:
-  - Regex:           '^<.*\.h>'
-    Priority:        1
-  - Regex:           '.*'
-    Priority:        2
-IndentCaseLabels: true
-IndentGotoLabels: true
-IndentPPDirectives: None
-IndentWidth: 4
-KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 1
-NamespaceIndentation: None
-PointerAlignment: Left
-ReflowComments: true
-SortIncludes: true
-SpaceAfterCStyleCast: true
-SpaceBeforeAssignmentOperators: true
+BreakBeforeTernaryOperators: true
+BreakBeforeBinaryOperators: None   # consider NonAssignment if you like operators-first
+
+# Spacing
 SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpacesInContainerLiterals: true
-TabWidth: 4
-UseTab: Never
+SpaceAfterCStyleCast: true
+
+# Indentation
+IndentCaseLabels: true
+IndentGotoLabels: true
+IndentPPDirectives: None   # consider AfterHash if you want indented continuations
+Cpp11BracedListStyle: true
+FixNamespaceComments: true
+NamespaceIndentation: None
+
+# Includes
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<c[a-z_]+>'          # C++ std headers like <cstdint>
+    Priority: 1
+  - Regex: '^<.*\.h>'             # C system headers
+    Priority: 2
+  - Regex: '^(<|")(cmsis|arm_math).*'   # CMSIS
+    Priority: 3
+  - Regex: '^(<|")stm32.*'        # STM32 HAL/LL
+    Priority: 4
+  - Regex: '^"(.*)"'              # Project headers (quoted)
+    Priority: 5
+  - Regex: '.*'                   # Fallback
+    Priority: 6
+
+# Arguments / params
+BinPackArguments: false
+BinPackParameters: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ...
