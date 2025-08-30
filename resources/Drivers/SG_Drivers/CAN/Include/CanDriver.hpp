@@ -8,13 +8,13 @@ public:
         return CANDevice;
     }
 
-    HAL_StatusTypeDef StartCANDevice(CAN_HandleTypeDef *hcan);
+    HAL_StatusTypeDef StartCANDevice(CanHandle_t *hcan);
 
     void printCANTest();
 
 private:
 
-    CAN_HandleTypeDef *hcan;
+    CanHandle_t *hcan;
 
     CANDevice(){}
 

@@ -5,6 +5,7 @@ add can monitoring board as project (new mcu)
 add a folder for our drivers and make sure its able to be included easily
 put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
 note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
+note about needing to do make clean after messing with ioc
 
 # Solar Gators Flare Firmware
 
