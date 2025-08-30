@@ -15,7 +15,7 @@
       }
     },
     {
-      "name": "gcc-arm-none-eabi-debug",
+      "name": "debug",
       "displayName": "GCC ARM Embedded (Debug)",
       "description": "Debug build with GCC ARM toolchain",
       "inherits": "gcc-arm-none-eabi-base",
@@ -24,7 +24,7 @@
       }
     },
     {
-      "name": "gcc-arm-none-eabi-release",
+      "name": "release",
       "displayName": "GCC ARM Embedded (Release)",
       "description": "Release build with GCC ARM toolchain",
       "inherits": "gcc-arm-none-eabi-base",

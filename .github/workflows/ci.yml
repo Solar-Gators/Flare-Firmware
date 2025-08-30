@@ -15,36 +15,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install clang-format
+      # Pin to the same major you use locally (rev v17.0.6 in pre-commit)
+      - name: Install clang-format 17
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format
+          sudo apt-get install -y clang-format-17
+          sudo ln -sf /usr/bin/clang-format-17 /usr/local/bin/clang-format
+          clang-format --version
 
-      # Adjust file filters as needed; we exclude vendor/third_party.
       - name: Run clang-format (verify no diffs)
         shell: bash
         run: |
           set -eo pipefail
-          echo "Checking formatting..."
-          mapfile -t FILES < <( \
+          echo "Checking formatting (user/ + SG_Drivers only)..."
+
+          # Collect only our sources (avoid HAL/CMSIS/Middlewares/etc)
+          mapfile -d '' -t FILES < <(
             find \
-              firmware resources \
-              -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) \
-              -not -path 'resources/Drivers/STM32*/*' \
-              -not -path 'resources/Drivers/CMSIS*/*' \
-              -not -path 'resources/Middlewares*/*' \
-              -not -path 'resources/Middlewares_v2*/*' \
-              -not -path '*/.git/*' \
+              firmware -path 'firmware/*/user/*' -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0
           )
+          mapfile -d '' -t SG_FILES < <(
+            find \
+              resources/Drivers/SG_Drivers -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0
+          )
+          FILES=("${FILES[@]}" "${SG_FILES[@]}")
+
           if [ "${#FILES[@]}" -eq 0 ]; then
             echo "No source files found to check."
             exit 0
           fi
 
-          # Check mode: -n (dry-run), --Werror fails if reformat is needed
-          clang-format --version
-          clang-format -style=file -n --Werror "${FILES[@]}"
-
+          # Dry-run check; fail if formatting would change
+          printf '%s\0' "${FILES[@]}" | xargs -0 -n 100 clang-format -style=file -n --Werror
   build:
     name: Build (Debug & Release)
     runs-on: ubuntu-latest
