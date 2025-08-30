@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 4,
   "cmakeMinimumRequired": { "major": 3, "minor": 22, "patch": 0 },
 
   "configurePresets": [
@@ -17,32 +17,26 @@
     {
       "name": "debug",
       "displayName": "GCC ARM Embedded (Debug)",
-      "description": "Debug build with GCC ARM toolchain",
       "inherits": "gcc-arm-none-eabi-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
       "name": "release",
       "displayName": "GCC ARM Embedded (Release)",
-      "description": "Release build with GCC ARM toolchain",
       "inherits": "gcc-arm-none-eabi-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],
 
   "buildPresets": [
     {
       "name": "debug",
-      "configurePreset": "gcc-arm-none-eabi-debug",
+      "configurePreset": "debug",
       "displayName": "Build (Debug)"
     },
     {
       "name": "release",
-      "configurePreset": "gcc-arm-none-eabi-release",
+      "configurePreset": "release",
       "displayName": "Build (Release)"
     }
   ]
