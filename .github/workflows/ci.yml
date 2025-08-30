@@ -74,19 +74,51 @@ jobs:
       - name: Build (${{ matrix.preset }})
         run: cmake --build --preset ${{ matrix.preset }} --target all
 
-      - name: Collect firmware artifacts
+      - name: Collect firmware artifacts (.elf/.hex only, grouped by project)
         if: always()
+        shell: bash
         run: |
-          mkdir -p artifacts/${{ matrix.preset }}
-          find build/${{ matrix.preset }} \
-            -maxdepth 4 \
-            -type f \( -name '*.elf' -o -name '*.bin' -o -name '*.hex' -o -name '*.map' \) \
-            -exec cp -v {} artifacts/${{ matrix.preset }}/ \; || true
+          set -euo pipefail
+          preset="${{ matrix.preset }}"
+
+          # Start clean for this preset
+          rm -rf "artifacts" || true
+
+          # Find only firmware outputs; skip CMake scratch dirs
+          mapfile -d '' -t FILES < <(
+            find "build/${preset}/firmware" \
+              -type d \( -name 'CMakeFiles*' -o -name 'CMakeScratch*' \) -prune -o \
+              -type f \( -name '*.elf' -o -name '*.hex' \) -print0 2>/dev/null || true
+          )
+
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "No .elf/.hex files found under build/${preset}/firmware"
+            exit 0
+          fi
+
+          for f in "${FILES[@]}"; do
+            # Project name = first dir under build/<preset>/firmware/
+            # e.g., build/release/firmware/project1/...
+            rel="${f#build/${preset}/firmware/}"
+            project="${rel%%/*}"
+
+            # Extension and destination subfolder (".elf" or ".hex")
+            ext="${f##*.}"
+            dest="artifacts/${project}/${preset}/.${ext}"
+            mkdir -p "${dest}"
+
+            # Keep original filename; copy into the right bucket
+            cp -v -- "$f" "${dest}/"
+          done
+
+          echo "Collected tree:"
+          find artifacts -type f | sort
 
       - name: Upload artifacts (${{ matrix.preset }})
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ matrix.preset }}
-          path: artifacts/${{ matrix.preset }}
+          path: artifacts/*/${{ matrix.preset }}/
           if-no-files-found: warn
+
