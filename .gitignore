@@ -51,6 +51,7 @@ release
 *.idb
 *.pdb
 *.launch
+*.idx
 
 # Visual Studio Code
 .vscode/

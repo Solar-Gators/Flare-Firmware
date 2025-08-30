@@ -44,6 +44,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/*.c
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
@@ -58,6 +59,16 @@ add_executable(${EXECUTABLE}
     ${STM32CUBEMX_SOURCES} 
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
+
+# Strict warnings only for user sources
+set_source_files_properties(${PROJECT_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Wsuggest-override"
+)
+
+# Relaxed / suppressed for Cube/HAL
+set_source_files_properties(${STM32CUBEMX_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-w"
+)
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
