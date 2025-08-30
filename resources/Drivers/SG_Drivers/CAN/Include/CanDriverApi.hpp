@@ -8,6 +8,8 @@
 
 #if defined(HAL_FDCAN_MODULE_ENABLED)
     using CanHandle_t = FDCAN_HandleTypeDef;
+    using CanFilter_t = FDCAN_FilterTypeDef;
 #elif defined(HAL_CAN_MODULE_ENABLED) 
     using CanHandle_t = CAN_HandleTypeDef;
+    using CanFilter_t = CAN_FilterTypeDef;
 #endif
