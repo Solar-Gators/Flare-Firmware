@@ -1,12 +1,9 @@
 TODO:
 add clang tidy
 add workflow that runs clang format, and builds the projects
-add can monitoring board as project (new mcu)
-add a folder for our drivers and make sure its able to be included easily
 put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
 note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
 note about needing to do make clean after messing with ioc
-add a way for clang format to only run on our code and not the generated code or the code in resources that isn't ours
 add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
 
 # Solar Gators Flare Firmware

@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: clang-format check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      # Adjust file filters as needed; we exclude vendor/third_party.
+      - name: Run clang-format (verify no diffs)
+        shell: bash
+        run: |
+          set -eo pipefail
+          echo "Checking formatting..."
+          mapfile -t FILES < <( \
+            find \
+              firmware resources \
+              -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) \
+              -not -path 'resources/Drivers/STM32*/*' \
+              -not -path 'resources/Drivers/CMSIS*/*' \
+              -not -path 'resources/Middlewares*/*' \
+              -not -path 'resources/Middlewares_v2*/*' \
+              -not -path '*/.git/*' \
+          )
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "No source files found to check."
+            exit 0
+          fi
+
+          # Check mode: -n (dry-run), --Werror fails if reformat is needed
+          clang-format --version
+          clang-format -style=file -n --Werror "${FILES[@]}"
+
+  build:
+    name: Build (Debug & Release)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [gcc-arm-none-eabi-debug, gcc-arm-none-eabi-release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ARM GCC & build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            cmake \
+            gcc-arm-none-eabi \
+            binutils-arm-none-eabi \
+            libnewlib-arm-none-eabi
+
+      - name: Configure (${{ matrix.preset }})
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build (${{ matrix.preset }})
+        run: cmake --build --preset ${{ matrix.preset }} --target all
+
+      - name: Collect firmware artifacts
+        if: always()
+        run: |
+          mkdir -p artifacts/${{ matrix.preset }}
+          find build/${{ matrix.preset }} \
+            -maxdepth 4 \
+            -type f \( -name '*.elf' -o -name '*.bin' -o -name '*.hex' -o -name '*.map' \) \
+            -exec cp -v {} artifacts/${{ matrix.preset }}/ \; || true
+
+      - name: Upload artifacts (${{ matrix.preset }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.preset }}
+          path: artifacts/${{ matrix.preset }}
+          if-no-files-found: warn

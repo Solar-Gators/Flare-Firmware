@@ -1,17 +1,49 @@
 {
-    "version": 8,
-    "configurePresets": [
-        {
-            "name": "gcc-arm-none-eabi",
-            "displayName": "GCC ARM Embedded (Ninja)",
-            "description": "Configure with GCC ARM toolchain and Ninja generator",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/resources/cmake/gcc-arm-none-eabi.cmake",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-            }
-        }
-    ]
+  "version": 8,
+  "cmakeMinimumRequired": { "major": 3, "minor": 22, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "gcc-arm-none-eabi-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/resources/cmake/gcc-arm-none-eabi.cmake",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "gcc-arm-none-eabi-debug",
+      "displayName": "GCC ARM Embedded (Debug)",
+      "description": "Debug build with GCC ARM toolchain",
+      "inherits": "gcc-arm-none-eabi-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "gcc-arm-none-eabi-release",
+      "displayName": "GCC ARM Embedded (Release)",
+      "description": "Release build with GCC ARM toolchain",
+      "inherits": "gcc-arm-none-eabi-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "gcc-arm-none-eabi-debug",
+      "displayName": "Build (Debug)"
+    },
+    {
+      "name": "release",
+      "configurePreset": "gcc-arm-none-eabi-release",
+      "displayName": "Build (Release)"
+    }
+  ]
 }
