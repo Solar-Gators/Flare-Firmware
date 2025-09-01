@@ -1,6 +1,7 @@
 #include "CanDriver.hpp"
 
-HAL_StatusTypeDef CANDevice::StartCANDevice(CanHandle_t *hcan){
+HAL_StatusTypeDef CANDevice::StartCANDevice(CanHandle_t *hcan)
+{
     this->hcan = hcan;
 
     CanFilter_t filter = {0};
@@ -18,14 +19,16 @@ HAL_StatusTypeDef CANDevice::StartCANDevice(CanHandle_t *hcan){
     filter.FilterMaskIdHigh = 0x0000;
     filter.FilterMaskIdLow = 0x0000;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &filter) != HAL_OK) {
-        Error_Handler(); //Debug message -> Write to eeprom?
+    if (HAL_CAN_ConfigFilter(&hcan, &filter) != HAL_OK)
+    {
+        Error_Handler();  // Debug message -> Write to eeprom?
     }
 
-    if (HAL_CAN_Start(&hcan) != HAL_OK) {
-        Error_Handler(); //Debug message -> Write to eeprom?
+    if (HAL_CAN_Start(&hcan) != HAL_OK)
+    {
+        Error_Handler();  // Debug message -> Write to eeprom?
     }
 #endif
-    
+
     return HAL_OK;
 }

@@ -1,9 +1,10 @@
 #include "CanDriverApi.hpp"
 
-class CANDevice {
-public:
-
-    static CANDevice& getInstance() {
+class CANDevice
+{
+   public:
+    static CANDevice &getInstance()
+    {
         static CANDevice CANDevice;
         return CANDevice;
     }
@@ -12,14 +13,12 @@ public:
 
     void printCANTest();
 
-private:
-
+   private:
     CanHandle_t *hcan;
 
-    CANDevice(){}
+    CANDevice() {}
 
-public:
-    CANDevice(CANDevice const&)         = delete;
-    void operator=(CANDevice const&)    = delete;
+   public:
+    CANDevice(CANDevice const &) = delete;
+    void operator=(CANDevice const &) = delete;
 };
-

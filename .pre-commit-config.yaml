@@ -4,5 +4,5 @@ repos:
     hooks:
       - id: clang-format
         additional_dependencies: []
-        files: '^firmware/.*\.(c|cpp|h|hpp)$'
+        files: '^(firmware/.*/user/|resources/Drivers/SG_Drivers/).*.(c|cpp|h|hpp)$'
         args: [--style=file]
