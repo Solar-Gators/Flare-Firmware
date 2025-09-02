@@ -1,25 +1,24 @@
 #include "CanDriverApi.hpp"
 
-class CANDevice {
-public:
-
-    static CANDevice& getInstance() {
+class CANDevice
+{
+   public:
+    static CANDevice &getInstance()
+    {
         static CANDevice CANDevice;
         return CANDevice;
     }
 
-    HAL_StatusTypeDef StartCANDevice(CAN_HandleTypeDef *hcan);
+    HAL_StatusTypeDef StartCANDevice(CanHandle_t *hcan);
 
     void printCANTest();
 
-private:
+   private:
+    CanHandle_t *hcan;
 
-    CAN_HandleTypeDef *hcan;
+    CANDevice() {}
 
-    CANDevice(){}
-
-public:
-    CANDevice(CANDevice const&)         = delete;
-    void operator=(CANDevice const&)    = delete;
+   public:
+    CANDevice(CANDevice const &) = delete;
+    void operator=(CANDevice const &) = delete;
 };
-

@@ -1,17 +1,43 @@
 {
-    "version": 8,
-    "configurePresets": [
-        {
-            "name": "gcc-arm-none-eabi",
-            "displayName": "GCC ARM Embedded (Ninja)",
-            "description": "Configure with GCC ARM toolchain and Ninja generator",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/resources/cmake/gcc-arm-none-eabi.cmake",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-            }
-        }
-    ]
+  "version": 4,
+  "cmakeMinimumRequired": { "major": 3, "minor": 22, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "gcc-arm-none-eabi-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/resources/cmake/gcc-arm-none-eabi.cmake",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "GCC ARM Embedded (Debug)",
+      "inherits": "gcc-arm-none-eabi-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "displayName": "GCC ARM Embedded (Release)",
+      "inherits": "gcc-arm-none-eabi-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "displayName": "Build (Debug)"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "displayName": "Build (Release)"
+    }
+  ]
 }
