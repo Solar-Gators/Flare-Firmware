@@ -25,6 +25,15 @@ typedef CAN_FilterTypeDef CanFilter_t;
 #error "Enable HAL_FDCAN_MODULE_ENABLED or HAL_CAN_MODULE_ENABLED in stm32*_hal_conf.h"
 #endif
 
+#define SG_CAN_ID_STD 0u
+#define SG_CAN_ID_EXT 1u
+
+#define SG_CAN_PRIORITY_HIGH 0u
+#define SG_CAN_PRIORITY_LOW 1u
+
+#define SG_CAN_RTR_DATA 0u
+#define SG_CAN_RTR_REMOTE 1u
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
