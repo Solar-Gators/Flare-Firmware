@@ -15,10 +15,12 @@ class CANDevice
     }
 
     static HAL_StatusTypeDef StartCANDevice(CanHandle_t* hcan);
+
     static HAL_StatusTypeDef AddFilterId(uint32_t can_id,
                                          uint32_t id_type,
                                          uint32_t rtr_mode,
                                          uint32_t priority);
+
     static HAL_StatusTypeDef AddFilterRange(
         uint32_t can_id, uint32_t range, uint32_t id_type, uint32_t rtr_mode, uint32_t priority);
 

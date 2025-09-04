@@ -22,7 +22,9 @@ extern "C"
 typedef CAN_HandleTypeDef CanHandle_t;
 typedef CAN_FilterTypeDef CanFilter_t;
 #else
-#error "Enable HAL_FDCAN_MODULE_ENABLED or HAL_CAN_MODULE_ENABLED in stm32*_hal_conf.h"
+// #error "Enable HAL_FDCAN_MODULE_ENABLED or HAL_CAN_MODULE_ENABLED in stm32*_hal_conf.h"
+typedef int CanHandle_t;
+typedef int CanFilter_t;
 #endif
 
 #define SG_CAN_ID_STD 0u
