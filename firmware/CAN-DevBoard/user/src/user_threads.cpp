@@ -7,6 +7,7 @@
 #include "main.h"
 
 extern CanHandle_t hfdcan1;
+using namespace CANDriver;
 
 void StartDefaultTask_user(void* argument)
 {

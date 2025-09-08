@@ -1,5 +1,10 @@
 #include "CanDriver.hpp"
 
+#include <algorithm>
+
+namespace CANDriver
+{
+
 #define TRY(x)                \
     do                        \
     {                         \
@@ -7,11 +12,105 @@
             return HAL_ERROR; \
     } while (0)
 
-CANDevice::CANDevice(CanHandle_t* hcan) : hcan(hcan) {}
+static inline int CAN_RxFifoLevel(CanHandle_t* h)
+{
+#if defined(HAL_CAN_MODULE_ENABLED)
+    return HAL_CAN_GetRxFifoFillLevel(h, CAN_RX_FIFO0);
+#elif defined(HAL_FDCAN_MODULE_ENABLED)
+    return static_cast<int>(HAL_FDCAN_GetRxFifoFillLevel(h, FDCAN_RX_FIFO0));
+#else
+    return 0;
+#endif
+}
+
+static inline uint8_t CAN_DlcToBytes(uint32_t dlcOrLen)
+{
+#if defined(HAL_FDCAN_MODULE_ENABLED)
+    switch (dlcOrLen)
+    {
+        case FDCAN_DLC_BYTES_0:
+            return 0;
+        case FDCAN_DLC_BYTES_1:
+            return 1;
+        case FDCAN_DLC_BYTES_2:
+            return 2;
+        case FDCAN_DLC_BYTES_3:
+            return 3;
+        case FDCAN_DLC_BYTES_4:
+            return 4;
+        case FDCAN_DLC_BYTES_5:
+            return 5;
+        case FDCAN_DLC_BYTES_6:
+            return 6;
+        case FDCAN_DLC_BYTES_7:
+            return 7;
+        case FDCAN_DLC_BYTES_8:
+            return 8;
+        case FDCAN_DLC_BYTES_12:
+            return 12;
+        case FDCAN_DLC_BYTES_16:
+            return 16;
+        case FDCAN_DLC_BYTES_20:
+            return 20;
+        case FDCAN_DLC_BYTES_24:
+            return 24;
+        case FDCAN_DLC_BYTES_32:
+            return 32;
+        case FDCAN_DLC_BYTES_48:
+            return 48;
+        case FDCAN_DLC_BYTES_64:
+            return 64;
+        default:
+            return 0;
+    }
+#else
+    return static_cast<uint8_t>(dlcOrLen);  // bxCAN: DLC equals byte length (0..8)
+#endif
+}
+
+static inline bool CAN_ReadOne(CanHandle_t* h, CANMsg& out)
+{
+#if defined(HAL_CAN_MODULE_ENABLED)
+    CAN_RxHeaderTypeDef hdr{};
+    if (HAL_CAN_GetRxMessage(h, CAN_RX_FIFO0, &hdr, out.data) != HAL_OK)
+        return false;
+    out.hcan = h;
+    out.id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
+    out.id_type = (hdr.IDE == CAN_ID_EXT) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
+    out.rtr = (hdr.RTR == CAN_RTR_REMOTE);
+    out.dlc = CAN_DlcToBytes(hdr.DLC);
+    out.timestamp = 0;  // bxCAN timestamping not filled here (optional: use TIM if needed)
+    return true;
+
+#elif defined(HAL_FDCAN_MODULE_ENABLED)
+    FDCAN_RxHeaderTypeDef hdr{};
+    if (HAL_FDCAN_GetRxMessage(h, FDCAN_RX_FIFO0, &hdr, out.data) != HAL_OK)
+        return false;
+    out.hcan = h;
+    out.id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
+    out.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
+    out.rtr = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
+    out.dlc = CAN_DlcToBytes(hdr.DataLength);
+    out.timestamp =
+        0;  // If timestamping enabled, you can capture from peripheral or a systick here
+    return true;
+#else
+    (void) h;
+    (void) out;
+    return false;
+#endif
+}
+
+CANDevice::CANDevice(CanHandle_t* hcan) : hcan_(hcan)
+{
+    filters_.reserve(NUM_FILTER_BANKS);
+    idCallbacks_.reserve(NUM_CAN_CALLBACKS);
+    rangeCallbacks_.reserve(NUM_CAN_CALLBACKS);
+}
 
 HAL_StatusTypeDef CANDevice::StartCANDevice()
 {
-    if (!registerHandle(hcan, this))
+    if (!registerHandle(hcan_, this))
     {
         return HAL_ERROR;
     }
@@ -38,19 +137,19 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
         filter.FilterMaskIdHigh = 0x0000;
         filter.FilterMaskIdLow = 0x0000;
 
-        TRY(HAL_CAN_ConfigFilter(hcan, &filter));
+        TRY(HAL_CAN_ConfigFilter(hcan_, &filter));
     }
     else
     {
         for (const auto& filter : filters_)
         {
-            TRY(HAL_CAN_ConfigFilter(hcan, &filter));
+            TRY(HAL_CAN_ConfigFilter(hcan_, &filter));
         }
     }
 
-    TRY(HAL_CAN_ActivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING));
+    TRY(HAL_CAN_ActivateNotification(hcan_, CAN_IT_RX_FIFO0_MSG_PENDING));
 
-    TRY(HAL_CAN_Start(hcan));
+    TRY(HAL_CAN_Start(hcan_));
 
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     // ===================== FDCAN (M_CAN) =====================
@@ -64,24 +163,24 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
         filter.FilterType = FDCAN_FILTER_RANGE;
         filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
         filter.FilterID1 = 0x0000;
-        filter.FilterID2 = 0x7FF;
+        filter.FilterID2 = MAX_CAN_ID;
 
-        TRY(HAL_FDCAN_ConfigFilter(hcan, &filter));
+        TRY(HAL_FDCAN_ConfigFilter(hcan_, &filter));
     }
     else
     {
         for (const auto& filter : filters_)
         {
-            TRY(HAL_FDCAN_ConfigFilter(hcan, &filter));
+            TRY(HAL_FDCAN_ConfigFilter(hcan_, &filter));
         }
     }
 
     TRY(HAL_FDCAN_ConfigGlobalFilter(
-        hcan, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE));
+        hcan_, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE));
 
-    TRY(HAL_FDCAN_ActivateNotification(hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0));
+    TRY(HAL_FDCAN_ActivateNotification(hcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0));
 
-    TRY(HAL_FDCAN_Start(hcan));
+    TRY(HAL_FDCAN_Start(hcan_));
 
 #else
 #error "Enable either HAL_CAN_MODULE_ENABLED or HAL_FDCAN_MODULE_ENABLED"
@@ -99,18 +198,18 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         return HAL_ERROR;
 
 #if defined(HAL_CAN_MODULE_ENABLED)
-    // ------------------------ bxCAN (classic) ------------------------
+    // ===================== bxCAN =====================
     // Validate & map RTR for bxCAN
     const uint32_t hal_rtr = (rtr_mode == SG_CAN_RTR_REMOTE) ? CAN_RTR_REMOTE : CAN_RTR_DATA;
 
     if (id_type == SG_CAN_ID_STD)
     {
-        if (can_id > 0x7FFu)
+        if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
 
         // Exact match: use IDMASK with all 11 ID bits compared (mask 0x7FF)
-        const uint32_t filter_id = ((can_id & 0x7FFu) << 21) | CAN_ID_STD | hal_rtr;
-        const uint32_t filter_mask = ((0x7FFu) << 21) | 0b110;  // also match IDE & RTR
+        const uint32_t filter_id = ((can_id & MAX_CAN_ID) << 21) | CAN_ID_STD | hal_rtr;
+        const uint32_t filter_mask = ((MAX_CAN_ID) << 21) | 0b110;  // also match IDE & RTR
 
         CAN_FilterTypeDef f = {};
         f.FilterIdHigh = (filter_id >> 16) & 0xFFFFu;
@@ -118,7 +217,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         f.FilterMaskIdHigh = (filter_mask >> 16) & 0xFFFFu;
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
-            (priority == SG_CAN_PRIO_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+            (priority == SG_CAN_PRIORITY_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
         f.FilterBank = filters_.size();
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -143,7 +242,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         f.FilterMaskIdHigh = (filter_mask >> 16) & 0xFFFFu;
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
-            (priority == SG_CAN_PRIO_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+            (priority == SG_CAN_PRIORITY_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
         f.FilterBank = filters_.size();
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -159,12 +258,12 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
     return HAL_OK;
 
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
-    // ------------------------ FDCAN (M_CAN) ------------------------
+    // ===================== FDCAN (M_CAN) =====================
 
     FDCAN_FilterTypeDef f = {};
     if (id_type == SG_CAN_ID_STD)
     {
-        if (can_id > 0x7FFu)
+        if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
 
         // Easiest exact match on FDCAN: RANGE with start==end
@@ -229,14 +328,14 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
 
     if (id_type == SG_CAN_ID_STD)
     {
-        if (can_id > 0x7FFu)
+        if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
-        if (end_inc > 0x7FFu)
-            end_inc = 0x7FFu;
+        if (end_inc > MAX_CAN_ID)
+            end_inc = MAX_CAN_ID;
 
         // bxCAN 32-bit IDMASK packing (STD: ID at bits 31..21)
-        uint32_t filter_id = ((base & 0x7FFu) << 21) | id_type | rtr_mode;
-        uint32_t filter_mask = ((id_mask & 0x7FFu) << 21) | 0b110;  // match IDE & RTR
+        uint32_t filter_id = ((base & MAX_CAN_ID) << 21) | id_type | rtr_mode;
+        uint32_t filter_mask = ((id_mask & MAX_CAN_ID) << 21) | 0b110;  // match IDE & RTR
 
         CanFilter_t f = {};
         f.FilterIdHigh = (filter_id >> 16) & 0xFFFFu;
@@ -291,10 +390,10 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
     CanFilter_t f = {};
     if (id_type == SG_CAN_ID_STD)
     {
-        if (can_id > 0x7FFu)
+        if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
-        if (end_inc > 0x7FFu)
-            end_inc = 0x7FFu;
+        if (end_inc > MAX_CAN_ID)
+            end_inc = MAX_CAN_ID;
 
         f.IdType = FDCAN_STANDARD_ID;
         f.FilterType = FDCAN_FILTER_RANGE;  // inclusive [ID1..ID2]
@@ -330,6 +429,37 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
 #endif
 }
 
+bool CANDevice::addCallbackId(uint32_t can_id, uint32_t id_type, CanCallback cb, void* ctx)
+{
+    if (idCallbacks_.size() >= NUM_CAN_CALLBACKS)
+        return false;
+    IdEntry entry{
+        .id = can_id,
+        .cb = cb,
+    };
+    idCallbacks_.push_back(entry);
+    return true;
+    // TODO: Add id_type filtering & context
+}
+
+bool CANDevice::addCallbackRange(uint32_t start_id,
+                                 uint32_t range,
+                                 uint32_t id_type,
+                                 CanCallback cb,
+                                 void* ctx)
+{
+    if (rangeCallbacks_.size() >= NUM_CAN_CALLBACKS)
+        return false;
+    RangeEntry entry{
+        .start = start_id,
+        .end = start_id + range,
+        .cb = cb,
+    };
+    rangeCallbacks_.push_back(entry);
+    return true;
+    // TODO: Add id_type filtering & context
+}
+
 // ---- ISR entry (called from HAL callback) ----
 HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
 {
@@ -337,6 +467,7 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     if (!self)
         return HAL_ERROR;
 
+    // Tell HandleRxLoop to unblock next time scheduled
     osThreadFlagsSet(self->rx_task_handle, 1u << 0);
     return HAL_OK;
 }
@@ -352,40 +483,14 @@ void CANDevice::HandleRxLoop()
     for (;;)
     {
         osThreadFlagsWait(1u << 0, osFlagsWaitAny, osWaitForever);
-
-#if defined(HAL_FDCAN_MODULE_ENABLED)
-        while (HAL_FDCAN_GetRxFifoFillLevel(hcan, FDCAN_RX_FIFO0) > 0)
+        while (CAN_RxFifoLevel(hcan_) > 0)
         {
             CANMsg msg{};
-            msg.hcan = hcan;
-            FDCAN_RxHeaderTypeDef hdr{};
-            if (HAL_FDCAN_GetRxMessage(hcan, FDCAN_RX_FIFO0, &hdr, msg.data) != HAL_OK)
+            if (!CAN_ReadOne(hcan_, msg))
                 break;
-            msg.id = (hdr.IdType == FDCAN_EXTENDED_ID) ? hdr.Identifier : (hdr.Identifier & 0x7FF);
-            msg.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
-            msg.rtr = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
-            msg.dlc = hdr.DataLength;
-            msg.timestamp = 0;
             // TODO: fill with timestamping
             // TODO: lookup and call handlers with (msg, ctx)
         }
-#elif defined(HAL_CAN_MODULE_ENABLED)
-        while (HAL_CAN_GetRxFifoFillLevel(hcan, CAN_RX_FIFO0) > 0)
-        {
-            CANMsg msg{};
-            msg.hcan = hcan;
-            CAN_RxHeaderTypeDef hdr{};
-            if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &hdr, msg.data) != HAL_OK)
-                break;
-            msg.id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
-            msg.id_type = (hdr.IDE == CAN_ID_EXT) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
-            msg.rtr = (hdr.RTR == CAN_RTR_REMOTE);
-            msg.dlc = hdr.DLC;
-            msg.timestamp = 0;
-            // TODO: fill with timestamping
-            // TODO: lookup and call handlers with (msg, ctx)
-        }
-#endif
     }
 }
 
@@ -433,6 +538,8 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
         }
 }
 
+};  // namespace CANDriver
+
 #if defined(HAL_CAN_MODULE_ENABLED)
 /**
  * @brief  CAN Rx interrupt callback.
@@ -441,7 +548,7 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 {
     HAL_CAN_DeactivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
-    CANDevice::RxCallback(hcan);
+    CANDriver::CANDevice::RxCallback(hcan);
 }
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
 /**
@@ -452,6 +559,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef* hcan, uint32_t RxFifo0ITs)
 {
     HAL_FDCAN_DeactivateNotification(hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
-    CANDevice::RxCallback(hcan);
+    CANDriver::CANDevice::RxCallback(hcan);
 }
 #endif
