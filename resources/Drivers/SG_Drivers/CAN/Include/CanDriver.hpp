@@ -1,10 +1,19 @@
+/**
+ * @file CanDriver.hpp
+ * @author Jonathon Brown (jonathonb18b@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-09-08 
+ */
+
 #pragma once
+#include <string.h>
+
 #include "cmsis_os2.h"
 
 #include "CanDriverApi.hpp"
 
 #include <queue>
-#include <utility>
 #include <vector>
 
 namespace CANDriver
@@ -16,6 +25,7 @@ namespace CANDriver
 #define NUM_CAN_CALLBACKS 16
 
 #define TX_QUEUE_SIZE 3 /* Size of Tx message queue */
+#define TX_TIMEOUT 10   /* Timeout for tx thread in ms */
 
 #define MAX_CAN_ID 0x7FFu
 
@@ -23,22 +33,78 @@ namespace CANDriver
 #define CANDEVICE_MAX_BUSES 2
 #endif
 
-struct CANMsg
+// struct CANMsg
+// {
+//     CanHandle_t* hcan;
+//     uint32_t id;
+//     bool id_type;
+//     bool rtr;
+//     uint8_t dlc;
+//     uint32_t timestamp;
+// #if defined(HAL_FDCAN_MODULE_ENABLED)
+//     uint8_t data[64];
+// #else
+//     uint8_t data[8];
+// #endif
+// };
+
+class CANFrame
 {
-    CanHandle_t* hcan;
-    uint32_t id;
-    bool id_type;
-    bool rtr;
-    uint8_t dlc;
-    uint32_t timestamp;
+   public:
+    CANFrame(uint32_t can_id, uint32_t id_type, uint32_t rtr_mode, uint32_t len)
+        : can_id(can_id), id_type(id_type), rtr_mode(rtr_mode), len(len)
+    {
+        const osMutexAttr_t attr = {
+            .name = "CANFrameMutex",
+            .attr_bits = osMutexRecursive | osMutexPrioInherit,
+            .cb_mem = nullptr,
+            .cb_size = 0,
+        };
+        mutex_id_ = osMutexNew(&attr);
+    };
+
+    CANFrame()
+    {
+        const osMutexAttr_t attr = {
+            .name = "CANFrameMutex",
+            .attr_bits = osMutexRecursive | osMutexPrioInherit,
+            .cb_mem = nullptr,
+            .cb_size = 0,
+        };
+        mutex_id_ = osMutexNew(&attr);
+    }
+
+    inline osStatus_t Lock(uint32_t timeout = osWaitForever)
+    {
+        return osMutexAcquire(mutex_id_, timeout);
+    }
+
+    inline osStatus_t Unlock() { return osMutexRelease(mutex_id_); }
+
+    void LoadData(uint8_t data[], uint32_t len)
+    {
+        uint8_t copy_len = max_len < len ? max_len : len;
+        memcpy(this->data, data, copy_len);
+    }
+
+    uint32_t can_id;     /* CAN ID, can be standard or extended */
+    uint32_t id_type;    /* CAN ID type, 0 if standard ID, 4 if extended ID */
+    uint32_t rtr_mode;   /* RTR mode, 0 if not RTR message, 2 if RTR */
+    uint32_t len;        /* payload data length */
+    uint32_t timestamp_; /* timestamp of last message received */
+
 #if defined(HAL_FDCAN_MODULE_ENABLED)
-    uint8_t data[64];
+    uint8_t data[64];           /* payload data array, maximum of 64 bytes */
+    const uint8_t max_len = 64; /* maximum payload length */
 #else
-    uint8_t data[8];
+    uint8_t data[8];           /* payload data array, maximum of 8 bytes */
+    const uint8_t max_len = 8; /* maximum payload length */
 #endif
+
+    osMutexId_t mutex_id_; /* CMSIS-RTOS2 mutex handle */
 };
 
-using CanCallback = HAL_StatusTypeDef (*)(const CANMsg& msg, void* ctx);
+using CanCallback = HAL_StatusTypeDef (*)(const CANFrame& msg, void* ctx);
 
 struct IdEntry
 {
@@ -172,6 +238,28 @@ class CANDevice
                           CanCallback cb,
                           void* ctx = nullptr);
 
+    /*!
+     * @brief Finds callback connected to a single id
+     *
+     * @details Finds registered callback for single CAN Id
+     * 
+     * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
+     * @return const CanCallback* if found, nullptr if no connected callback
+     */
+    const CanCallback* find_by_id(uint32_t id);
+
+    /*!
+     * @brief Finds callback connected to id within range filter
+     *
+     * @details Finds registered callback for id within range of CAN Identifiers
+     * 
+     * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
+     * @return const CanCallback* if found, nullptr if no connected callback
+     */
+    const CanCallback* find_by_range(uint32_t id);
+
+    HAL_StatusTypeDef Send(CANFrame* msg);
+
     static HAL_StatusTypeDef RxCallback(CanHandle_t* hcan);
 
    private:
@@ -181,7 +269,7 @@ class CANDevice
     std::vector<IdEntry> idCallbacks_;
     std::vector<RangeEntry> rangeCallbacks_;
 
-    osMessageQueueId_t tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANMsg*), NULL);
+    osMessageQueueId_t tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
 
     CANDevice(const CANDevice&) = delete;
     CANDevice& operator=(const CANDevice&) = delete;

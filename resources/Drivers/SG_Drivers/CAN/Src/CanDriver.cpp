@@ -1,3 +1,11 @@
+/**
+ * @file CanDriver.cpp
+ * @author Jonathon Brown (jonathonb18b@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-09-08 
+ */
+
 #include "CanDriver.hpp"
 
 #include <algorithm>
@@ -68,30 +76,31 @@ static inline uint8_t CAN_DlcToBytes(uint32_t dlcOrLen)
 #endif
 }
 
-static inline bool CAN_ReadOne(CanHandle_t* h, CANMsg& out)
+static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
 {
 #if defined(HAL_CAN_MODULE_ENABLED)
     CAN_RxHeaderTypeDef hdr{};
     if (HAL_CAN_GetRxMessage(h, CAN_RX_FIFO0, &hdr, out.data) != HAL_OK)
         return false;
-    out.hcan = h;
-    out.id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
+    // out.hcan = h;
+    out.can_id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
     out.id_type = (hdr.IDE == CAN_ID_EXT) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
-    out.rtr = (hdr.RTR == CAN_RTR_REMOTE);
-    out.dlc = CAN_DlcToBytes(hdr.DLC);
-    out.timestamp = 0;  // bxCAN timestamping not filled here (optional: use TIM if needed)
+    out.rtr_mode = (hdr.RTR == CAN_RTR_REMOTE);
+    out.len = CAN_DlcToBytes(hdr.DLC);
+    out.timestamp_ = 0;  // bxCAN timestamping not filled here (optional: use TIM if needed)
+
     return true;
 
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     FDCAN_RxHeaderTypeDef hdr{};
     if (HAL_FDCAN_GetRxMessage(h, FDCAN_RX_FIFO0, &hdr, out.data) != HAL_OK)
         return false;
-    out.hcan = h;
-    out.id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
+    //out.hcan = h;
+    out.can_id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
     out.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
-    out.rtr = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
-    out.dlc = CAN_DlcToBytes(hdr.DataLength);
-    out.timestamp =
+    out.rtr_mode = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
+    out.len = CAN_DlcToBytes(hdr.DataLength);
+    out.timestamp_ =
         0;  // If timestamping enabled, you can capture from peripheral or a systick here
     return true;
 #else
@@ -460,7 +469,38 @@ bool CANDevice::addCallbackRange(uint32_t start_id,
     // TODO: Add id_type filtering & context
 }
 
-// ---- ISR entry (called from HAL callback) ----
+const CanCallback* CANDevice::find_by_id(uint32_t id)
+{
+    for (const auto& idEntry : idCallbacks_)
+    {
+        if (id == idEntry.id)
+        {
+            return &idEntry.cb;
+        }
+    }
+    return nullptr;
+}
+const CanCallback* CANDevice::find_by_range(uint32_t id)
+{
+    for (const auto& rangeEntry : rangeCallbacks_)
+    {
+        if (id < rangeEntry.start)
+        {
+            continue;
+        }
+        else if (id > rangeEntry.end)
+        {
+            continue;
+        }
+        else
+        {
+            return &rangeEntry.cb;
+        }
+    }
+    return nullptr;
+}
+
+// ISR entry (called from HAL callback)
 HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
 {
     CANDevice* self = findByHandle(hcan);
@@ -485,15 +525,46 @@ void CANDevice::HandleRxLoop()
         osThreadFlagsWait(1u << 0, osFlagsWaitAny, osWaitForever);
         while (CAN_RxFifoLevel(hcan_) > 0)
         {
-            CANMsg msg{};
+            CANFrame msg{};
             if (!CAN_ReadOne(hcan_, msg))
                 break;
             // TODO: fill with timestamping
-            // TODO: lookup and call handlers with (msg, ctx)
+
+            const CanCallback* cb = find_by_id(msg.can_id);
+            if (cb)
+            {
+                (*cb)(msg, this);
+                continue;
+            }
+
+            cb = find_by_range(msg.can_id);
+            if (cb)
+            {
+                (*cb)(msg, this);
+            }
         }
     }
 }
 
+HAL_StatusTypeDef CANDevice::Send(CANFrame* msg)
+{
+    // Locking to prevent editing while in queue
+    osMutexAcquire(msg->mutex_id_, osWaitForever);
+
+    if (osMessageQueuePut(tx_queue_, &msg, 0, TX_TIMEOUT) != osOK)
+    {
+        //HandleTxTimeout();
+        osMutexRelease(msg->mutex_id_);
+        return HAL_ERROR;
+    }
+    // TODO: Add Tx task
+
+    osMutexRelease(msg->mutex_id_);
+
+    return HAL_OK;
+}
+
+// ====== HANDLE FUNCTIONS ======
 CANDevice* CANDevice::findByHandle(CanHandle_t* h)
 {
     for (auto& e : s_registry_)
@@ -547,7 +618,7 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
  */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 {
-    HAL_CAN_DeactivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+    //HAL_CAN_DeactivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
     CANDriver::CANDevice::RxCallback(hcan);
 }
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
@@ -558,7 +629,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
  */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef* hcan, uint32_t RxFifo0ITs)
 {
-    HAL_FDCAN_DeactivateNotification(hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
+    //HAL_FDCAN_DeactivateNotification(hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
     CANDriver::CANDevice::RxCallback(hcan);
 }
 #endif
