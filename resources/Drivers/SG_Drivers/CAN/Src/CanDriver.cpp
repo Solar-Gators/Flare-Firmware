@@ -128,6 +128,10 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
     if (!rx_task_handle)
         return HAL_ERROR;
 
+    tx_task_handle = osThreadNew(&CANDevice::HandleTxTrampoline, this, &tx_task_attributes_);
+    if (!tx_task_handle)
+        return HAL_ERROR;
+
 #if defined(HAL_CAN_MODULE_ENABLED)
     // ===================== bxCAN =====================
     if (filters_.empty())
@@ -469,6 +473,11 @@ bool CANDevice::addCallbackRange(uint32_t start_id,
     // TODO: Add id_type filtering & context
 }
 
+void CANDevice::addCallbackAll(CanCallback cb)
+{
+    allCallback_ = cb;
+}
+
 const CanCallback* CANDevice::find_by_id(uint32_t id)
 {
     for (const auto& idEntry : idCallbacks_)
@@ -512,13 +521,15 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     return HAL_OK;
 }
 
+// ====== TX AND RX FUNCTIONS ======
+
 // Turn static task function into Device specific Call
 void CANDevice::HandleRxTrampoline(void* arg)
 {
-    static_cast<CANDevice*>(arg)->HandleRxLoop();
+    static_cast<CANDevice*>(arg)->HandleRx();
 }
 
-void CANDevice::HandleRxLoop()
+void CANDevice::HandleRx()
 {
     for (;;)
     {
@@ -541,25 +552,83 @@ void CANDevice::HandleRxLoop()
             if (cb)
             {
                 (*cb)(msg, this);
+                continue;
+            }
+
+            if (allCallback_)
+            {
+                allCallback_(msg, this);
             }
         }
+    }
+}
+
+void CANDevice::HandleTxTrampoline(void* arg)
+{
+    static_cast<CANDevice*>(arg)->HandleTx();
+}
+
+void CANDevice::HandleTx()
+{
+    CANFrame* tx_msg;
+    for (;;)
+    {
+        osMessageQueueGet(tx_queue_, &tx_msg, NULL, osWaitForever);
+
+        // Release lock on message, lock was acquired in CANDevice::Send()
+        osMutexRelease(tx_msg->mutex_id_);
+
+        // Spinlock until a tx mailbox is empty
+
+#if defined(HAL_FDCAN_MODULE_ENABLED)
+        while (!HAL_FDCAN_GetTxFifoFreeLevel(hcan_))
+            ;
+
+        FDCAN_TxHeaderTypeDef txHeader = {.Identifier = tx_msg->can_id,
+                                          .IdType = tx_msg->id_type,
+                                          .TxFrameType = tx_msg->rtr_mode,
+                                          .DataLength = tx_msg->len,
+                                          .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+                                          .BitRateSwitch = FDCAN_BRS_ON,
+                                          .FDFormat = FDCAN_FD_CAN,
+                                          .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
+                                          .MessageMarker = 0};
+
+        // Request HAL message send
+        HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg->data);
+#else
+        while (!HAL_CAN_GetTxMailboxesFreeLevel(hcan_))
+            ;
+
+        CAN_TxHeaderTypeDef txHeader = {
+            .StdId = tx_msg->can_id,
+            .ExtId = tx_msg->can_id,
+            .IDE = tx_msg->id_type,
+            .RTR = tx_msg->rtr_mode,
+            .DLC = tx_msg->len,
+            .TransmitGlobalTime = DISABLE,
+        };
+
+        uint32_t txMailbox;
+
+        // Request HAL message send
+        HAL_CAN_AddTxMessage(hcan_, &txHeader, tx_msg->data, &txMailbox);
+#endif
     }
 }
 
 HAL_StatusTypeDef CANDevice::Send(CANFrame* msg)
 {
     // Locking to prevent editing while in queue
-    osMutexAcquire(msg->mutex_id_, osWaitForever);
+    msg->Lock();
 
     if (osMessageQueuePut(tx_queue_, &msg, 0, TX_TIMEOUT) != osOK)
     {
         //HandleTxTimeout();
-        osMutexRelease(msg->mutex_id_);
+        msg->Unlock();
         return HAL_ERROR;
     }
-    // TODO: Add Tx task
-
-    osMutexRelease(msg->mutex_id_);
+    msg->Unlock();
 
     return HAL_OK;
 }
@@ -618,7 +687,6 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
  */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 {
-    //HAL_CAN_DeactivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
     CANDriver::CANDevice::RxCallback(hcan);
 }
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
@@ -629,7 +697,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
  */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef* hcan, uint32_t RxFifo0ITs)
 {
-    //HAL_FDCAN_DeactivateNotification(hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
     CANDriver::CANDevice::RxCallback(hcan);
 }
 #endif

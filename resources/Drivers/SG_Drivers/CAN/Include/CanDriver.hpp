@@ -33,21 +33,6 @@ namespace CANDriver
 #define CANDEVICE_MAX_BUSES 2
 #endif
 
-// struct CANMsg
-// {
-//     CanHandle_t* hcan;
-//     uint32_t id;
-//     bool id_type;
-//     bool rtr;
-//     uint8_t dlc;
-//     uint32_t timestamp;
-// #if defined(HAL_FDCAN_MODULE_ENABLED)
-//     uint8_t data[64];
-// #else
-//     uint8_t data[8];
-// #endif
-// };
-
 class CANFrame
 {
    public:
@@ -238,6 +223,8 @@ class CANDevice
                           CanCallback cb,
                           void* ctx = nullptr);
 
+    void addCallbackAll(CanCallback cb);
+
     /*!
      * @brief Finds callback connected to a single id
      *
@@ -258,6 +245,14 @@ class CANDevice
      */
     const CanCallback* find_by_range(uint32_t id);
 
+    /*!
+     * @brief 
+     *
+     * @details
+     * 
+     * @param msg 
+     * @return HAL_StatusTypeDef 
+     */
     HAL_StatusTypeDef Send(CANFrame* msg);
 
     static HAL_StatusTypeDef RxCallback(CanHandle_t* hcan);
@@ -268,14 +263,12 @@ class CANDevice
     std::vector<CanFilter_t> filters_;
     std::vector<IdEntry> idCallbacks_;
     std::vector<RangeEntry> rangeCallbacks_;
+    CanCallback allCallback_ = nullptr;
 
     osMessageQueueId_t tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
 
     CANDevice(const CANDevice&) = delete;
     CANDevice& operator=(const CANDevice&) = delete;
-
-    static void HandleRxTrampoline(void* arg);
-    void HandleRxLoop();
 
     struct Entry
     {
@@ -288,6 +281,14 @@ class CANDevice
     static bool registerHandle(CanHandle_t* h, CANDevice* d);
     static void unregisterHandle(CanHandle_t* h);
 
+    // ====== Tx and Rx Methods ======
+
+    static void HandleRxTrampoline(void* arg);
+    void HandleRx();
+
+    static void HandleTxTrampoline(void* arg);
+    void HandleTx();
+
     inline static osThreadId_t rx_task_handle;
     alignas(8) inline static uint32_t rx_task_stack[512];
 
@@ -296,6 +297,17 @@ class CANDevice
         .attr_bits = osThreadDetached,
         .stack_mem = rx_task_stack,
         .stack_size = sizeof(rx_task_stack),
+        .priority = osPriorityAboveNormal,
+    };
+
+    inline static osThreadId_t tx_task_handle;
+    alignas(8) inline static uint32_t tx_task_stack[512];
+
+    static constexpr osThreadAttr_t tx_task_attributes_ = {
+        .name = "CAN Tx Task",
+        .attr_bits = osThreadDetached,
+        .stack_mem = tx_task_stack,
+        .stack_size = sizeof(tx_task_stack),
         .priority = osPriorityAboveNormal,
     };
 };
