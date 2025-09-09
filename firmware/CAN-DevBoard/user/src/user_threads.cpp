@@ -6,10 +6,7 @@
 #include "eeprom_93aa46.hpp"
 #include "main.h"
 
-extern "C"
-{
-    SPI_HandleTypeDef hspi3;
-}
+extern SPI_HandleTypeDef hspi3;
 
 void StartDefaultTask_user(void* argument)
 {
