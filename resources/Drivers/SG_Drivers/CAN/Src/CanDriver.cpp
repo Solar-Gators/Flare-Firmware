@@ -268,7 +268,6 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
     {
         return HAL_ERROR;
     }
-    return HAL_OK;
 
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     // ===================== FDCAN (M_CAN) =====================
@@ -395,7 +394,6 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
     {
         return HAL_ERROR;
     }
-    return HAL_OK;
 
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     // ===================== FDCAN (M_CAN) =====================

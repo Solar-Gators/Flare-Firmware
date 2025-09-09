@@ -24,6 +24,8 @@ namespace CANDriver
 #define NUM_FILTER_BANKS 14
 #define NUM_CAN_CALLBACKS 16
 
+#define THREAD_STACK_SIZE_WORDS 512
+
 #define TX_QUEUE_SIZE 3 /* Size of Tx message queue */
 #define TX_TIMEOUT 10   /* Timeout for tx thread in ms */
 
@@ -290,7 +292,7 @@ class CANDevice
     void HandleTx();
 
     inline static osThreadId_t rx_task_handle;
-    alignas(8) inline static uint32_t rx_task_stack[512];
+    alignas(8) inline static uint32_t rx_task_stack[THREAD_STACK_SIZE_WORDS];
 
     static constexpr osThreadAttr_t rx_task_attributes_ = {
         .name = "CAN Rx Task",
@@ -301,7 +303,7 @@ class CANDevice
     };
 
     inline static osThreadId_t tx_task_handle;
-    alignas(8) inline static uint32_t tx_task_stack[512];
+    alignas(8) inline static uint32_t tx_task_stack[THREAD_STACK_SIZE_WORDS];
 
     static constexpr osThreadAttr_t tx_task_attributes_ = {
         .name = "CAN Tx Task",
