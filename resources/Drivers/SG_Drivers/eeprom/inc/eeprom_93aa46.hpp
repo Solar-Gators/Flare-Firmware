@@ -15,7 +15,10 @@
 class Eeprom93AA46 final : public Eeprom
 {
    public:
-    Eeprom93AA46(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin);
+    Eeprom93AA46(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin)
+        : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin)
+    {
+    }
 
     int read(uint32_t addr, void* buf, size_t len) override;
     int write(uint32_t addr, const void* buf, size_t len) override;
