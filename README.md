@@ -60,13 +60,15 @@ put videos that explain workflow, as well as creating project in cubemx and also
     
 7. **Import project into CubeIDE so that it can easily be built and debugged**
     - Open STM32CubeIDE → File → New → Makefile project with existing code
-    - Project Directory: select firmware/<YourProject>
+    - Project Directory: select firmware/YourProject
+    - Project Name: should autofill but it would be YourProject
     - Toolchain: choose MCU ARM GCC
-    - Project Type: C/C++ 
+    - Languages: Both C and C++ (Should auto fill)
     - CubeIDE will index the project and should build immediately using your Makefile/Ninja/CMake setup (via Project → Build or the hammer icon).
 
 8. **Run and Debug project**
-    - Create a Debug Configuration of type STM32 C/C++ Application (Set the ELF path to build/<YourProject>.elf).
+    - Create a Debug Configuration by clicking drop down next to debug button of type STM32 C/C++ Application (Set the ELF path to build/YourProject.elf).
+    - You can select the correct one when going to run by adding them to favorites and selecting them with the drop down.
     - Flash and start a debug or flash session.
 
 ## Other Notes
