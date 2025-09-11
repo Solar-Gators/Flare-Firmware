@@ -1,0 +1,21 @@
+this file is an example for if we use clang tidy later probably add to it but its just our variable/class/function naming convention
+
+Checks: >
+  -readability-identifier-naming
+  -*
+CheckOptions:
+  - { key: readability-identifier-naming.ClassCase,              value: CamelCase }
+  - { key: readability-identifier-naming.StructCase,             value: CamelCase }
+  - { key: readability-identifier-naming.EnumCase,               value: CamelCase }
+  - { key: readability-identifier-naming.FunctionCase,           value: lowerCamelCase }
+  - { key: readability-identifier-naming.VariableCase,           value: lower_case }
+  - { key: readability-identifier-naming.ParameterCase,          value: lower_case }
+  - { key: readability-identifier-naming.MemberCase,             value: lower_case }
+  - { key: readability-identifier-naming.MemberSuffix,           value: _ }
+  - { key: readability-identifier-naming.GlobalConstantCase,     value: CamelCase }
+  - { key: readability-identifier-naming.GlobalConstantPrefix,   value: k }
+  - { key: readability-identifier-naming.ConstantCase,           value: CamelCase }
+  - { key: readability-identifier-naming.ConstantPrefix,         value: k }
+  - { key: readability-identifier-naming.MacroDefinitionCase,    value: UPPER_CASE }
+  - { key: readability-identifier-naming.HeaderFileCase,         value: lower_case }
+  - { key: readability-identifier-naming.SourceFileCase,         value: lower_case }

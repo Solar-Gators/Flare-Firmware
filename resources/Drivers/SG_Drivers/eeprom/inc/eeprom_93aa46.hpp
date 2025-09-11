@@ -43,8 +43,13 @@ class Eeprom93AA46 final : public Eeprom
     static constexpr uint8_t kAddrEWDS = 0b0000000;
     static constexpr uint8_t kAddrEWEN = 0b1100000;
 
-    static constexpr size_t kEWInstructionLength = 10;
-    static constexpr size_t kRWInstructionLength = 18;
+    // Lengths of the two instruction types for the eeprom
+    // either erase/write enable/disable or read/write
+    enum class InstrLen : size_t
+    {
+        kEW = 10,
+        kRW = 18
+    };
 
     // cs control helpers
     inline void csLow() { HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET); };
@@ -63,5 +68,5 @@ class Eeprom93AA46 final : public Eeprom
     //
 
     // TODO: Change count variable to instruction type, and function to be one that sends a specific instruction to the eeprom
-    HAL_StatusTypeDef sendBits(const uint32_t& data, size_t count);
+    HAL_StatusTypeDef sendInstruction(const uint32_t& data, const InstrLen& instruction_length);
 };
