@@ -68,6 +68,11 @@ put videos that explain workflow, as well as creating project in cubemx and also
 
 ## Other Notes
 
+- **For working Intellisense in Vscode**
+    Use C/C++ extension for intellisense with CMake Tools as its source.
+
+---
+
 - **From firmware subfolder** (`cd firmware/project1`):
 
     ```sh
