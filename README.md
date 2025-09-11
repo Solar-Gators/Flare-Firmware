@@ -39,12 +39,6 @@ put videos that explain workflow, as well as creating project in cubemx and also
       clang
     ```
 
-4. **Install Python deps**
-    ```sh
-    pip install --upgrade pip
-    pip install pre-commit
-    ```
-
 5. **Install pre-commit hook**
     ```sh
     pre-commit install
