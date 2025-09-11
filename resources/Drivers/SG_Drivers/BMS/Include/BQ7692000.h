@@ -10,8 +10,6 @@ extern "C"
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_i2c.h"
 #elif defined(STM32U575xx)
-#include <stm32u5xx_hal_def.h>
-
 #include "stm32u5xx_hal.h"
 #include "stm32u5xx_hal_i2c.h"
 #endif
