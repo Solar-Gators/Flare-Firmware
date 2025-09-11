@@ -22,19 +22,19 @@ HAL_StatusTypeDef BQ7692000PW::getCC(uint16_t *data)
 {
     TRY(checkCC());
 
-    *data = (dataCC_[0] << 8) | dataCC_[1];
+    *data = (static_cast<uint16_t>(dataCC_[0]) << 8) | dataCC_[1];
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getVC(std::vector<uint16_t> &vc_values)
+HAL_StatusTypeDef BQ7692000PW::getVC(std::array<uint16_t, CELL_COUNT> &vc_values)
 {
     TRY(checkVC());
 
-    vc_values.reserve(dataVC_.size() / TWO_BYTES);
-
-    for (size_t i = 0; i < dataVC_.size(); i += TWO_BYTES)
+    for (size_t cell = 0; cell < CELL_COUNT; ++cell)
     {
-        vc_values.push_back((uint16_t(dataVC_[i]) << 8) | dataVC_[i + 1]);
+        const size_t byte_idx = cell * TWO_BYTES;
+        vc_values.at(cell) =
+            (static_cast<uint16_t>(dataVC_[byte_idx]) << 8) | dataVC_[byte_idx + 1];
     }
 
     return HAL_OK;
@@ -59,7 +59,7 @@ HAL_StatusTypeDef BQ7692000PW::setActiveBalancing(uint8_t *activeBal)
 {
     // Ensure upper three bits are not written
     uint8_t write = *activeBal & ACTIVE_BAL_MASK;
-    TRY(readN(static_cast<uint8_t>(registers::CELL_BAL1), &write, ONE_BYTE));
+    TRY(writeN(static_cast<uint8_t>(registers::CELL_BAL1), &write, ONE_BYTE));
 
     return HAL_OK;
 }
@@ -106,23 +106,25 @@ HAL_StatusTypeDef BQ7692000PW::initCC()
 
 HAL_StatusTypeDef BQ7692000PW::enableCCReading()
 {
-    uint8_t data = CC_EN_MASK;
-    TRY(writeN(static_cast<uint8_t>(registers::SYS_CTRL2), &data, ONE_BYTE));
-
+    uint8_t reg{};
+    TRY(readN(static_cast<uint8_t>(registers::SYS_CTRL2), &reg, ONE_BYTE));
+    reg |= CC_EN_MASK;
+    TRY(writeN(static_cast<uint8_t>(registers::SYS_CTRL2), &reg, ONE_BYTE));
     return HAL_OK;
 }
 
 HAL_StatusTypeDef BQ7692000PW::enableADC()
 {
-    uint8_t data = ADC_EN_MASK;
-    TRY(writeN(static_cast<uint8_t>(registers::SYS_CTRL1), &data, ONE_BYTE));
-
+    uint8_t reg{};
+    TRY(readN(static_cast<uint8_t>(registers::SYS_CTRL1), &reg, ONE_BYTE));
+    reg |= ADC_EN_MASK;
+    TRY(writeN(static_cast<uint8_t>(registers::SYS_CTRL1), &reg, ONE_BYTE));
     return HAL_OK;
 }
 
 HAL_StatusTypeDef BQ7692000PW::checkVC()
 {
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < CELL_COUNT; i++)
     {
         TRY(readN(static_cast<uint8_t>(registers::VC1_HI) + static_cast<uint8_t>(i * TWO_BYTES),
                   dataVC_.data() + (i * TWO_BYTES),

@@ -2,7 +2,7 @@
 
 #include "i2c_api.h"
 
-#include <vector>
+#include <array>
 
 #define ONE_BYTE 1
 #define TWO_BYTES 2
@@ -22,10 +22,7 @@
 class BQ7692000PW : public I2CDevice
 {
    public:
-    BQ7692000PW(I2C_HandleTypeDef *h) : I2CDevice(h, i2c_addr)
-    {
-        dataVC_.reserve(CELL_COUNT * TWO_BYTES);  // 5 cells, 2 bytes per
-    };
+    BQ7692000PW(I2C_HandleTypeDef *h) : I2CDevice(h, i2c_addr){};
 
     /**
      * @brief Enables Coulomb Counting and ADC reading on VC pins
@@ -41,7 +38,7 @@ class BQ7692000PW : public I2CDevice
      * @param vc_values list of cell voltages
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getVC(std::vector<uint16_t> &vc_values);
+    HAL_StatusTypeDef getVC(std::array<uint16_t, CELL_COUNT> &vc_values);
 
     /**
      * @brief Reads Coulomb count register after ensuring CC_Ready is true
@@ -115,7 +112,7 @@ class BQ7692000PW : public I2CDevice
     uint8_t status_ = 0;
     uint8_t dataCC_[TWO_BYTES] = {};
     uint8_t dataBAT_[TWO_BYTES] = {};
-    std::vector<uint8_t> dataVC_;
+    std::array<uint8_t, CELL_COUNT * TWO_BYTES> dataVC_{};
 
     /* FUNCTIONS */
 
