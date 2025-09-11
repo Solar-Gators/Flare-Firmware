@@ -1,8 +1,8 @@
-TODO:
-add clang tidy
-make sams bms project
-make nates bms project
-put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
+TODO: add clang tidy
+TODO: put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
+TODO: note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
+TODO: note about needing to do make clean after messing with ioc
+TODO: add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
 
 # Solar Gators Flare Firmware
 
