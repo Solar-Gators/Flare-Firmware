@@ -30,9 +30,9 @@ HAL_StatusTypeDef BQ7692000PW::getVC(std::vector<uint16_t> &vc_values)
 {
     TRY(checkVC());
 
-    vc_values.reserve(dataVC_.size() / 2);
+    vc_values.reserve(dataVC_.size() / TWO_BYTES);
 
-    for (size_t i = 0; i < dataVC_.size(); i += 2)
+    for (size_t i = 0; i < dataVC_.size(); i += TWO_BYTES)
     {
         vc_values.push_back((uint16_t(dataVC_[i]) << 8) | dataVC_[i + 1]);
     }
@@ -66,9 +66,9 @@ HAL_StatusTypeDef BQ7692000PW::setActiveBalancing(uint8_t *activeBal)
 
 HAL_StatusTypeDef BQ7692000PW::setADCGain(uint8_t *data)
 {
-    uint8_t formatted_data = *data & 0x1F;
-    uint8_t reg1 = (formatted_data & 0b0001'1000) >> 1;
-    uint8_t reg2 = (formatted_data & 0b0000'0111) << 5;
+    uint8_t formatted_data = *data & ADC_GAIN_MAX_MASK;
+    uint8_t reg1 = (formatted_data & ADC_GAIN_REG1_MASK) >> 1;
+    uint8_t reg2 = (formatted_data & ADC_GAIN_REG2_MASK) << 5;
 
     TRY(writeN(static_cast<uint8_t>(registers::ADCGAIN1), &reg1, ONE_BYTE));
     TRY(writeN(static_cast<uint8_t>(registers::ADCGAIN2), &reg2, ONE_BYTE));

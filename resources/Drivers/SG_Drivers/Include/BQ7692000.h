@@ -1,19 +1,8 @@
 #pragma once
 
-#include <cstdint>
+#include "i2c_api.h"
 
 #include <vector>
-
-extern "C"
-{
-#if defined(STM32L476xx)
-#include "stm32l4xx_hal.h"
-#include "stm32l4xx_hal_i2c.h"
-#elif defined(STM32U575xx)
-#include "stm32u5xx_hal.h"
-#include "stm32u5xx_hal_i2c.h"
-#endif
-}  // Extern "C"
 
 #define ONE_BYTE 1
 #define TWO_BYTES 2
@@ -26,27 +15,9 @@ extern "C"
 #define STATUS_ERR_MASK 0b0010'1111
 #define ACTIVE_BAL_MASK 0b0001'1111
 
-// TODO: Split I2C Device into own folders and expand default operations
-class I2CDevice
-{
-   public:
-    I2CDevice(I2C_HandleTypeDef *h, uint8_t addr) : i2cHandle(h), deviceAddress(addr){};
-
-    HAL_StatusTypeDef readN(uint8_t reg, uint8_t *buf, size_t len)
-    {
-        return HAL_I2C_Mem_Read(
-            i2cHandle, deviceAddress, reg, I2C_MEMADD_SIZE_8BIT, buf, len, HAL_MAX_DELAY);
-    }
-    HAL_StatusTypeDef writeN(uint8_t reg, uint8_t *buf, size_t len)
-    {
-        return (HAL_I2C_Mem_Write(
-            i2cHandle, deviceAddress, reg, I2C_MEMADD_SIZE_8BIT, buf, len, HAL_MAX_DELAY));
-    }
-
-   private:
-    I2C_HandleTypeDef *i2cHandle;
-    const uint8_t deviceAddress;
-};
+#define ADC_GAIN_MAX_MASK 0x1F
+#define ADC_GAIN_REG1_MASK 0b0001'1000
+#define ADC_GAIN_REG2_MASK 0b0000'0111
 
 class BQ7692000PW : public I2CDevice
 {
@@ -81,17 +52,43 @@ class BQ7692000PW : public I2CDevice
     HAL_StatusTypeDef getCC(uint16_t *data);
 
     /**
-     * @brief
+     * @brief Retrieves current battery calculation
      *
-     * @param data
+     * @param [out] data
      * @return HAL_StatusTypeDef
      */
     HAL_StatusTypeDef getBAT(uint16_t *data);
 
+    /**
+     * @brief Retrieves ADC Offset from read only register
+     *
+     * @param [out] data
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef getADCOffset(uint8_t *data);
+
+    /**
+     * @brief Sets ADC gain
+     *
+     * @param [in] data from 0x00 to 0x1F
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef setADCGain(uint8_t *data);
 
+    /**
+     * @brief Get the Active Balancing register
+     *
+     * @param [out] activeBal
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef getActiveBalancing(uint8_t *activeBal);
+
+    /**
+     * @brief Set the Active Balancing register
+     *
+     * @param [in] activeBal
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef setActiveBalancing(uint8_t *activeBal);
 
    private:
@@ -122,12 +119,45 @@ class BQ7692000PW : public I2CDevice
 
     /* FUNCTIONS */
 
+    /**
+     * @brief Private CC start
+     *
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef initCC();
 
+    /**
+     * @brief Private enable CC reading reg
+     *
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef enableCCReading();
+
+    /**
+     * @brief Private ADC enable
+     *
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef enableADC();
 
+    /**
+     * @brief Private read status register
+     *
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef checkStatus();
+
+    /**
+     * @brief Private read of all 10 VC registers
+     *
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef checkVC();
+
+    /**
+     * @brief Private read CC register
+     *
+     * @return HAL_StatusTypeDef
+     */
     HAL_StatusTypeDef checkCC();
 };
