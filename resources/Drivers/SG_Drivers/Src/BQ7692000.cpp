@@ -90,6 +90,7 @@ HAL_StatusTypeDef BQ7692000PW::checkStatus()
     if ((status_ & STATUS_ERR_MASK) != 0)
     {
         // TODO: log/handle error bits
+        return HAL_ERROR;
     }
 
     return HAL_OK;
