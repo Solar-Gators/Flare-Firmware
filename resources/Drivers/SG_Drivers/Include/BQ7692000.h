@@ -57,6 +57,14 @@ class BQ7692000PW : public I2CDevice
     HAL_StatusTypeDef getBAT(uint16_t *data);
 
     /**
+     * @brief Get the Die Temperature
+     *
+     * @param [out] data
+     * @return HAL_StatusTypeDef
+     */
+    HAL_StatusTypeDef getDieTemp(uint16_t *data);
+
+    /**
      * @brief Retrieves ADC Offset from read only register
      *
      * @param [out] data
@@ -103,6 +111,7 @@ class BQ7692000PW : public I2CDevice
         CC_CFG = 0x0B,
         VC1_HI = 0x0C,
         BAT_HI = 0x2A,
+        TS1_HI = 0x2C,
         CC_HI = 0x32,
         ADCGAIN1 = 0x50,
         ADCOFFSET = 0x51,
@@ -112,6 +121,7 @@ class BQ7692000PW : public I2CDevice
     uint8_t status_ = 0;
     uint8_t dataCC_[TWO_BYTES] = {};
     uint8_t dataBAT_[TWO_BYTES] = {};
+    uint8_t dataTemp_[TWO_BYTES] = {};
     std::array<uint8_t, CELL_COUNT * TWO_BYTES> dataVC_{};
 
     /* FUNCTIONS */

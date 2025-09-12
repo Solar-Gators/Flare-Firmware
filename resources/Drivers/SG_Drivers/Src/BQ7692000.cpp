@@ -48,6 +48,14 @@ HAL_StatusTypeDef BQ7692000PW::getBAT(uint16_t *data)
     return HAL_OK;
 }
 
+HAL_StatusTypeDef BQ7692000PW::getDieTemp(uint16_t *data)
+{
+    TRY(readN(static_cast<uint8_t>(registers::TS1_HI), dataTemp_, TWO_BYTES));
+
+    *data = (static_cast<uint16_t>((dataTemp_[0] << 8) | dataTemp_[1]));
+    return HAL_OK;
+}
+
 HAL_StatusTypeDef BQ7692000PW::getActiveBalancing(uint8_t *activeBal)
 {
     TRY(readN(static_cast<uint8_t>(registers::CELL_BAL1), activeBal, ONE_BYTE));
@@ -143,7 +151,7 @@ HAL_StatusTypeDef BQ7692000PW::checkCC()
         return HAL_BUSY;  // Maybe HAL_ERROR?
     }
 
-    TRY(readN(static_cast<uint8_t>(registers::CC_HI), dataCC_, static_cast<size_t>(TWO_BYTES)));
+    TRY(readN(static_cast<uint8_t>(registers::CC_HI), dataCC_, TWO_BYTES));
 
     // Clear CC Ready latch
     uint8_t clearCC = STATUS_CC_READY_MASK;
