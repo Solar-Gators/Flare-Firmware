@@ -2,7 +2,7 @@
 
 #include <array>
 
-#define HAL_SPI_TRANSMIT_TIMEOUT
+#define HAL_SPI_TRANSMIT_TIMEOUT 100
 
 // read can only do one byte at a time on on this device
 EepromStatus Eeprom93AA46::read(uint32_t addr, void* buf, size_t len)
@@ -34,7 +34,7 @@ EepromStatus Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 
 EepromStatus Eeprom93AA46::sendEWEN()
 {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(hspi_, &kEwen[0], kEwLen, HAL_SPI_TRANSMIT_TIMEOUT);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(hspi_, &kEwen[0], kEwLen, 100);
     return hal_to_eeprom_status(status);
 }
 
