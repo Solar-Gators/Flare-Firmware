@@ -26,18 +26,18 @@ class Eeprom93AA46 final : public Eeprom
     GPIO_TypeDef* cs_port_;
     uint16_t cs_pin_;
 
-    // constant opcodes
-    struct kOpcode
-    {
-        static constexpr uint8_t Read = 0b10;
-        static constexpr uint8_t Write = 0b01;
-    };
-
     // EWEN  -> 1 00 1 1 X X X X X
     static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};
     // EWDS  -> 1 00 0 0 XXXXX
     static inline constexpr std::array<uint8_t, 2> kEwds = {0b00000010, 0b00000000};
     static inline constexpr size_t kEwLen = 2;
+
+    static inline constexpr uint32_t kRdMask = (0b110 << 15);
+    static inline constexpr uint32_t kWrMask = (0b101 << 15);
+    static inline constexpr size_t kRWLen = 3;
+
+    // address is 7 bits
+    static inline constexpr uint8_t kAddrMask = 0b011111111;
 
     // instruction types, only used because we want to send data as fast as possible and we have to send leading 0's
     // so it helps us send an optimal amount of bytes
@@ -64,5 +64,5 @@ class Eeprom93AA46 final : public Eeprom
     //
 
     // TODO: Change count variable to instruction type, and function to be one that sends a specific instruction to the eeprom
-    EepromStatus sendInstruction(uint8_t* instr, size_t len);
+    EepromStatus sendRWInstruction(uint32_t instr);
 };
