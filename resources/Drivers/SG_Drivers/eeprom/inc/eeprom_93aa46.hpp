@@ -2,15 +2,7 @@
 
 #include "eeprom.hpp"
 
-#if defined(STM32L476xx)
-#include "stm32l4xx_hal.h"
-#include "stm32l4xx_hal_spi.h"
-#elif defined(STM32U575xx)
-#include "stm32u5xx_hal.h"
-#include "stm32u5xx_hal_spi.h"
-#else
-#error "Define your STM32 part macro (e.g., STM32U575xx or STM32L476xx)."
-#endif
+#include <array>
 
 // this eeprom has a start bit before it begins reading bits it recieves on its mosi line, which means you can prepend as many zeros as you like so that it correctly aligns with the 8 bit at a time send protocol of the HAL_SPI functions
 class Eeprom93AA46 final : public Eeprom
@@ -22,8 +14,8 @@ class Eeprom93AA46 final : public Eeprom
         csLow();
     }
 
-    int read(uint32_t addr, void* buf, size_t len) override;
-    int write(uint32_t addr, const void* buf, size_t len) override;
+    EepromStatus read(uint32_t addr, void* buf, size_t len) override;
+    EepromStatus write(uint32_t addr, const void* buf, size_t len) override;
 
     uint32_t size() const override { return 128; }
     uint16_t programGranularity() const override { return 1; }
@@ -35,16 +27,20 @@ class Eeprom93AA46 final : public Eeprom
     uint16_t cs_pin_;
 
     // constant opcodes
-    static constexpr uint8_t kOpcodeRead = 0b10;
-    static constexpr uint8_t kOpcodeWrite = 0b01;
-    static constexpr uint8_t kOpcodeGeneral = 0b00;
+    struct kOpcode
+    {
+        static constexpr uint8_t Read = 0b10;
+        static constexpr uint8_t Write = 0b01;
+    };
 
-    // constand address's, specifically for use with the general opcode
-    static constexpr uint8_t kAddrEWDS = 0b0000000;
-    static constexpr uint8_t kAddrEWEN = 0b1100000;
+    // EWEN  -> 1 00 1 1 X X X X X
+    static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};
+    // EWDS  -> 1 00 0 0 XXXXX
+    static inline constexpr std::array<uint8_t, 2> kEwds = {0b00000010, 0b00000000};
+    static inline constexpr size_t kEwLen = 2;
 
-    // Lengths of the two instruction types for the eeprom
-    // either erase/write enable/disable or read/write
+    // instruction types, only used because we want to send data as fast as possible and we have to send leading 0's
+    // so it helps us send an optimal amount of bytes
     enum class InstrLen : size_t
     {
         kEW = 10,
@@ -56,10 +52,10 @@ class Eeprom93AA46 final : public Eeprom
     inline void csHigh() { HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET); };
 
     // helper functions that send one of the commands to the eeprom
-    HAL_StatusTypeDef sendEWEN();
-    HAL_StatusTypeDef sendEWDS();
-    HAL_StatusTypeDef sendRead(uint32_t addr, uint8_t& out);
-    HAL_StatusTypeDef sendWrite(uint32_t addr, const uint8_t& byte);
+    EepromStatus sendRead(uint32_t addr, uint8_t& out);
+    EepromStatus sendWrite(uint32_t addr, const uint8_t& byte);
+    EepromStatus sendEWEN();
+    EepromStatus sendEWDS();
 
     // function should be used to send a single command
     // count is in bits. Prepends zeros so that it aligns
@@ -68,5 +64,5 @@ class Eeprom93AA46 final : public Eeprom
     //
 
     // TODO: Change count variable to instruction type, and function to be one that sends a specific instruction to the eeprom
-    HAL_StatusTypeDef sendInstruction(const uint32_t& data, const InstrLen& instruction_length);
+    EepromStatus sendInstruction(uint8_t* instr, size_t len);
 };
