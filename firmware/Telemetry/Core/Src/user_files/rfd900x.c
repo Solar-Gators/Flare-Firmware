@@ -11,11 +11,11 @@
 
 
 //send the whole buffer of data
-HAL_StatusTypeDef sendData(uint8_t *databuffer){
+HAL_StatusTypeDef sendData(uint8_t *databuffer, uint16_t sizeData){
 
 	HAL_StatusTypeDef status;
 
-	status = HAL_UART_Transmit(&huart1, databuffer, sizeof(databuffer), UART_TIMEOUT );
+	status = HAL_UART_Transmit(&huart1, databuffer, sizeData, UART_TIMEOUT );
 	HAL_Delay(1000);
 
 	return status;
@@ -29,27 +29,28 @@ HAL_StatusTypeDef getFirmwareData(uint8_t ATI_val){
 	data[index++] = 'T';
 	data[index++] = 'I';
 	data[index++] = ATI_val;
-	return sendData(data);
+	return sendData(data, sizeof(data));
 }
 
-//AT&W, Write current paramters to EEPROM
-HAL_StatusTypeDef writeRegister(){
+//AT&W, Write current parameters to EEPROM
+HAL_StatusTypeDef saveRegisterValues(){
 	uint8_t data[] = {'A','T','&', 'W'};
-	return sendData(data);
+	return sendData(data, sizeof(data));
 }
 
-//ATZ, Rebbot radio
+//ATZ, Reboot radio
 HAL_StatusTypeDef rebootRadio(){
 	uint8_t data[] = {'A','T','Z'};
-	return sendData(data);
+	return sendData(data, sizeof(data));
 }
 
 
 
 //set register value for configuration
-HAL_StatusTypeDef setRegister(uint8_t* reg_num, uint8_t* reg_val ){
+HAL_StatusTypeDef setRegister(uint8_t reg_num, uint16_t reg_val ){
 
 	uint8_t data[20];
+	uint8_t val_buffer[6];
 	uint8_t index = 0;
 
 	data[index++] = 'A';
@@ -57,19 +58,25 @@ HAL_StatusTypeDef setRegister(uint8_t* reg_num, uint8_t* reg_val ){
 	data[index++] = 'S';
 
 	//attach the register value
-	for (int i = 0; i < sizeof(reg_num); i++){
-		data[index++] = reg_num[i];
+	if (reg_num < 10){
+		data[index++] = reg_num + '0';
+	}
+	else{
+		data[index++] = (reg_num / 10) + '0';
+		data[index++] = (reg_num % 10) + '0';
 	}
 
 	data[index++] = '=';
 
 	//value that you will set the "register" to
-	for(int i =0; i < sizeof(reg_val); i++){
-		data[index++] = reg_val[i];
+	sprintf(val_buffer, "%d", reg_val);
+
+	for(int i =0; i < sizeof(val_buffer); i++){
+		data[index++] = val_buffer[i];
 	}
 	data[index++] = '\0';
 
-	return sendData(data);
+	return sendData(data, sizeof(data));
 
 }
 
@@ -82,7 +89,7 @@ HAL_StatusTypeDef enterATCommandMode(){
 	//Figure out how to use putty to send and receive data
 
 	//send "+++" to enterATCommandMode, no quotes
-	if(sendData("+++") != HAL_OK){
+	if(sendData("+++", sizeof("+++")) != HAL_OK){
 		errors++;
 	}
 

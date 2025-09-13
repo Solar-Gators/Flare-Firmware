@@ -5,6 +5,8 @@
 
 void app_main();
 
+void testing();
+
 
 
 #endif /* INC_USER_FILES_APP_MAIN_H_ */

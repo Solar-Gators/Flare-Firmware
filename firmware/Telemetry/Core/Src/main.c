@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,7 +98,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  //app_main();
+	  testing();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
