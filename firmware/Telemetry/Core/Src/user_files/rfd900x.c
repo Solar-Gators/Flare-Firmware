@@ -28,7 +28,7 @@ HAL_StatusTypeDef getFirmwareData(uint8_t ATI_val){
 	data[index++] = 'A';
 	data[index++] = 'T';
 	data[index++] = 'I';
-	data[index++] = ATI_val;
+	data[index++] = ATI_val + '0';
 	return sendData(data, sizeof(data));
 }
 
@@ -38,9 +38,15 @@ HAL_StatusTypeDef saveRegisterValues(){
 	return sendData(data, sizeof(data));
 }
 
-//ATZ, Reboot radio
+//Reboot radio, saves some register values
 HAL_StatusTypeDef rebootRadio(){
 	uint8_t data[] = {'A','T','Z'};
+	return sendData(data, sizeof(data));
+}
+
+//wipe the configurations to factory default
+HAL_StatusTypeDef resetParameters(){
+	uint8_t data[] = {'A','T','&', 'F'};
 	return sendData(data, sizeof(data));
 }
 
@@ -48,6 +54,11 @@ HAL_StatusTypeDef rebootRadio(){
 
 //set register value for configuration
 HAL_StatusTypeDef setRegister(uint8_t reg_num, uint16_t reg_val ){
+
+	//check if register value doesn't exist
+	if(reg_num >= 29){
+		return HAL_ERROR;
+	}
 
 	uint8_t data[20];
 	uint8_t val_buffer[6];
@@ -72,12 +83,44 @@ HAL_StatusTypeDef setRegister(uint8_t reg_num, uint16_t reg_val ){
 	sprintf(val_buffer, "%d", reg_val);
 
 	for(int i =0; i < sizeof(val_buffer); i++){
+		//check if end of buffer, NULL
+		if(val_buffer[i] == 0){
+		    break;
+		}
 		data[index++] = val_buffer[i];
 	}
-	data[index++] = '\0';
 
-	return sendData(data, sizeof(data));
+	return sendData(data, index);
 
+}
+
+//get the local RF register value
+HAL_StatusTypeDef getLocalRegisterValue(uint8_t reg_num){
+
+	//check if register value doesn't exist
+	if(reg_num >= 29){
+		return HAL_ERROR;
+	}
+
+	uint8_t data[10];
+	uint8_t index = 0;
+
+	data[index++] = 'A';
+	data[index++] = 'T';
+	data[index++] = 'S';
+
+	//attach the register value
+	if (reg_num < 10){
+		data[index++] = reg_num + '0';
+	}
+	else{
+		data[index++] = (reg_num / 10) + '0';
+		data[index++] = (reg_num % 10) + '0';
+	}
+
+	data[index ++] = '?';
+
+	return sendData(data, index);
 }
 
 
@@ -85,11 +128,12 @@ HAL_StatusTypeDef setRegister(uint8_t reg_num, uint16_t reg_val ){
 HAL_StatusTypeDef enterATCommandMode(){
 
 	uint8_t errors = 0;
+	uint8_t data[] = {'+',"+","+"};
 
 	//Figure out how to use putty to send and receive data
 
 	//send "+++" to enterATCommandMode, no quotes
-	if(sendData("+++", sizeof("+++")) != HAL_OK){
+	if(sendData(data, sizeof(data)) != HAL_OK){
 		errors++;
 	}
 
@@ -101,6 +145,11 @@ HAL_StatusTypeDef enterATCommandMode(){
 		return HAL_ERROR;
 	}
 	return HAL_OK;
+}
+
+HAL_StatusTypeDef exitATCommandMode(){
+	uint8_t data[] = {'A','T','O'};
+	return sendData(data, sizeof(data));
 }
 
 

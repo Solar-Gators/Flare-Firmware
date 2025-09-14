@@ -8,6 +8,8 @@
 
 4. Make it so I don't send all the data in register at the same time
 
+5. Getfirmware(), do the edge cases 5 and ?
+
 # AT/RT Commands
 
 ### RT Commands should be used first before AT
