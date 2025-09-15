@@ -30,11 +30,19 @@ HAL_StatusTypeDef BQ7692000PW::getVC(std::array<uint16_t, CELL_COUNT> &vc_values
 {
     TRY(checkVC());
 
+    uint8_t temp = 0;
+
+    TRY(getADCGain(&temp));
+    float gain_F = (static_cast<float>(365 + temp) / 1000);
+
+    TRY(getADCOffset(&temp));
+    signed char offset = static_cast<signed char>(temp);
+
     for (size_t cell = 0; cell < CELL_COUNT; ++cell)
     {
         const size_t byte_idx = cell * TWO_BYTES;
-        vc_values.at(cell) =
-            (static_cast<uint16_t>(dataVC_[byte_idx]) << 8) | dataVC_[byte_idx + 1];
+        uint16_t rawADC = (static_cast<uint16_t>(dataVC_[byte_idx]) << 8) | dataVC_[byte_idx + 1];
+        vc_values.at(cell) = static_cast<uint16_t>(rawADC * gain_F + 0.5f) + offset;
     }
 
     return HAL_OK;
@@ -72,14 +80,15 @@ HAL_StatusTypeDef BQ7692000PW::setActiveBalancing(uint8_t *activeBal)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::setADCGain(uint8_t *data)
+HAL_StatusTypeDef BQ7692000PW::getADCGain(uint8_t *data)
 {
-    uint8_t formatted_data = *data & ADC_GAIN_MAX_MASK;
-    uint8_t reg1 = (formatted_data & ADC_GAIN_REG1_MASK) >> 1;
-    uint8_t reg2 = (formatted_data & ADC_GAIN_REG2_MASK) << 5;
+    uint8_t reg1;  // = (formatted_data & ADC_GAIN_REG1_MASK) >> 1;
+    uint8_t reg2;  // = (formatted_data & ADC_GAIN_REG2_MASK) << 5;
 
-    TRY(writeN(static_cast<uint8_t>(registers::ADCGAIN1), &reg1, ONE_BYTE));
-    TRY(writeN(static_cast<uint8_t>(registers::ADCGAIN2), &reg2, ONE_BYTE));
+    TRY(readN(static_cast<uint8_t>(registers::ADCGAIN1), &reg1, ONE_BYTE));
+    TRY(readN(static_cast<uint8_t>(registers::ADCGAIN2), &reg2, ONE_BYTE));
+
+    *data = ((reg1 & 0b0000'1100) << 1) | ((reg2 & 0b1110'0000) >> 5);
 
     return HAL_OK;
 }

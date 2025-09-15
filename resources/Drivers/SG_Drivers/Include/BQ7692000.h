@@ -65,22 +65,6 @@ class BQ7692000PW : public I2CDevice
     HAL_StatusTypeDef getDieTemp(uint16_t *data);
 
     /**
-     * @brief Retrieves ADC Offset from read only register
-     *
-     * @param [out] data
-     * @return HAL_StatusTypeDef
-     */
-    HAL_StatusTypeDef getADCOffset(uint8_t *data);
-
-    /**
-     * @brief Sets ADC gain
-     *
-     * @param [in] data from 0x00 to 0x1F
-     * @return HAL_StatusTypeDef
-     */
-    HAL_StatusTypeDef setADCGain(uint8_t *data);
-
-    /**
      * @brief Get the Active Balancing register
      *
      * @param [out] activeBal
@@ -125,6 +109,22 @@ class BQ7692000PW : public I2CDevice
     std::array<uint8_t, CELL_COUNT * TWO_BYTES> dataVC_{};
 
     /* FUNCTIONS */
+
+    /**
+     * @brief Retrieves ADC Offset from read only register
+     *
+     * @param [out] data
+     * @return HAL_StatusTypeDef
+     */
+    HAL_StatusTypeDef getADCOffset(uint8_t *data);
+
+    /**
+     * @brief Gets ADC gain
+     *
+     * @param [out] data from 0x00 to 0x1F
+     * @return HAL_StatusTypeDef
+     */
+    HAL_StatusTypeDef getADCGain(uint8_t *data);
 
     /**
      * @brief Private CC start
