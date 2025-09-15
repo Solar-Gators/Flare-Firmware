@@ -30,13 +30,13 @@ HAL_StatusTypeDef BQ7692000PW::getVC(std::array<uint16_t, CELL_COUNT> &vc_values
 {
     TRY(checkVC());
 
-    uint8_t temp = 0;
+    uint8_t gain_temp = 0;
+    TRY(getADCGain(&gain_temp));
+    float gain_F = (static_cast<float>(365 + gain_temp) / 1000);
 
-    TRY(getADCGain(&temp));
-    float gain_F = (static_cast<float>(365 + temp) / 1000);
-
-    TRY(getADCOffset(&temp));
-    signed char offset = static_cast<signed char>(temp);
+    uint8_t offset_temp = 0;
+    TRY(getADCOffset(&offset_temp));
+    signed char offset = static_cast<signed char>(offset_temp);
 
     for (size_t cell = 0; cell < CELL_COUNT; ++cell)
     {
@@ -52,7 +52,18 @@ HAL_StatusTypeDef BQ7692000PW::getBAT(uint16_t *data)
 {
     TRY(readN(static_cast<uint8_t>(registers::BAT_HI), dataBAT_, TWO_BYTES));
 
-    *data = (dataBAT_[0] << 8) | dataBAT_[1];
+    uint8_t gain_temp = 0;
+    TRY(getADCGain(&gain_temp));
+    float gain_F = (static_cast<float>(365 + gain_temp) / 1000);
+
+    uint8_t offset_temp = 0;
+    TRY(getADCOffset(&offset_temp));
+    signed char offset = static_cast<signed char>(offset_temp);
+
+    uint16_t raw_adc = (dataBAT_[0] << 8) | dataBAT_[1];
+
+    // V(BAT) = 4 × GAIN × ADC(cell) + (#Cells x OFFSET)
+    *data = static_cast<uint16_t>(4 * gain_F * static_cast<float>(raw_adc) + (CELL_COUNT * offset));
     return HAL_OK;
 }
 
@@ -60,7 +71,18 @@ HAL_StatusTypeDef BQ7692000PW::getDieTemp(uint16_t *data)
 {
     TRY(readN(static_cast<uint8_t>(registers::TS1_HI), dataTemp_, TWO_BYTES));
 
-    *data = (static_cast<uint16_t>((dataTemp_[0] << 8) | dataTemp_[1]));
+    /*
+        V25 = 1.200 V (nominal) (6)
+        VTSX = (ADC in Decimal) x 382 μV/LSB (7)
+        TEMPDIE = 25° – ((VTSX – V25) ÷ 0.0042) (8)
+    */
+
+    uint16_t raw_adc = (static_cast<uint16_t>((dataTemp_[0] << 8) | dataTemp_[1]));
+
+    float temp = static_cast<float>(raw_adc) * 0.382;
+    temp = 25 - ((temp - 1.2) / 0.0042);
+    *data = static_cast<uint16_t>(temp);
+
     return HAL_OK;
 }
 
