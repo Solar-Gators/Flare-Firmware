@@ -128,7 +128,7 @@ HAL_StatusTypeDef getLocalRegisterValue(uint8_t reg_num){
 HAL_StatusTypeDef enterATCommandMode(){
 
 	uint8_t errors = 0;
-	uint8_t data[] = {'+',"+","+"};
+	uint8_t data[] = {'+','+','+'};
 
 	//Figure out how to use putty to send and receive data
 
