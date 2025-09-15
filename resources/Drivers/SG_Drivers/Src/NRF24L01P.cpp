@@ -18,7 +18,15 @@ HAL_StatusTypeDef NRF24L01P::writeMultiple(uint8_t reg, const uint8_t *data, uin
     buf[0] = reg;
     memcpy(buf + 1, data, data_len);
 
-    return write(buf, data_len + 1);
+    HAL_StatusTypeDef st = write(buf, data_len + 1);
+    delete[] buf;
+    return st;
+}
+
+HAL_StatusTypeDef NRF24L01P::sendCmd(uint8_t cmd)
+{
+    uint8_t data = cmd;
+    return write(&data, 1);
 }
 
 HAL_StatusTypeDef NRF24L01P::init()
@@ -44,7 +52,17 @@ HAL_StatusTypeDef NRF24L01P::init()
     // Enable only pipe 0
     TRY(writeSingle(0x02, 0x01));
 
-    TRY(writeMultiple(0x10, ADDR, sizeof(ADDR)));
+    // Write 5 bytes (LSB first) to register 0x10
+    TRY(writeMultiple(0x20 | 0x10, ADDR, sizeof(ADDR)));
+
+    TRY(writeSingle(0x1D /*FEATURE*/, 0x04 /*EN_DPL*/ | 0x02 /*EN_ACK_PAY*/));
+    TRY(writeSingle(0x1C /*DYNPD*/, 0x01 /*pipe0*/));
+
+    // Clear pending IRQs
+    TRY(writeSingle(0x07 /*STATUS*/, 0x70));
+
+    TRY(sendCmd(FLUSH_TX_CMD));
+    TRY(sendCmd(FLUSH_RX_CMD));
 
     return HAL_OK;
 }

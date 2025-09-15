@@ -12,6 +12,10 @@
     } while (0)
 
 static const uint8_t ADDR[5] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};  // LSByte first
+
+#define FLUSH_TX_CMD 0b1110'0001
+#define FLUSH_RX_CMD 0b1110'0010
+
 class NRF24L01P : public SpiDevice
 {
    public:
@@ -22,11 +26,14 @@ class NRF24L01P : public SpiDevice
               uint16_t ce_pin)
         : SpiDevice(hspi, cs_port, cs_pin), ce_port_(ce_port), ce_pin_(ce_pin)
     {
+        init();
     }
 
     HAL_StatusTypeDef readRegister(uint8_t reg, uint8_t* data, uint8_t data_len);
     HAL_StatusTypeDef writeSingle(uint8_t reg, const uint8_t data);
     HAL_StatusTypeDef writeMultiple(uint8_t reg, const uint8_t* data, uint8_t data_len);
+
+    HAL_StatusTypeDef sendCmd(uint8_t cmd);
 
     HAL_StatusTypeDef init();
 
