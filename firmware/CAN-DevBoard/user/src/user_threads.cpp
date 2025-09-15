@@ -10,9 +10,6 @@ extern CanHandle_t hfdcan1;
 
 void StartDefaultTask_user(void* argument)
 {
-    CANDevice& device = CANDevice::getInstance();
-    device.StartCANDevice(&hfdcan1);
-
     for (;;)
     {
         osDelay(500);
