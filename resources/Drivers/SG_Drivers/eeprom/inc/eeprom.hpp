@@ -18,6 +18,7 @@
 #endif
 
 /* 
+THIS SHOULD BE MOVED IN LOGGER CLASS / FILE WHEN WE DO THAT LOL
 0x00–0x03 : BOOT_COUNT   (uint32_t, little-endian)
 0x04      : BOOT_CSUM    (boot0 ^ boot1 ^ boot2 ^ boot3)   ← lets you detect torn writes (the ^ are xor's) (checksum)
 0x05      : NEXT_SLOT    (addr to start writing to next) 
