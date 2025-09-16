@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "transmit_status.hpp"
+
 #if defined(STM32L476xx)
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_def.h"
@@ -24,14 +26,8 @@
 0x7E–0x7F : spare
 */
 
-enum class EepromStatus : uint8_t
+namespace sg
 {
-    kOk,
-    kError,
-    kBusy,
-    kTimeout,
-    kInvalidParam
-};
 
 // abc for very basic eeprom, might get wierd if you wanna use an eeprom with pages that limit how many bytes you can write at once
 class Eeprom
@@ -39,8 +35,8 @@ class Eeprom
    public:
     virtual ~Eeprom() = default;
 
-    virtual EepromStatus read(uint32_t addr, uint8_t* buf, size_t len) = 0;
-    virtual EepromStatus write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
+    virtual Status read(uint32_t addr, uint8_t* buf, size_t len) = 0;
+    virtual Status write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
 
     // max amount of bytes that can be written/read at once
     virtual uint16_t programGranularity() const = 0;
@@ -49,27 +45,9 @@ class Eeprom
     // total size of eeprom in bytes
     virtual uint32_t size() const = 0;
 
-    EepromStatus readByte(uint32_t addr, uint8_t& out) { return read(addr, &out, 1); }
+    Status readByte(uint32_t addr, uint8_t& out) { return read(addr, &out, 1); }
 
-    EepromStatus writeByte(uint32_t addr, uint8_t val) { return write(addr, &val, 1); }
-
-   protected:
-#if defined(HAL_SPI_MODULE_ENABLED)
-    static inline EepromStatus hal_to_eeprom_status(const HAL_StatusTypeDef& status)
-    {
-        switch (status)
-        {
-            case HAL_OK:
-                return EepromStatus::kOk;
-            case HAL_ERROR:
-                return EepromStatus::kError;
-            case HAL_BUSY:
-                return EepromStatus::kBusy;
-            case HAL_TIMEOUT:
-                return EepromStatus::kTimeout;
-            default:
-                return EepromStatus::kInvalidParam;
-        }
-    }
-#endif
+    Status writeByte(uint32_t addr, uint8_t val) { return write(addr, &val, 1); }
 };
+
+}  // namespace sg

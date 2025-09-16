@@ -2,32 +2,30 @@
 
 #include <array>
 
-#define HAL_SPI_TRANSMIT_TIMEOUT 100
+using namespace sg;
 
 // read can only do one byte at a time on on this device
-EepromStatus Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
+Status Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
 {
-    EepromStatus status;
+    sg::Status status;
 
     for (size_t i = 0; i < len; i++)
     {
         status = sendRead(addr + i, buf[i]);
-        if (status != EepromStatus::kOk)
-        {
+        if (status != sg::Status::Ok)
             return status;
-        }
     }
 
     return status;
 }
 
 // write can only do one byte at a time on on this device
-EepromStatus Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
+Status Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
 {
-    EepromStatus status;
+    sg::Status status;
 
     status = sendEWEN();
-    if (status != EepromStatus::kOk)
+    if (status != sg::Status::Ok)
     {
         return status;
     }
@@ -35,7 +33,7 @@ EepromStatus Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
     for (size_t i = 0; i < len; i++)
     {
         status = sendWrite(addr + i, buf[i]);
-        if (status != EepromStatus::kOk)
+        if (status != sg::Status::Ok)
         {
             return status;
         }
@@ -46,7 +44,7 @@ EepromStatus Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
     return status;
 }
 
-EepromStatus Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
+Status Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
 {
     uint32_t instruction = 0;
 
@@ -54,23 +52,11 @@ EepromStatus Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
     addr &= kAddrMask;
     instruction |= addr;
 
-    csHigh();
-    EepromStatus status = sendReadFromBitInstruction(instruction);
-    if (status != EepromStatus::kOk)
-    {
-        csLow();
-        return status;
-    }
-
-    // recieve byte
-    HAL_StatusTypeDef status_hal =
-        HAL_SPI_Receive(hspi_, &out, programGranularity(), HAL_SPI_TRANSMIT_TIMEOUT);
-    csLow();
-    return hal_to_eeprom_status(status_hal);
+    return sendReadFromBitInstruction(instruction, out);
 }
 
 // need write enable sent before this, this does not send the write enable, so it should not be called by the user
-EepromStatus Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
+Status Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 {
     uint32_t instruction = 0;
 
@@ -79,30 +65,20 @@ EepromStatus Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
     instruction |= (addr << 8);
     instruction |= byte;
 
-    csHigh();
-    EepromStatus status = sendWriteFromBitInstruction(instruction);
-    csLow();
-    return status;
+    return sendWriteFromBitInstruction(instruction);
 }
 
-EepromStatus Eeprom93AA46::sendEWEN()
+Status Eeprom93AA46::sendEWEN()
 {
-    csHigh();
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(hspi_, &kEwen[0], kEwen.size(), 100);
-    csLow();
-    return hal_to_eeprom_status(status);
+    return spi_.transmit(&kEwen[0], kEwen.size());
 }
 
-EepromStatus Eeprom93AA46::sendEWDS()
+Status Eeprom93AA46::sendEWDS()
 {
-    csHigh();
-    HAL_StatusTypeDef status =
-        HAL_SPI_Transmit(hspi_, &kEwds[0], kEwds.size(), HAL_SPI_TRANSMIT_TIMEOUT);
-    csLow();
-    return hal_to_eeprom_status(status);
+    return spi_.transmit(&kEwds[0], kEwds.size());
 }
 
-EepromStatus Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
+Status Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
 {
     std::array<uint8_t, kWLen> bytes_arr;
 
@@ -110,19 +86,15 @@ EepromStatus Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
     bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[2] = static_cast<uint8_t>(instr >> 0);
 
-    HAL_StatusTypeDef status =
-        HAL_SPI_Transmit(hspi_, &bytes_arr[0], bytes_arr.size(), HAL_SPI_TRANSMIT_TIMEOUT);
-    return hal_to_eeprom_status(status);
+    return spi_.transmit(&bytes_arr[0], bytes_arr.size());
 }
 
-EepromStatus Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr)
+Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
 {
     std::array<uint8_t, kRLen> bytes_arr;
 
     bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 0);
 
-    HAL_StatusTypeDef status =
-        HAL_SPI_Transmit(hspi_, &bytes_arr[0], bytes_arr.size(), HAL_SPI_TRANSMIT_TIMEOUT);
-    return hal_to_eeprom_status(status);
+    return spi_.transmitRecieve(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
 }

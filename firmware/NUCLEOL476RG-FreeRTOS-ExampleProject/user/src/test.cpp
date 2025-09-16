@@ -4,7 +4,6 @@
 #include <stm32l4xx_hal.h>
 
 #include "main.h"
-#include "spi_api.h"
 
 void StartDefaultTask_user(void *argument)
 {

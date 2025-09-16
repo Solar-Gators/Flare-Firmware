@@ -40,8 +40,7 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${USER_DIR}/inc
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Include)
+    ${USER_DIR}/inc)
 
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
@@ -55,8 +54,7 @@ file(GLOB STM32CUBEMX_SOURCES
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
-    ${USER_DIR}/src/*.c
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.cpp)
+    ${USER_DIR}/src/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
