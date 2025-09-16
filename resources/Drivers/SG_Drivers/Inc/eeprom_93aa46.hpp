@@ -54,4 +54,8 @@ class Eeprom93AA46 final : public Eeprom
     Status sendReadFromBitInstruction(uint32_t instr, uint8_t& out);
 };
 
+#ifdef HAL_SPI_MODULE_ENABLED
+Eeprom93AA46 makeEeprom(SPI_HandleTypeDef* h, GPIO_TypeDef* p, uint16_t pin);
+#endif
+
 }  // namespace sg

@@ -2,7 +2,8 @@
 
 #include <array>
 
-using namespace sg;
+namespace sg
+{
 
 // read can only do one byte at a time on on this device
 Status Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
@@ -98,3 +99,12 @@ Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
 
     return spi_.transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
 }
+
+#ifdef HAL_SPI_MODULE_ENABLED
+Eeprom93AA46 makeEeprom(SPI_HandleTypeDef* h, GPIO_TypeDef* p, uint16_t pin)
+{
+    return Eeprom93AA46(h, p, pin);
+}
+#endif
+
+}  // namespace sg
