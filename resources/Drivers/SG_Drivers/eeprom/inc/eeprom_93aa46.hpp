@@ -14,7 +14,7 @@ class Eeprom93AA46 final : public Eeprom
 {
    public:
     Eeprom93AA46(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin)
-        : spi_(hspi, cs_port, cs_pin, true)
+        : spi_(hspi, cs_port, cs_pin, false)
     {
     }
 

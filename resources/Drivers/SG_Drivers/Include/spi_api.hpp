@@ -38,13 +38,13 @@ class Stm32HalSpi
         return Status::Ok;
     }
 
-    sg::Status recieve(uint8_t* data, uint16_t len, uint8_t fill = 0xFF)
+    sg::Status receive(uint8_t* data, uint16_t len, uint8_t fill = 0xFF)
     {
         ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
         return txrx_fill(data, len, fill);
     }
 
-    sg::Status transmitRecieve(const uint8_t* cmd,
+    sg::Status transmitReceive(const uint8_t* cmd,
                                uint16_t cmd_len,
                                uint8_t* rx,
                                uint16_t rx_len,

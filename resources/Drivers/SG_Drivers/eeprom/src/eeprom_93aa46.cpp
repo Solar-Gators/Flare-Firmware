@@ -96,5 +96,5 @@ Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
     bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 0);
 
-    return spi_.transmitRecieve(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
+    return spi_.transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
 }
