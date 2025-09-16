@@ -82,6 +82,7 @@ HAL_StatusTypeDef BQ7692000PW::getDieTemp(uint16_t *data)
     float temp = static_cast<float>(raw_adc) * 0.382;
     temp = 25 - ((temp - 1.2) / 0.0042);
     *data = (static_cast<uint16_t>(temp) * 1000);
+    *data = static_cast<uint16_t>(temp);
 
     return HAL_OK;
 }

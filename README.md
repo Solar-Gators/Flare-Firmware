@@ -23,25 +23,20 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
 
 2. **Install MSYS2**  
    Download: https://www.msys2.org/  
-   Open an `MSYS2` terminal (Start menu).
-   All the following commands need to be ran in an MSYS2 (Unix like) terminal
+   Open an `MSYS2 Mingw64` terminal (Start menu).
+   All the following commands need to be ran in an MSYS2 Mingw64 (Unix like) terminal
 
 3. **Install build tools**
     ```sh
     pacman -Syu         # Update system, restart if prompted
     pacman -S --needed \
-      arm-none-eabi-gcc \
+      mingw-w64-x86_64-python-pre-commit \
+      make \
       ninja \
       cmake \
       git \
       python-pip \
       clang
-    ```
-
-4. **Install Python deps**
-    ```sh
-    pip install --upgrade pip
-    pip install pre-commit
     ```
 
 5. **Install pre-commit hook**
@@ -72,6 +67,11 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
     - Flash and start a debug or flash session.
 
 ## Other Notes
+
+- **For working Intellisense in Vscode**
+    Use C/C++ extension for intellisense with CMake Tools as its source.
+
+---
 
 - **From firmware subfolder** (`cd firmware/project1`):
 
@@ -144,18 +144,4 @@ project-folder/
 
 ## 🖥️ Recommended VS Code Settings
 
-Add something like this to your vscode settings json file to use an msys2 terminal inside of vscode
-```json
-"terminal.integrated.profiles.windows": {
-    "MSYS2": {
-		"path": "C:\\msys64\\usr\\bin\\bash.exe",
-		"args": [
-			"--login",
-			"-i"
-		],
-		"env": {
-			"CHERE_INVOKING": "1"
-		}
-	}
-}
-```
+There is a way to add the MSYS2 Mingw64 terminal in vscode so you don't have to switch windows to use the terminal.
