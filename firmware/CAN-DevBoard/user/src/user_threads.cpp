@@ -3,13 +3,16 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
-#include "CanDriver.hpp"
+#include "eeprom_93aa46.hpp"
 #include "main.h"
 
-extern CanHandle_t hfdcan1;
+extern SPI_HandleTypeDef hspi3;
 
 void StartDefaultTask_user(void* argument)
 {
+    // intended way to make eepromj
+    auto eeprom = sg::makeEeprom(&hspi3, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
+
     for (;;)
     {
         osDelay(500);
