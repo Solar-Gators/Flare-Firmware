@@ -67,7 +67,7 @@ class BQ7692000PW : public I2CDevice
     /**
      * @brief Get the Active Balancing register
      *
-     * @param [out] activeBal
+     * @param [out] activeBal returns mC
      * @return HAL_StatusTypeDef
      */
     HAL_StatusTypeDef getActiveBalancing(uint8_t *activeBal);
