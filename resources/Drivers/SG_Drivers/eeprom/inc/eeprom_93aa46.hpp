@@ -14,8 +14,8 @@ class Eeprom93AA46 final : public Eeprom
         csLow();
     }
 
-    EepromStatus read(uint32_t addr, void* buf, size_t len) override;
-    EepromStatus write(uint32_t addr, const void* buf, size_t len) override;
+    EepromStatus read(uint32_t addr, uint8_t* buf, size_t len) override;
+    EepromStatus write(uint32_t addr, const uint8_t* buf, size_t len) override;
 
     uint32_t size() const override { return 128; }
     uint16_t programGranularity() const override { return 1; }
@@ -32,12 +32,15 @@ class Eeprom93AA46 final : public Eeprom
     static inline constexpr std::array<uint8_t, 2> kEwds = {0b00000010, 0b00000000};
     static inline constexpr size_t kEwLen = 2;
 
-    static inline constexpr uint32_t kRdMask = (0b110 << 15);
+    // start bit and opcode
+    static inline constexpr uint32_t kRdMask = (0b110 << 7);
+    static inline constexpr size_t kRLen = 2;
+
     static inline constexpr uint32_t kWrMask = (0b101 << 15);
-    static inline constexpr size_t kRWLen = 3;
+    static inline constexpr size_t kWLen = 3;
 
     // address is 7 bits
-    static inline constexpr uint8_t kAddrMask = 0b011111111;
+    static inline constexpr uint8_t kAddrMask = 0b01111111;
 
     // instruction types, only used because we want to send data as fast as possible and we have to send leading 0's
     // so it helps us send an optimal amount of bytes
@@ -57,12 +60,7 @@ class Eeprom93AA46 final : public Eeprom
     EepromStatus sendEWEN();
     EepromStatus sendEWDS();
 
-    // function should be used to send a single command
-    // count is in bits. Prepends zeros so that it aligns
-    // cannot send more than 32 bits
-    // basically expecting for the count variable to be either 10 or 18 from the constants above
-    //
-
-    // TODO: Change count variable to instruction type, and function to be one that sends a specific instruction to the eeprom
-    EepromStatus sendRWInstruction(uint32_t instr);
+    // internal helpers
+    EepromStatus sendWriteFromBitInstruction(uint32_t instr);
+    EepromStatus sendReadFromBitInstruction(uint32_t instr);
 };

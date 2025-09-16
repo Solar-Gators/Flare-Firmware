@@ -39,10 +39,10 @@ class Eeprom
    public:
     virtual ~Eeprom() = default;
 
-    virtual EepromStatus read(uint32_t addr, void* buf, size_t len) = 0;
-    virtual EepromStatus write(uint32_t addr, const void* buf, size_t len) = 0;
+    virtual EepromStatus read(uint32_t addr, uint8_t* buf, size_t len) = 0;
+    virtual EepromStatus write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
 
-    // max amount of bytes that can be written at once
+    // max amount of bytes that can be written/read at once
     virtual uint16_t programGranularity() const = 0;
     // page size, for some eeprom's you can't write to multiple pages in one write
     virtual uint16_t pageSize() const = 0;
