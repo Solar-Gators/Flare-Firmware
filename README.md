@@ -1,9 +1,8 @@
-TODO:
-add clang tidy
-put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
-note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
-note about needing to do make clean after messing with ioc
-add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
+TODO: add clang tidy
+TODO: put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
+TODO: note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
+TODO: note about needing to do make clean after messing with ioc
+TODO: add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
 
 # Solar Gators Flare Firmware
 
@@ -58,6 +57,19 @@ add a way for the copiolet review to only review the code that is ours instead o
     make clean        # Clean build folder
     make BUILD_TYPE=Release  # Release build
     ```
+    
+7. **Import project into CubeIDE so that it can easily be built and debugged**
+    - Open STM32CubeIDE → File → New → Makefile project with existing code
+    - Project Directory: select firmware/YourProject
+    - Project Name: should autofill but it would be YourProject
+    - Toolchain: choose MCU ARM GCC
+    - Languages: Both C and C++ (Should auto fill)
+    - CubeIDE will index the project and should build immediately using your Makefile/Ninja/CMake setup (via Project → Build or the hammer icon).
+
+8. **Run and Debug project**
+    - Create a Debug Configuration by clicking drop down next to debug button of type STM32 C/C++ Application (Set the ELF path to build/YourProject.elf).
+    - You can select the correct one when going to run by adding them to favorites and selecting them with the drop down.
+    - Flash and start a debug or flash session.
 
 ## Other Notes
 
@@ -68,6 +80,11 @@ add a way for the copiolet review to only review the code that is ours instead o
     make clean           # Remove build
     make BUILD_TYPE=Release   # Build release
     ```
+---
+
+- **After modifying ioc file**
+    You may need to do `make clean` in the terminal before rebuilding.
+
 ---
 
 - **Clang-Format**:  
@@ -90,7 +107,7 @@ add a way for the copiolet review to only review the code that is ours instead o
 
 ---
 
-### Individual Project Structure
+### Individual Project Structure (a project inside of the firmware folder)
 ```sh
 project-folder/
 ├── build/             # Output folder for build artifacts (e.g., .elf, .hex, .bin files). Does not get pushed to repo
@@ -107,7 +124,22 @@ project-folder/
 ### 🧠 VS Code + IntelliSense:
 - Open root of repo or open specific subproject
 - Point vscode/cmaketools extension to cmakelists.txt in root of whatever you opened
-- 
+
+---
+
+### Creating a New Project Steps:
+- Open CubeMX, and configure your MCU/board/peripherals as usual.
+- Project Manager (before code generation)
+- Project Location: set to your repo’s firmware/ folder.
+- Toolchain/IDE: select Makefile (We’ll use our own build system; this prevents IDE-specific files.)
+- Toolchain Folder Location: add another /CubeMX to the path that is in the box already (This makes CubeMX put startup files/linker script and toolchain bits under firmware/<Project>/CubeMX/.) 
+- Generate code
+- CubeMX creates Core/, drivers, and the CubeMX/ subfolder inside firmware/<YourProject>/.
+- Copy your template Makefile and CMakeLists.txt from another project (use CAN-DevBoard project) into firmware/<YourProject>/.
+- Edit the top portion of the CMakeLists.txt with information specific to your project's mcu.
+- You should now be able to type `make` in the terminal to build the project.
+- You can also add a user/ folder with inc/ and src/ inside of it, to separate our code from the generated code in Core/
+
 ---
 
 ## 🖥️ Recommended VS Code Settings

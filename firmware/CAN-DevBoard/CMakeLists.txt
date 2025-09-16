@@ -42,6 +42,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${USER_DIR}/inc
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Include
     ${RESOURCES_DIR}/Drivers/SG_Drivers/eeprom/inc)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
