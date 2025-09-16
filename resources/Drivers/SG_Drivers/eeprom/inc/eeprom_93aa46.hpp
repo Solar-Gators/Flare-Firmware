@@ -30,29 +30,21 @@ class Eeprom93AA46 final : public Eeprom
     static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};
     // EWDS  -> 1 00 0 0 XXXXX
     static inline constexpr std::array<uint8_t, 2> kEwds = {0b00000010, 0b00000000};
-    static inline constexpr size_t kEwLen = 2;
 
-    // start bit and opcode
+    // start bit and opcode for read, length is byte length of instruction
     static inline constexpr uint32_t kRdMask = (0b110 << 7);
     static inline constexpr size_t kRLen = 2;
 
+    // start bit and opcode for write, length in byte length of instruction
     static inline constexpr uint32_t kWrMask = (0b101 << 15);
     static inline constexpr size_t kWLen = 3;
 
     // address is 7 bits
     static inline constexpr uint8_t kAddrMask = 0b01111111;
 
-    // instruction types, only used because we want to send data as fast as possible and we have to send leading 0's
-    // so it helps us send an optimal amount of bytes
-    enum class InstrLen : size_t
-    {
-        kEW = 10,
-        kRW = 18
-    };
-
     // cs control helpers
-    inline void csLow() { HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET); };
-    inline void csHigh() { HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET); };
+    inline void csLow() { HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET); }
+    inline void csHigh() { HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET); }
 
     // helper functions that send one of the commands to the eeprom
     EepromStatus sendRead(uint32_t addr, uint8_t& out);

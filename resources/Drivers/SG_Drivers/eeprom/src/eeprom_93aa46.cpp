@@ -88,7 +88,7 @@ EepromStatus Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 EepromStatus Eeprom93AA46::sendEWEN()
 {
     csHigh();
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(hspi_, &kEwen[0], kEwLen, 100);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(hspi_, &kEwen[0], kEwen.size(), 100);
     csLow();
     return hal_to_eeprom_status(status);
 }
@@ -96,7 +96,8 @@ EepromStatus Eeprom93AA46::sendEWEN()
 EepromStatus Eeprom93AA46::sendEWDS()
 {
     csHigh();
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(hspi_, &kEwds[0], kEwLen, HAL_SPI_TRANSMIT_TIMEOUT);
+    HAL_StatusTypeDef status =
+        HAL_SPI_Transmit(hspi_, &kEwds[0], kEwds.size(), HAL_SPI_TRANSMIT_TIMEOUT);
     csLow();
     return hal_to_eeprom_status(status);
 }
