@@ -48,7 +48,7 @@ file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c
-    ${RESOURCES_DUR}/Drivers/SG_Drivers/CAN/Src/*.cpp
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/*.c
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
