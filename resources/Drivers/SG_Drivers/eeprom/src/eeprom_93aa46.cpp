@@ -19,7 +19,7 @@ Status Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
     return status;
 }
 
-// write can only do one byte at a time on on this device
+// write can only do one byte at a time on this device
 Status Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
 {
     sg::Status status;
