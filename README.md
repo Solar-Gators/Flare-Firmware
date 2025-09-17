@@ -1,14 +1,13 @@
 # TODO:
 
-1. Fix sendData to have no ptr version.
+1. Implement RTS/CTS
 
-2. Implement RTS/CTS
+2. Test w/ RX
 
-3. Test w/ RX
+3. Getfirmware(), do the edge cases 5 and ?
 
-4. Make it so I don't send all the data in register at the same time
+4. Write RT versions
 
-5. Getfirmware(), do the edge cases 5 and ?
 
 # AT/RT Commands
 

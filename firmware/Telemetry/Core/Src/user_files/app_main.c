@@ -26,17 +26,18 @@ void testing(){
 	*/
 
 	//test other general send functions
-
+	uint8_t data[] = "checking";
 
 	while(1){
 		//HAL_StatusTypeDef status = setRegister(10,20); //WORKS
-		HAL_StatusTypeDef check = enterATCommandMode();
-		HAL_StatusTypeDef status = rebootRadio(); //WORKS
+		//HAL_StatusTypeDef check = enterATCommandMode();
+		//HAL_StatusTypeDef status = rebootRadio(); //WORKS
 
 		//HAL_StatusTypeDef status = getFirmwareData(1); //WORKS
 		//HAL_StatusTypeDef status = getLocalRegisterValue(10); //WORKS
-		HAL_StatusTypeDef try = exitATCommandMode();
+		HAL_StatusTypeDef try = exitLocalATCommandMode();
 		//HAL_StatusTypeDef status = resetParameters();
+		HAL_StatusTypeDef new_try = sendData(data, sizeof(data)-1);
 
 	}
 
