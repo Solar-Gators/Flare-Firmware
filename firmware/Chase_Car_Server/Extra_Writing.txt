@@ -1,0 +1,21 @@
+Apache2 Configs:
+
+- Server code will automatically update
+
+-Server .html file should be in "/var/www/html/"
+
+To start the apache2 server:
+
+$ sudo systemctl start apache2
+
+To check the status of the apache2 server:
+
+$ sudo systemctl status apache2
+
+To close the apache2 server:
+
+$ sudo systemctl stop apache2.service
+
+Website Thoughts:
+
+Use HTML/CSS frontned, Python Flash backend

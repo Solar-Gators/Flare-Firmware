@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> RF Module Serial Data Viewer</title>
+</head>
+<body>
+  <h1>RF Serial Data</h1>
+  <pre id="output"></pre>
+
+  <script>
+    const output = document.getElementById('output');
+    const eventSource = new EventSource("http://localhost:5000/serial");
+    eventSource.onmessage = (e) => {
+      output.textContent += e.data + "\n";
+    };
+  </script>
+</body>
+</html>
