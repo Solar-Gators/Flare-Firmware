@@ -19,3 +19,6 @@ $ sudo systemctl stop apache2.service
 Website Thoughts:
 
 Use HTML/CSS frontned, Python Flash backend
+
+Shutdown Pi:
+$ sudo poweroff
