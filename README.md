@@ -31,6 +31,7 @@ put videos that explain workflow, as well as creating project in cubemx and also
     pacman -Syu         # Update system, restart if prompted
     pacman -S --needed \
       mingw-w64-x86_64-python-pre-commit \
+      mingw-w64-x86_64-arm-none-eabi-gcc \
       make \
       ninja \
       cmake \
