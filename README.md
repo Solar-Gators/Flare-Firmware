@@ -34,7 +34,7 @@ put videos that explain workflow, as well as creating project in cubemx and also
       mingw-w64-x86_64-arm-none-eabi-gcc \
       make \
       ninja \
-      cmake \
+      mingw-w64-x86_64-cmake \
       git \
       python-pip \
       clang
