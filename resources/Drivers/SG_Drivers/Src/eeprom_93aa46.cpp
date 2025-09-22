@@ -2,47 +2,40 @@
 
 #include <array>
 
+#define TRY(x)                 \
+    do                         \
+    {                          \
+        if ((x) != Status::Ok) \
+            return x;          \
+    } while (0)
+
 namespace sg
 {
 
 // read can only do one byte at a time on on this device
 Status Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
 {
-    sg::Status status;
-
     for (size_t i = 0; i < len; i++)
     {
-        status = sendRead(addr + i, buf[i]);
-        if (status != sg::Status::Ok)
-            return status;
+        TRY(sendRead(addr + i, buf[i]));
     }
 
-    return status;
+    return Status::Ok;
 }
 
 // write can only do one byte at a time on this device
 Status Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
 {
-    sg::Status status;
-
-    status = sendEWEN();
-    if (status != sg::Status::Ok)
-    {
-        return status;
-    }
+    TRY(sendEWEN());
 
     for (size_t i = 0; i < len; i++)
     {
-        status = sendWrite(addr + i, buf[i]);
-        if (status != sg::Status::Ok)
-        {
-            return status;
-        }
+        TRY(sendWrite(addr + i, buf[i]));
     }
 
-    status = sendEWDS();
+    TRY(sendEWDS());
 
-    return status;
+    return Status::Ok;
 }
 
 Status Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
@@ -87,7 +80,7 @@ Status Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
     bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[2] = static_cast<uint8_t>(instr >> 0);
 
-    return spi_->transmit(&bytes_arr[0], bytes_arr.size());
+    return spi_->transmit(bytes_arr.data(), bytes_arr.size());
 }
 
 Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
