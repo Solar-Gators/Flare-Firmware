@@ -1,10 +1,10 @@
 #pragma once
 
 #include "eeprom.hpp"
-#include "spi_api.hpp"
-#include "transmit_status.hpp"
+#include "spi_target.hpp"
 
 #include <array>
+#include <memory>
 
 namespace sg
 {
@@ -13,10 +13,7 @@ namespace sg
 class Eeprom93AA46 final : public Eeprom
 {
    public:
-    Eeprom93AA46(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin)
-        : spi_(hspi, cs_port, cs_pin, false)
-    {
-    }
+    Eeprom93AA46(std::unique_ptr<SpiTarget> spi) : spi_(std::move(spi)) {}
 
     Status read(uint32_t addr, uint8_t* buf, size_t len) override;
     Status write(uint32_t addr, const uint8_t* buf, size_t len) override;
@@ -26,7 +23,8 @@ class Eeprom93AA46 final : public Eeprom
     uint16_t pageSize() const override { return 1; }
 
    private:
-    Stm32HalSpi spi_;
+    std::unique_ptr<SpiTarget> spi_;
+
     // EWEN  -> 1 00 1 1 X X X X X
     static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};
     // EWDS  -> 1 00 0 0 XXXXX
@@ -53,9 +51,5 @@ class Eeprom93AA46 final : public Eeprom
     Status sendWriteFromBitInstruction(uint32_t instr);
     Status sendReadFromBitInstruction(uint32_t instr, uint8_t& out);
 };
-
-#ifdef HAL_SPI_MODULE_ENABLED
-Eeprom93AA46 makeEeprom(SPI_HandleTypeDef* h, GPIO_TypeDef* p, uint16_t pin);
-#endif
 
 }  // namespace sg

@@ -1,4 +1,4 @@
-#include "eeprom_93aa46.hpp"
+#include "eeprom93aa46.hpp"
 
 #include <array>
 
@@ -71,12 +71,12 @@ Status Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 
 Status Eeprom93AA46::sendEWEN()
 {
-    return spi_.transmit(&kEwen[0], kEwen.size());
+    return spi_->transmit(&kEwen[0], kEwen.size());
 }
 
 Status Eeprom93AA46::sendEWDS()
 {
-    return spi_.transmit(&kEwds[0], kEwds.size());
+    return spi_->transmit(&kEwds[0], kEwds.size());
 }
 
 Status Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
@@ -87,7 +87,7 @@ Status Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
     bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[2] = static_cast<uint8_t>(instr >> 0);
 
-    return spi_.transmit(&bytes_arr[0], bytes_arr.size());
+    return spi_->transmit(&bytes_arr[0], bytes_arr.size());
 }
 
 Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
@@ -97,14 +97,7 @@ Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
     bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 0);
 
-    return spi_.transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
+    return spi_->transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
 }
-
-#ifdef HAL_SPI_MODULE_ENABLED
-Eeprom93AA46 makeEeprom(SPI_HandleTypeDef* h, GPIO_TypeDef* p, uint16_t pin)
-{
-    return Eeprom93AA46(h, p, pin);
-}
-#endif
 
 }  // namespace sg

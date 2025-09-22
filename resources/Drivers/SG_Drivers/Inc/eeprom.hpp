@@ -5,18 +5,6 @@
 
 #include "transmit_status.hpp"
 
-#if defined(STM32L476xx)
-#include "stm32l4xx_hal.h"
-#include "stm32l4xx_hal_def.h"
-#include "stm32l4xx_hal_spi.h"
-#elif defined(STM32U575xx)
-#include "stm32u5xx_hal.h"
-#include "stm32u5xx_hal_def.h"
-#include "stm32u5xx_hal_spi.h"
-#else
-#error "Define your STM32 part macro (e.g., STM32U575xx or STM32L476xx)."
-#endif
-
 /* 
 THIS SHOULD BE MOVED IN LOGGER CLASS / FILE WHEN WE DO THAT LOL
 0x00–0x03 : BOOT_COUNT   (uint32_t, little-endian)
@@ -36,8 +24,8 @@ class Eeprom
    public:
     virtual ~Eeprom() = default;
 
-    virtual Status read(uint32_t addr, uint8_t* buf, size_t len) = 0;
-    virtual Status write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
+    virtual sg::Status read(uint32_t addr, uint8_t* buf, size_t len) = 0;
+    virtual sg::Status write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
 
     // max amount of bytes that can be written/read at once
     virtual uint16_t programGranularity() const = 0;

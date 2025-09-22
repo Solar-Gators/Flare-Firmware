@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "transmit_status.hpp"
+#include <memory>
 
 #if defined(STM32L476xx)
 #include "stm32l4xx_hal.h"
@@ -11,6 +11,9 @@
 #include "stm32u5xx_hal.h"
 #include "stm32u5xx_hal_spi.h"
 #endif
+
+#include "spi_target.hpp"
+#include "transmit_status.hpp"
 
 #define TRY(x)                               \
     do                                       \
@@ -24,13 +27,33 @@
 namespace sg
 {
 
-class Stm32HalSpi
+static inline Status hal_to_spi_status(const HAL_StatusTypeDef& status)
+{
+    switch (status)
+    {
+        case HAL_OK:
+            return Status::Ok;
+        case HAL_ERROR:
+            return Status::Error;
+        case HAL_BUSY:
+            return Status::Busy;
+        case HAL_TIMEOUT:
+            return Status::Timeout;
+        default:
+            return Status::InvalidParam;
+    }
+}
+
+class Stm32HalSpiTarget final : public SpiTarget
 {
    public:
-    Stm32HalSpi(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin, bool active_low_cs)
+    Stm32HalSpiTarget(SPI_HandleTypeDef* hspi,
+                      GPIO_TypeDef* cs_port,
+                      uint16_t cs_pin,
+                      bool active_low_cs)
         : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin), active_low_cs_(active_low_cs){};
 
-    Status transmit(const uint8_t* data, uint16_t len)
+    Status transmit(const uint8_t* data, uint16_t len) override
     {
         ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
         TRY(HAL_SPI_Transmit(hspi_, data, len, HAL_SPI_TRANSMIT_TIMEOUT));
@@ -38,7 +61,7 @@ class Stm32HalSpi
         return Status::Ok;
     }
 
-    sg::Status receive(uint8_t* data, uint16_t len, uint8_t fill = 0xFF)
+    sg::Status receive(uint8_t* data, uint16_t len, uint8_t fill = 0xFF) override
     {
         ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
         return txrx_fill(data, len, fill);
@@ -48,7 +71,7 @@ class Stm32HalSpi
                                uint16_t cmd_len,
                                uint8_t* rx,
                                uint16_t rx_len,
-                               uint8_t fill = 0xFF)
+                               uint8_t fill = 0xFF) override
     {
         ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
         TRY(HAL_SPI_Transmit(hspi_, const_cast<uint8_t*>(cmd), cmd_len, HAL_SPI_TRANSMIT_TIMEOUT));
@@ -108,5 +131,13 @@ class Stm32HalSpi
         return Status::Ok;
     }
 };
+
+inline std::unique_ptr<Stm32HalSpiTarget> makeStm32HalSpiTarget(SPI_HandleTypeDef* hspi,
+                                                                GPIO_TypeDef* cs_port,
+                                                                uint16_t cs_pin,
+                                                                bool active_low_cs)
+{
+    return std::make_unique<Stm32HalSpiTarget>(hspi, cs_port, cs_pin, active_low_cs);
+}
 
 }  // namespace sg
