@@ -1,8 +1,10 @@
 repos:
-  - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.6
+  - repo: local
     hooks:
       - id: clang-format
-        additional_dependencies: []
+        name: clang-format
+        entry: clang-format
+        language: system
+        types_or: [c, c++]
         files: '^(firmware/.*/user/|resources/Drivers/SG_Drivers/).*.(c|cpp|h|hpp)$'
         args: [--style=file]
