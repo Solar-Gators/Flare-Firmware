@@ -87,6 +87,9 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
     - You can select the correct one when going to run by adding them to favorites and selecting them with the drop down.
     - Flash and start a debug or flash session.
 
+10. **SSH key or github desktop**
+    - You will likely need to create an ssh key with github or use github desktop in order to push code to this repo
+
 ## Other Notes
 
 - **For working Intellisense in Vscode**
