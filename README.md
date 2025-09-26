@@ -40,7 +40,7 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
       mingw-w64-x86_64-cmake \
       ninja \
       git \
-      make
+      make \
       clang
     ```
 5. **.vscode/settings.json for windows**
