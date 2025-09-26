@@ -91,7 +91,7 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
 
 10. **SSH key or github desktop**
     - You will likely need to create an ssh key with github or use github desktop in order to push code to this repo
-
+    - Follow the linux instructions here if doing it inside MSYS2 MINGW64 terminal, or windows if doing it outside: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux
 ## Other Notes
 
 - **For working Intellisense in Vscode**
