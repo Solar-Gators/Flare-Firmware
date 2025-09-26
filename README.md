@@ -21,7 +21,9 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
    All the following commands need to be ran in an MSYS2 Mingw64 (Unix like) terminal
 
 2. **Install git in MSYS MINGW64 terminal**
+    ```sh
     pacman -S git
+    ```
 
 3. **Clone this repo in the MSYS MINGW64 terminal**
     ```sh
