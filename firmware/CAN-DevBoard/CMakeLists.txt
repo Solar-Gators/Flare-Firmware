@@ -42,6 +42,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${USER_DIR}/inc
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Stm32/Inc
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Inc)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
@@ -55,6 +56,7 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
     ${USER_DIR}/src/*.c
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Stm32/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.cpp)
 
 

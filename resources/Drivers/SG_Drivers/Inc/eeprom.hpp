@@ -3,9 +3,15 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "transmit_status.hpp"
+#if defined(STM32L476xx)
+#include "stm32l4xx_hal.h"
+#include "stm32l4xx_hal_spi.h"
+#elif defined(STM32U575xx)
+#include "stm32u5xx_hal.h"
+#include "stm32u5xx_hal_spi.h"
+#endif
 
-/* 
+/*
 THIS SHOULD BE MOVED IN LOGGER CLASS / FILE WHEN WE DO THAT LOL
 0x00–0x03 : BOOT_COUNT   (uint32_t, little-endian)
 0x04      : BOOT_CSUM    (boot0 ^ boot1 ^ boot2 ^ boot3)   ← lets you detect torn writes (the ^ are xor's) (checksum)
@@ -24,8 +30,8 @@ class Eeprom
    public:
     virtual ~Eeprom() = default;
 
-    virtual sg::Status read(uint32_t addr, uint8_t* buf, size_t len) = 0;
-    virtual sg::Status write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
+    virtual HAL_StatusTypeDef read(uint32_t addr, uint8_t* buf, size_t len) = 0;
+    virtual HAL_StatusTypeDef write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
 
     // max amount of bytes that can be written/read at once
     virtual uint16_t programGranularity() const = 0;
@@ -34,9 +40,9 @@ class Eeprom
     // total size of eeprom in bytes
     virtual uint32_t size() const = 0;
 
-    Status readByte(uint32_t addr, uint8_t& out) { return read(addr, &out, 1); }
+    HAL_StatusTypeDef readByte(uint32_t addr, uint8_t& out) { return read(addr, &out, 1); }
 
-    Status writeByte(uint32_t addr, uint8_t val) { return write(addr, &val, 1); }
+    HAL_StatusTypeDef writeByte(uint32_t addr, uint8_t val) { return write(addr, &val, 1); }
 };
 
 }  // namespace sg

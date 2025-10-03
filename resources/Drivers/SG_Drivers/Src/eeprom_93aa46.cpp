@@ -2,29 +2,29 @@
 
 #include <array>
 
-#define TRY(x)                 \
-    do                         \
-    {                          \
-        if ((x) != Status::Ok) \
-            return x;          \
+#define TRY(x)             \
+    do                     \
+    {                      \
+        if ((x) != HAL_OK) \
+            return x;      \
     } while (0)
 
 namespace sg
 {
 
 // read can only do one byte at a time on on this device
-Status Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
+HAL_StatusTypeDef Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
 {
     for (size_t i = 0; i < len; i++)
     {
         TRY(sendRead(addr + i, buf[i]));
     }
 
-    return Status::Ok;
+    return HAL_OK;
 }
 
 // write can only do one byte at a time on this device
-Status Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
+HAL_StatusTypeDef Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
 {
     TRY(sendEWEN());
 
@@ -35,10 +35,10 @@ Status Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
 
     TRY(sendEWDS());
 
-    return Status::Ok;
+    return HAL_OK;
 }
 
-Status Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
+HAL_StatusTypeDef Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
 {
     uint32_t instruction = 0;
 
@@ -50,7 +50,7 @@ Status Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
 }
 
 // need write enable sent before this, this does not send the write enable, so it should not be called by the user
-Status Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
+HAL_StatusTypeDef Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 {
     uint32_t instruction = 0;
 
@@ -62,17 +62,17 @@ Status Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
     return sendWriteFromBitInstruction(instruction);
 }
 
-Status Eeprom93AA46::sendEWEN()
+HAL_StatusTypeDef Eeprom93AA46::sendEWEN()
 {
-    return spi_->transmit(&kEwen[0], kEwen.size());
+    return spi_.transmit(&kEwen[0], kEwen.size());
 }
 
-Status Eeprom93AA46::sendEWDS()
+HAL_StatusTypeDef Eeprom93AA46::sendEWDS()
 {
-    return spi_->transmit(&kEwds[0], kEwds.size());
+    return spi_.transmit(&kEwds[0], kEwds.size());
 }
 
-Status Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
+HAL_StatusTypeDef Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
 {
     std::array<uint8_t, kWLen> bytes_arr;
 
@@ -80,17 +80,17 @@ Status Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
     bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[2] = static_cast<uint8_t>(instr >> 0);
 
-    return spi_->transmit(bytes_arr.data(), bytes_arr.size());
+    return spi_.transmit(bytes_arr.data(), bytes_arr.size());
 }
 
-Status Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
+HAL_StatusTypeDef Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
 {
     std::array<uint8_t, kRLen> bytes_arr;
 
     bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 0);
 
-    return spi_->transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
+    return spi_.transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
 }
 
 }  // namespace sg

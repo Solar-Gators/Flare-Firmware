@@ -10,20 +10,27 @@ namespace sg
 {
 
 // this eeprom has a start bit before it begins reading bits it receives on its mosi line, which means you can prepend as many zeros as you like so that it correctly aligns with the 8 bit at a time send protocol of the HAL_SPI functions
+
 class Eeprom93AA46 final : public Eeprom
 {
    public:
-    Eeprom93AA46(std::unique_ptr<SpiTarget> spi) : spi_(std::move(spi)) {}
+    Eeprom93AA46(SPI_HandleTypeDef* hspi,
+                 GPIO_TypeDef* cs_port,
+                 uint16_t cs_pin,
+                 bool active_low_cs)
+        : spi_(hspi, cs_port, cs_pin, active_low_cs)
+    {
+    }
 
-    Status read(uint32_t addr, uint8_t* buf, size_t len) override;
-    Status write(uint32_t addr, const uint8_t* buf, size_t len) override;
+    HAL_StatusTypeDef read(uint32_t addr, uint8_t* buf, size_t len);
+    HAL_StatusTypeDef write(uint32_t addr, const uint8_t* buf, size_t len);
 
     uint32_t size() const override { return 128; }
     uint16_t programGranularity() const override { return 1; }
     uint16_t pageSize() const override { return 1; }
 
    private:
-    std::unique_ptr<SpiTarget> spi_;
+    SpiTarget spi_;
 
     // EWEN  -> 1 00 1 1 X X X X X
     static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};
@@ -42,14 +49,14 @@ class Eeprom93AA46 final : public Eeprom
     static inline constexpr uint8_t kAddrMask = 0b01111111;
 
     // helper functions that send one of the commands to the eeprom
-    Status sendRead(uint32_t addr, uint8_t& out);
-    Status sendWrite(uint32_t addr, const uint8_t& byte);
-    Status sendEWEN();
-    Status sendEWDS();
+    HAL_StatusTypeDef sendRead(uint32_t addr, uint8_t& out);
+    HAL_StatusTypeDef sendWrite(uint32_t addr, const uint8_t& byte);
+    HAL_StatusTypeDef sendEWEN();
+    HAL_StatusTypeDef sendEWDS();
 
     // internal helpers
-    Status sendWriteFromBitInstruction(uint32_t instr);
-    Status sendReadFromBitInstruction(uint32_t instr, uint8_t& out);
+    HAL_StatusTypeDef sendWriteFromBitInstruction(uint32_t instr);
+    HAL_StatusTypeDef sendReadFromBitInstruction(uint32_t instr, uint8_t& out);
 };
 
 }  // namespace sg
