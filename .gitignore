@@ -75,10 +75,14 @@ firmware/**/Drivers/
 .mxproject
 mx.scratch
 
-
 # Common CMake artifacts
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 compile_commands.json
+
+# clion
+.idea/
+cmake-build-debug/
+
 

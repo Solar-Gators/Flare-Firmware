@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include <memory>
 
 #if defined(STM32L476xx)
@@ -17,10 +15,23 @@
 namespace sg
 {
 
+// this eeprom has a start bit before it begins reading bits it receives on its mosi line, which means you can prepend as many zeros as you like so that it correctly aligns with the 8 bit at a time send protocol of the HAL_SPI functions
+enum class ActivationLevel
+{
+    ActiveLow = GPIO_PIN_RESET,
+    ActiveHigh = GPIO_PIN_SET
+};
+
+static inline ActivationLevel invert(const ActivationLevel a)
+{
+    return (a == ActivationLevel::ActiveLow) ? ActivationLevel::ActiveHigh
+                                             : ActivationLevel::ActiveLow;
+}
+
 class SpiTarget
 {
    public:
-    SpiTarget(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin, bool active_low_cs);
+    SpiTarget(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin, ActivationLevel al);
 
     HAL_StatusTypeDef transmit(const uint8_t* data, uint16_t len);
 
@@ -36,36 +47,19 @@ class SpiTarget
     SPI_HandleTypeDef* hspi_;
     GPIO_TypeDef* cs_port_;
     uint16_t cs_pin_;
-    bool active_low_cs_;
+    ActivationLevel al_;
 
     struct ChipSelectGuard
     {
         GPIO_TypeDef* port;
         uint16_t pin;
-        bool active_low;
-        explicit ChipSelectGuard(GPIO_TypeDef* p, uint16_t n, bool a)
-            : port(p), pin(n), active_low(a)
+        ActivationLevel al;
+        explicit ChipSelectGuard(GPIO_TypeDef* p, const uint16_t n, const ActivationLevel a)
+            : port(p), pin(n), al(a)
         {
-            if (active_low)
-            {
-                HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
-            }
-            else
-            {
-                HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
-            }
+            HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(al));
         }
-        ~ChipSelectGuard()
-        {
-            if (active_low)
-            {
-                HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
-            }
-            else
-            {
-                HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
-            }
-        }
+        ~ChipSelectGuard() { HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(invert(al))); }
     };
 
     HAL_StatusTypeDef txrx_fill(uint8_t* rx, uint16_t len, uint8_t fill);

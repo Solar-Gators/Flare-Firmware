@@ -9,16 +9,21 @@
 namespace sg
 {
 
-// this eeprom has a start bit before it begins reading bits it receives on its mosi line, which means you can prepend as many zeros as you like so that it correctly aligns with the 8 bit at a time send protocol of the HAL_SPI functions
-
 class Eeprom93AA46 final : public Eeprom
 {
    public:
+    /**
+     *
+     * @param hspi Stm32Hal Spi Handle
+     * @param cs_port Stm32Hal Port that holds the ss for this target
+     * @param cs_pin Stm32Hal Pin that holds teh ss for this target
+     * @param active_low_cs Enum denoting the activation level for the devices ss. ActiveLow means low ss activates the device
+     */
     Eeprom93AA46(SPI_HandleTypeDef* hspi,
                  GPIO_TypeDef* cs_port,
                  uint16_t cs_pin,
-                 bool active_low_cs)
-        : spi_(hspi, cs_port, cs_pin, active_low_cs)
+                 ActivationLevel al)
+        : spi_(hspi, cs_port, cs_pin, al)
     {
     }
 

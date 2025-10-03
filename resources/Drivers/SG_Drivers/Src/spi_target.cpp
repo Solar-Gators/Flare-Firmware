@@ -21,12 +21,12 @@ namespace sg
 SpiTarget::SpiTarget(SPI_HandleTypeDef* hspi,
                      GPIO_TypeDef* cs_port,
                      uint16_t cs_pin,
-                     bool active_low_cs)
-    : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin), active_low_cs_(active_low_cs){};
+                     ActivationLevel al)
+    : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin), al_(al){};
 
 HAL_StatusTypeDef SpiTarget::transmit(const uint8_t* data, uint16_t len)
 {
-    ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
+    ChipSelectGuard guard{cs_port_, cs_pin_, al_};
     TRY(HAL_SPI_Transmit(hspi_, data, len, HAL_SPI_TRANSMIT_TIMEOUT));
 
     return HAL_OK;
@@ -34,7 +34,7 @@ HAL_StatusTypeDef SpiTarget::transmit(const uint8_t* data, uint16_t len)
 
 HAL_StatusTypeDef SpiTarget::receive(uint8_t* data, uint16_t len, uint8_t fill)
 {
-    ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
+    ChipSelectGuard guard{cs_port_, cs_pin_, al_};
     return txrx_fill(data, len, fill);
 }
 
@@ -44,7 +44,7 @@ HAL_StatusTypeDef SpiTarget::transmitReceive(const uint8_t* cmd,
                                              uint16_t rx_len,
                                              uint8_t fill)
 {
-    ChipSelectGuard guard{cs_port_, cs_pin_, active_low_cs_};
+    ChipSelectGuard guard{cs_port_, cs_pin_, al_};
     TRY(HAL_SPI_Transmit(hspi_, const_cast<uint8_t*>(cmd), cmd_len, HAL_SPI_TRANSMIT_TIMEOUT));
     return txrx_fill(rx, rx_len, fill);
 }

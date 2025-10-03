@@ -12,7 +12,8 @@ extern SPI_HandleTypeDef hspi3;
 void StartDefaultTask_user(void* argument)
 {
     // intended way to make eeprom
-    sg::Eeprom93AA46 eeprom(&hspi3, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin, true);
+    sg::Eeprom93AA46 eeprom(
+        &hspi3, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin, sg::ActivationLevel::ActiveLow);
 
     eeprom.writeByte(0, 0);
     eeprom.write(0, nullptr, 0);
