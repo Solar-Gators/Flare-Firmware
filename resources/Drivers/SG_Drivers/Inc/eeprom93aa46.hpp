@@ -17,7 +17,7 @@ class Eeprom93AA46 final : public Eeprom
      * @param hspi Stm32Hal Spi Handle
      * @param cs_port Stm32Hal Port that holds the ss for this target
      * @param cs_pin Stm32Hal Pin that holds teh ss for this target
-     * @param active_low_cs Enum denoting the activation level for the devices ss. ActiveLow means low ss activates the device
+     * @param al ActivationLevel Enum denoting the activation level for the devices ss. ActiveLow means low ss activates the device
      */
     Eeprom93AA46(SPI_HandleTypeDef* hspi,
                  GPIO_TypeDef* cs_port,
@@ -27,11 +27,40 @@ class Eeprom93AA46 final : public Eeprom
     {
     }
 
-    HAL_StatusTypeDef read(uint32_t addr, uint8_t* buf, size_t len);
-    HAL_StatusTypeDef write(uint32_t addr, const uint8_t* buf, size_t len);
+    /**
+     *
+     * @param addr Address inside the eeprom to read from
+     * @param buf Pointer to byte buffer that data at addr will be placed in
+     * @param len The number of bytes read
+     * @return HAL status denoting sucess of transmit. HAL_OK on success
+     */
+    HAL_StatusTypeDef read(uint32_t addr, uint8_t* buf, size_t len) override;
 
+    /**
+     *
+     * @param addr Address inside the eeprom to read from
+     * @param buf Pointer to const byte buffer where data resides that will be written
+     * @param len The number of bytes to write
+     * @return HAL status denoting sucess of transmit. HAL_OK on success
+     */
+    HAL_StatusTypeDef write(uint32_t addr, const uint8_t* buf, size_t len) override;
+
+    /**
+     *
+     * @return The number of pages in the eeprom
+     */
     uint32_t size() const override { return 128; }
+
+    /**
+     *
+     * @return The number of bytes that can be read/written in one command
+     */
     uint16_t programGranularity() const override { return 1; }
+
+    /**
+     *
+     * @return The size of a single page, in bytes
+     */
     uint16_t pageSize() const override { return 1; }
 
    private:
