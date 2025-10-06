@@ -4,7 +4,6 @@
 #include "spi_target.hpp"
 
 #include <array>
-#include <memory>
 
 namespace sg
 {
@@ -38,7 +37,7 @@ class Eeprom93AA46 final : public Eeprom
 
     /**
      *
-     * @param addr Address inside the eeprom to read from
+     * @param addr Address inside the eeprom to write to
      * @param buf Pointer to const byte buffer where data resides that will be written
      * @param len The number of bytes to write
      * @return HAL status denoting sucess of transmit. HAL_OK on success
@@ -53,15 +52,15 @@ class Eeprom93AA46 final : public Eeprom
 
     /**
      *
-     * @return The number of bytes that can be read/written in one command
-     */
-    uint16_t programGranularity() const override { return 1; }
-
-    /**
-     *
      * @return The size of a single page, in bytes
      */
     uint16_t pageSize() const override { return 1; }
+
+    /**
+     *
+     * @return The number of bytes that can be read/written in one command
+     */
+    uint16_t programGranularity() const override { return 1; }
 
    private:
     SpiTarget spi_;

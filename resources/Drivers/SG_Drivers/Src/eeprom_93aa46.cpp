@@ -12,7 +12,7 @@
 namespace sg
 {
 
-// read can only do one byte at a time on on this device
+// read can only do one byte at a time on this device
 HAL_StatusTypeDef Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
 {
     for (size_t i = 0; i < len; i++)
@@ -74,7 +74,7 @@ HAL_StatusTypeDef Eeprom93AA46::sendEWDS()
 
 HAL_StatusTypeDef Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
 {
-    std::array<uint8_t, kWLen> bytes_arr;
+    std::array<uint8_t, kWLen> bytes_arr{};
 
     bytes_arr[0] = static_cast<uint8_t>(instr >> 16);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
@@ -85,7 +85,7 @@ HAL_StatusTypeDef Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
 
 HAL_StatusTypeDef Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
 {
-    std::array<uint8_t, kRLen> bytes_arr;
+    std::array<uint8_t, kRLen> bytes_arr{};
 
     bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 0);

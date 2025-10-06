@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <cstdint>
 
 #if defined(STM32L476xx)
@@ -30,19 +29,57 @@ class Eeprom
    public:
     virtual ~Eeprom() = default;
 
+    /**
+     *
+     * @param addr Address inside the eeprom to read from
+     * @param buf Pointer to byte buffer that data at addr will be placed in
+     * @param len The number of bytes read
+     * @return HAL status denoting sucess of transmit. HAL_OK on success
+     */
     virtual HAL_StatusTypeDef read(uint32_t addr, uint8_t* buf, size_t len) = 0;
+
+    /**
+     *
+     * @param addr Address inside the eeprom to write to
+     * @param buf Pointer to const byte buffer where data resides that will be written
+     * @param len The number of bytes to write
+     * @return HAL status denoting sucess of transmit. HAL_OK on success
+     */
     virtual HAL_StatusTypeDef write(uint32_t addr, const uint8_t* buf, size_t len) = 0;
 
-    // max amount of bytes that can be written/read at once
-    virtual uint16_t programGranularity() const = 0;
-    // page size, for some eeprom's you can't write to multiple pages in one write
-    virtual uint16_t pageSize() const = 0;
-    // total size of eeprom in bytes
+    /**
+     *
+     * @return The number of pages in the eeprom
+     */
     virtual uint32_t size() const = 0;
 
+    /**
+     *
+     * @return The size of a single page, in bytes
+     */
+    virtual uint16_t pageSize() const = 0;
+
+    /**
+     *
+     * @return The number of bytes that can be read/written in one command
+     */
+    virtual uint16_t programGranularity() const = 0;
+
+    /**
+     *
+     * @param addr Addr to read byte from
+     * @param out Byte passed by reference that the read byte will be place in
+     * @return HAL status denoting success of transmission
+     */
     HAL_StatusTypeDef readByte(uint32_t addr, uint8_t& out) { return read(addr, &out, 1); }
 
-    HAL_StatusTypeDef writeByte(uint32_t addr, uint8_t val) { return write(addr, &val, 1); }
+    /**
+     *
+     * @param addr Addr to write byte to
+     * @param val Const byte that will be written
+     * @return HAL status denoting success of transmission
+     */
+    HAL_StatusTypeDef writeByte(uint32_t addr, const uint8_t val) { return write(addr, &val, 1); }
 };
 
 }  // namespace sg
