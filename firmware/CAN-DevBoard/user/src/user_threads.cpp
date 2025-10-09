@@ -3,9 +3,9 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
-#include "../../../../resources/Drivers/SG_Drivers/Inc/spi_target.hpp"
 #include "eeprom93aa46.hpp"
 #include "main.h"
+#include "spi_target.hpp"
 
 extern SPI_HandleTypeDef hspi3;
 
