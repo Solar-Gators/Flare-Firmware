@@ -19,6 +19,8 @@
 #define ADC_GAIN_REG1_MASK 0b0001'1000
 #define ADC_GAIN_REG2_MASK 0b0000'0111
 
+namespace sg
+{
 class BQ7692000PW : public I2CDevice
 {
    public:
@@ -168,3 +170,5 @@ class BQ7692000PW : public I2CDevice
      */
     HAL_StatusTypeDef checkCC();
 };
+
+}  // namespace sg
