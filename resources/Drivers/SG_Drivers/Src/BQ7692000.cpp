@@ -1,4 +1,4 @@
-#include "../Include/BQ7692000.h"
+#include "BQ7692000.h"
 
 #include <cstdint>
 

@@ -1,6 +1,7 @@
-#include "spi_target.hpp"
+#include "spi_api.hpp"
 
 #include <cstdint>
+
 #include <memory>
 
 #define TRY(x)             \
@@ -15,13 +16,13 @@
 namespace sg
 {
 
-SpiTarget::SpiTarget(SPI_HandleTypeDef* hspi,
+SpiDevice::SpiDevice(SPI_HandleTypeDef* hspi,
                      GPIO_TypeDef* cs_port,
                      uint16_t cs_pin,
                      ActivationLevel al)
     : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin), al_(al){};
 
-HAL_StatusTypeDef SpiTarget::transmit(const uint8_t* data, uint16_t len)
+HAL_StatusTypeDef SpiDevice::transmit(const uint8_t* data, uint16_t len)
 {
     ChipSelectGuard guard{cs_port_, cs_pin_, al_};
     TRY(HAL_SPI_Transmit(hspi_, data, len, HAL_SPI_TRANSMIT_TIMEOUT));
@@ -29,13 +30,13 @@ HAL_StatusTypeDef SpiTarget::transmit(const uint8_t* data, uint16_t len)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef SpiTarget::receive(uint8_t* data, uint16_t len, uint8_t fill)
+HAL_StatusTypeDef SpiDevice::receive(uint8_t* data, uint16_t len, uint8_t fill)
 {
     ChipSelectGuard guard{cs_port_, cs_pin_, al_};
     return txrx_fill(data, len, fill);
 }
 
-HAL_StatusTypeDef SpiTarget::transmitReceive(const uint8_t* cmd,
+HAL_StatusTypeDef SpiDevice::transmitReceive(const uint8_t* cmd,
                                              uint16_t cmd_len,
                                              uint8_t* rx,
                                              uint16_t rx_len,
@@ -46,7 +47,7 @@ HAL_StatusTypeDef SpiTarget::transmitReceive(const uint8_t* cmd,
     return txrx_fill(rx, rx_len, fill);
 }
 
-HAL_StatusTypeDef SpiTarget::txrx_fill(uint8_t* rx, uint16_t len, uint8_t fill)
+HAL_StatusTypeDef SpiDevice::txrx_fill(uint8_t* rx, uint16_t len, uint8_t fill)
 {
     // Chunk to avoid large temp allocation if len is big
     uint8_t dummy_tx[32];

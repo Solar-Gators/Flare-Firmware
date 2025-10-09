@@ -5,7 +5,7 @@
 
 #include "eeprom93aa46.hpp"
 #include "main.h"
-#include "spi_target.hpp"
+#include "spi_api.hpp"
 
 extern SPI_HandleTypeDef hspi3;
 

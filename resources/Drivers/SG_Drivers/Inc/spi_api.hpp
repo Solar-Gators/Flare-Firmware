@@ -1,6 +1,6 @@
 #pragma once
 
-#include "spi_target.hpp"
+#include "spi_api.hpp"
 #if defined(STM32L476xx)
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_spi.h"
@@ -27,10 +27,10 @@ static inline ActivationLevel invert(const ActivationLevel a)
                                              : ActivationLevel::ActiveLow;
 }
 
-class SpiTarget
+class SpiDevice
 {
    public:
-    SpiTarget(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin, ActivationLevel al);
+    SpiDevice(SPI_HandleTypeDef* hspi, GPIO_TypeDef* cs_port, uint16_t cs_pin, ActivationLevel al);
 
     HAL_StatusTypeDef transmit(const uint8_t* data, uint16_t len);
 

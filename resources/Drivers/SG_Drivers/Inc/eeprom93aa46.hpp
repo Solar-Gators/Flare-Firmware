@@ -1,7 +1,7 @@
 #pragma once
 
 #include "eeprom.hpp"
-#include "spi_target.hpp"
+#include "spi_api.hpp"
 
 #include <array>
 
@@ -63,7 +63,7 @@ class Eeprom93AA46 final : public Eeprom
     uint16_t programGranularity() const override { return 1; }
 
    private:
-    SpiTarget spi_;
+    SpiDevice spi_;
 
     // EWEN  -> 1 00 1 1 X X X X X
     static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};

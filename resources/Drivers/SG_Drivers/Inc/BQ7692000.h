@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Include/i2c_api.h"
+#include "i2c_api.hpp"
 
 #include <array>
 
