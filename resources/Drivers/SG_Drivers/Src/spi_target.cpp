@@ -1,6 +1,7 @@
 #include "spi_target.hpp"
 
 #include <cstdint>
+#include <memory>
 
 #define TRY(x)             \
     do                     \
@@ -10,10 +11,6 @@
     } while (0)
 
 #define HAL_SPI_TRANSMIT_TIMEOUT 100
-
-#include <cstdint>
-
-#include <memory>
 
 namespace sg
 {
