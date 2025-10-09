@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-
+#include "spi_target.hpp"
 #if defined(STM32L476xx)
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_spi.h"
@@ -10,7 +9,7 @@
 #include "stm32u5xx_hal_spi.h"
 #endif
 
-#include "spi_target.hpp"
+#include <memory>
 
 namespace sg
 {
