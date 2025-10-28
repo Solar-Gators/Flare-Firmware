@@ -10,8 +10,6 @@
 
 #include <algorithm>
 
-//static CAN_HandleTypeDef* hcan_s;
-
 namespace CANDriver
 {
 
@@ -128,14 +126,14 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
 
     if (!tx_queue_)
     {
-        tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+        tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame), NULL);
         if (!tx_queue_)
             return HAL_ERROR;
     }
 
     if (!rx_queue_)
     {
-        rx_queue_ = osMessageQueueNew(RX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+        rx_queue_ = osMessageQueueNew(RX_QUEUE_SIZE, sizeof(CANFrame), NULL);
         if (!rx_queue_)
             return HAL_ERROR;
     }
@@ -534,11 +532,11 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     // Read ALL messages from FIFO in the ISR
     while (CAN_RxFifoLevel(hcan) > 0)
     {
-        CANFrame msg{};
-        if (!CAN_ReadOne(hcan, msg))
-            break;
+        CANFrame msg{};  // Simple struct, no mutex
 
-        // Queue the message (non-blocking from ISR)
+        CAN_ReadOne(hcan, msg);
+
+        // Queue the simple struct (safe to copy)
         osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
     }
 
