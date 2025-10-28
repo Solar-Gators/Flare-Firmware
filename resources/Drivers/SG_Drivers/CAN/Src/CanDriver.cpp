@@ -6,9 +6,11 @@
  * @date 2025-09-08 
  */
 
-#include "CanDriver.hpp"
+#include "../Inc/CanDriver.hpp"
 
 #include <algorithm>
+
+//static CAN_HandleTypeDef* hcan_s;
 
 namespace CANDriver
 {
@@ -124,6 +126,20 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
         return HAL_ERROR;
     }
 
+    if (!tx_queue_)
+    {
+        tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+        if (!tx_queue_)
+            return HAL_ERROR;
+    }
+
+    if (!rx_queue_)
+    {
+        rx_queue_ = osMessageQueueNew(RX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+        if (!rx_queue_)
+            return HAL_ERROR;
+    }
+
     rx_task_handle = osThreadNew(&CANDevice::HandleRxTrampoline, this, &rx_task_attributes_);
     if (!rx_task_handle)
         return HAL_ERROR;
@@ -140,6 +156,7 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
 
         filter.FilterActivation = ENABLE;
         filter.FilterBank = 0;
+        filter.SlaveStartFilterBank = 14;
         filter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
         filter.FilterMode = CAN_FILTERMODE_IDMASK;
         filter.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -514,8 +531,20 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     if (!self)
         return HAL_ERROR;
 
-    // Tell HandleRxLoop to unblock next time scheduled
+    // Read ALL messages from FIFO in the ISR
+    while (CAN_RxFifoLevel(hcan) > 0)
+    {
+        CANFrame msg{};
+        if (!CAN_ReadOne(hcan, msg))
+            break;
+
+        // Queue the message (non-blocking from ISR)
+        osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
+    }
+
+    // Now signal the task that messages are available
     osThreadFlagsSet(self->rx_task_handle, 1u << 0);
+
     return HAL_OK;
 }
 
@@ -529,16 +558,14 @@ void CANDevice::HandleRxTrampoline(void* arg)
 
 void CANDevice::HandleRx()
 {
+    CANFrame msg{};
+
     for (;;)
     {
-        osThreadFlagsWait(1u << 0, osFlagsWaitAny, osWaitForever);
-        while (CAN_RxFifoLevel(hcan_) > 0)
+        // Wait for message in queue (blocking)
+        if (osMessageQueueGet(rx_queue_, &msg, NULL, osWaitForever) == osOK)
         {
-            CANFrame msg{};
-            if (!CAN_ReadOne(hcan_, msg))
-                break;
-            // TODO: fill with timestamping
-
+            // Process the message
             const CanCallback* cb = find_by_id(msg.can_id);
             if (cb)
             {
@@ -683,7 +710,7 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
  * @brief  CAN Rx interrupt callback.
  * @param  hcan Pointer to CAN_HandleTypeDef object
  */
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
+extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 {
     CANDriver::CANDevice::RxCallback(hcan);
 }

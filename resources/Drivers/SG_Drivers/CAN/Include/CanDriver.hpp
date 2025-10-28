@@ -9,7 +9,7 @@
 #pragma once
 #include <string.h>
 
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
 
 #include "CanDriverApi.hpp"
 
@@ -26,7 +26,8 @@ namespace CANDriver
 
 #define THREAD_STACK_SIZE_WORDS 512
 
-#define TX_QUEUE_SIZE 3 /* Size of Tx message queue */
+#define TX_QUEUE_SIZE 5 /* Size of Tx message queue */
+#define RX_QUEUE_SIZE 5 /* Size of Tx message queue */
 #define TX_TIMEOUT 10   /* Timeout for tx thread in ms */
 
 #define MAX_CAN_ID 0x7FFu
@@ -267,7 +268,8 @@ class CANDevice
     std::vector<RangeEntry> rangeCallbacks_;
     CanCallback allCallback_ = nullptr;
 
-    osMessageQueueId_t tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+    osMessageQueueId_t tx_queue_;  // = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+    osMessageQueueId_t rx_queue_;
 
     CANDevice(const CANDevice&) = delete;
     CANDevice& operator=(const CANDevice&) = delete;
@@ -294,12 +296,17 @@ class CANDevice
     inline static osThreadId_t rx_task_handle;
     alignas(8) inline static uint32_t rx_task_stack[THREAD_STACK_SIZE_WORDS];
 
+    inline static StaticTask_t tx_tcb;
+    inline static StaticTask_t rx_tcb;
+
     static constexpr osThreadAttr_t rx_task_attributes_ = {
         .name = "CAN Rx Task",
         .attr_bits = osThreadDetached,
+        .cb_mem = &rx_tcb,
+        .cb_size = sizeof(rx_tcb),
         .stack_mem = rx_task_stack,
         .stack_size = sizeof(rx_task_stack),
-        .priority = osPriorityAboveNormal,
+        .priority = osPriorityHigh,
     };
 
     inline static osThreadId_t tx_task_handle;
@@ -308,6 +315,8 @@ class CANDevice
     static constexpr osThreadAttr_t tx_task_attributes_ = {
         .name = "CAN Tx Task",
         .attr_bits = osThreadDetached,
+        .cb_mem = &tx_tcb,
+        .cb_size = sizeof(tx_tcb),
         .stack_mem = tx_task_stack,
         .stack_size = sizeof(tx_task_stack),
         .priority = osPriorityAboveNormal,
