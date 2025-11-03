@@ -3,3 +3,4 @@ project(SolarGatorsSTM32Projects)
 
 add_subdirectory(firmware/NUCLEOL476RG-FreeRTOS-ExampleProject)
 add_subdirectory(firmware/CAN-DevBoard)
+add_subdirectory(firmware/Telemetry)
