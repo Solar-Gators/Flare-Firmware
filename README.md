@@ -13,6 +13,25 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
 
 ---
 
+## 🧩 CLion Setup (You can install arm-none-eabi with a package manager as well)
+
+You can also build and debug projects directly in **JetBrains CLion** using the official **ARM GNU Toolchain** from Arm Developer.
+
+1. **Install CLion and ARM GNU Toolchain**
+- **Download CLion**:  
+  [https://www.jetbrains.com/clion/](https://www.jetbrains.com/clion/)
+- **Download ARM GNU Toolchain (non-EABI)**:  
+  [https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+- During installing, a popup will ask to add to PATH, make sure to check that box.
+
+2. **Open the Project in CLion**
+1. Launch CLion and open the **Flare-Firmware** repository root.
+2. Go to **File → Settings → Build, Execution, Deployment → CMake**.
+3. Enable the existing **Debug** and **Release** build presets that are already configured in the repository.
+4. Click **Apply** and then reload your cmake (this should be a button somewhere) to configure the environment.
+
+Once configured, you can select any project inside the `firmware/` subfolders as the active CMake target and build it using the top-right build dropdown in CLion.
+
 ## 🚀 Quick Start (Windows) (Can be done on linux type OS too using whatever package manager you have and regular terminal)
 
 1. **Install MSYS2**  
