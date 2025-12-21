@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 # Edit your MCU information up to the next border
 get_filename_component(SOURCE_DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${SOURCE_DIR_NAME})
+set(BOARD_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/")  # Where we want the artifacts to go:
 set(USER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/user)
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../resources)
 
@@ -42,8 +43,8 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${USER_DIR}/inc
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Include)
-
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Inc
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.tpp)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
@@ -55,13 +56,21 @@ file(GLOB STM32CUBEMX_SOURCES
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
     ${USER_DIR}/src/*.c
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}
-    ${STM32CUBEMX_SOURCES} 
+    ${STM32CUBEMX_SOURCES}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
+
+# Put all artifacts for this board under firmware/Rear-VCU/build/Rear-VCU
+set_target_properties(${EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+        ARCHIVE_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+        LIBRARY_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+)
 
 # Strict warnings only for user sources
 set_source_files_properties(${PROJECT_SOURCES} PROPERTIES
@@ -106,11 +115,13 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,--end-group
     -Wl,--print-memory-usage)
 
+# Size is fine, it uses $<TARGET_FILE> which already points to BOARD_BUILD_DIR
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
+        COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
+)
 
+# Explicitly put hex/bin next to the ELF
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.bin)
+        COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${EXECUTABLE}> ${BOARD_BUILD_DIR}/${EXECUTABLE}.hex
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${BOARD_BUILD_DIR}/${EXECUTABLE}.bin
+)

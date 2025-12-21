@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 # Edit your MCU information up to the next border
 get_filename_component(SOURCE_DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${SOURCE_DIR_NAME})
+set(BOARD_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/")  # Where we want the artifacts to go:
 set(USER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/user)
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../resources)
 
@@ -64,6 +65,13 @@ add_executable(${EXECUTABLE}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
+# Put all artifacts for this board under firmware/Rear-VCU/build/Rear-VCU
+set_target_properties(${EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+        ARCHIVE_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+        LIBRARY_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+)
+
 # Strict warnings only for user sources
 set_source_files_properties(${PROJECT_SOURCES} PROPERTIES
     COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Wsuggest-override;-Wno-unused-parameter;-Wno-pedantic"
@@ -107,11 +115,13 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,--end-group
     -Wl,--print-memory-usage)
 
+# Size is fine, it uses $<TARGET_FILE> which already points to BOARD_BUILD_DIR
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
+        COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
+)
 
+# Explicitly put hex/bin next to the ELF
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.bin)
+        COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${EXECUTABLE}> ${BOARD_BUILD_DIR}/${EXECUTABLE}.hex
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${BOARD_BUILD_DIR}/${EXECUTABLE}.bin
+)
