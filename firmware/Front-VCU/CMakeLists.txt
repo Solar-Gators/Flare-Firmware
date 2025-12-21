@@ -65,7 +65,6 @@ add_executable(${EXECUTABLE}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
-# Put all artifacts for this board under firmware/Rear-VCU/build/Rear-VCU
 set_target_properties(${EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
         ARCHIVE_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
