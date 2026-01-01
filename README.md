@@ -1,8 +1,5 @@
-TODO: add clang tidy
-TODO: put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
-TODO: note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
+TODO: put videos that explain workflow
 TODO: note about needing to do make clean after messing with ioc
-TODO: add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
 
 # Solar Gators Flare Firmware
 
@@ -107,6 +104,7 @@ Once configured, you can select any project inside the `firmware/` subfolders as
     - Create a Debug Configuration by clicking drop down next to debug button of type STM32 C/C++ Application (Set the ELF path to build/YourProject.elf).
     - You can select the correct one when going to run by adding them to favorites and selecting them with the drop down.
     - Flash and start a debug or flash session.
+    - SOMETHING TO NOTE is that its totally possible to flash and debug inside of clion, we just need to figure out how to do so.
 
 10. **SSH key or github desktop**
     - You will likely need to create an ssh key with github or use github desktop in order to push code to this repo
