@@ -111,6 +111,8 @@ Once configured, you can select any project inside the `firmware/` subfolders as
     - Follow the linux instructions here if doing it inside MSYS2 MINGW64 terminal, or windows if doing it outside: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux
 ## Other Notes
 
+- **The entire build system and intellisense+free clang tidy works really well in CLion, which is now free!**
+
 - **For working Intellisense in Vscode**
     Use C/C++ extension for intellisense with CMake Tools as its source.
 
@@ -123,11 +125,6 @@ Once configured, you can select any project inside the `firmware/` subfolders as
     make clean           # Remove build
     make BUILD_TYPE=Release   # Build release
     ```
----
-
-- **After modifying ioc file**
-    You may need to do `make clean` in the terminal before rebuilding.
-
 ---
 
 - **Clang-Format**:  
@@ -150,7 +147,7 @@ Once configured, you can select any project inside the `firmware/` subfolders as
 
 ---
 
-### Individual Project Structure (a project inside of the firmware folder)
+### Individual Project Structure
 ```sh
 project-folder/
 ├── build/             # Output folder for build artifacts (e.g., .elf, .hex, .bin files). Does not get pushed to repo
@@ -167,22 +164,7 @@ project-folder/
 ### 🧠 VS Code + IntelliSense:
 - Open root of repo or open specific subproject
 - Point vscode/cmaketools extension to cmakelists.txt in root of whatever you opened
-
----
-
-### Creating a New Project Steps:
-- Open CubeMX, and configure your MCU/board/peripherals as usual.
-- Project Manager (before code generation)
-- Project Location: set to your repo’s firmware/ folder.
-- Toolchain/IDE: select Makefile (We’ll use our own build system; this prevents IDE-specific files.)
-- Toolchain Folder Location: add another /CubeMX to the path that is in the box already (This makes CubeMX put startup files/linker script and toolchain bits under firmware/<Project>/CubeMX/.) 
-- Generate code
-- CubeMX creates Core/, drivers, and the CubeMX/ subfolder inside firmware/<YourProject>/.
-- Copy your template Makefile and CMakeLists.txt from another project (use CAN-DevBoard project) into firmware/<YourProject>/.
-- Edit the top portion of the CMakeLists.txt with information specific to your project's mcu.
-- You should now be able to type `make` in the terminal to build the project.
-- You can also add a user/ folder with inc/ and src/ inside of it, to separate our code from the generated code in Core/
-
+- 
 ---
 
 ## 🖥️ Recommended VS Code Settings

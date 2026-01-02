@@ -1,4 +1,4 @@
-#include "../Include/BQ7692000.h"
+#include "BQ7692000.h"
 
 #include <cstdint>
 
@@ -9,6 +9,8 @@
             return HAL_ERROR; \
     } while (0)
 
+namespace sg
+{
 HAL_StatusTypeDef BQ7692000PW::init()
 {
     TRY(initCC());
@@ -188,3 +190,5 @@ HAL_StatusTypeDef BQ7692000PW::checkCC()
     uint8_t clearCC = STATUS_CC_READY_MASK;
     return writeN(static_cast<uint8_t>(registers::SYS_STAT), &clearCC, ONE_BYTE);
 }
+
+}  // namespace sg
