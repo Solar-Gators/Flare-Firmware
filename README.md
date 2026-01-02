@@ -1,9 +1,5 @@
-TODO:
-add clang tidy
-put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
-note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
-note about needing to do make clean after messing with ioc
-add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
+TODO: put videos that explain workflow
+TODO: note about needing to do make clean after messing with ioc
 
 # Solar Gators Flare Firmware
 
@@ -13,6 +9,25 @@ add a way for the copiolet review to only review the code that is ours instead o
 - **Unified** intellisense for all firmware subfolders using root cmakelists.txt
 
 ---
+
+## 🧩 CLion Setup (You can install arm-none-eabi with a package manager as well)
+
+You can also build and debug projects directly in **JetBrains CLion** using the official **ARM GNU Toolchain** from Arm Developer.
+
+1. **Install CLion and ARM GNU Toolchain**
+- **Download CLion**:  
+  [https://www.jetbrains.com/clion/](https://www.jetbrains.com/clion/)
+- **Download ARM GNU Toolchain (non-EABI)**:  
+  [https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+- During installing, a popup will ask to add to PATH, make sure to check that box.
+
+2. **Open the Project in CLion**
+1. Launch CLion and open the **Flare-Firmware** repository root.
+2. Go to **File → Settings → Build, Execution, Deployment → CMake**.
+3. Enable the existing **Debug** and **Release** build presets that are already configured in the repository.
+4. Click **Apply** and then reload your cmake (this should be a button somewhere) to configure the environment.
+
+Once configured, you can select any project inside the `firmware/` subfolders as the active CMake target and build it using the top-right build dropdown in CLion.
 
 ## 🚀 Quick Start (Windows) (Can be done on linux type OS too using whatever package manager you have and regular terminal)
 
@@ -89,6 +104,7 @@ add a way for the copiolet review to only review the code that is ours instead o
     - Create a Debug Configuration by clicking drop down next to debug button of type STM32 C/C++ Application (Set the ELF path to build/YourProject.elf).
     - You can select the correct one when going to run by adding them to favorites and selecting them with the drop down.
     - Flash and start a debug or flash session.
+    - SOMETHING TO NOTE is that its totally possible to flash and debug inside of clion, we just need to figure out how to do so.
 
 10. **SSH key or github desktop**
     - You will likely need to create an ssh key with github or use github desktop in order to push code to this repo

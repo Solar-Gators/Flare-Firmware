@@ -84,5 +84,3 @@ compile_commands.json
 # clion
 .idea/
 cmake-build-debug/
-
-
