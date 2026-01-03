@@ -21,10 +21,8 @@ class Eeprom93AA46 final : public Eeprom
     Eeprom93AA46(SPI_HandleTypeDef* hspi,
                  GPIO_TypeDef* cs_port,
                  uint16_t cs_pin,
-                 ActivationLevel al)
-        : spi_(hspi, cs_port, cs_pin, al)
-    {
-    }
+                 ActivationLevel al = ActivationLevel::ActiveHigh)
+        : spi_(hspi, cs_port, cs_pin, al) { }
 
     /**
      *
