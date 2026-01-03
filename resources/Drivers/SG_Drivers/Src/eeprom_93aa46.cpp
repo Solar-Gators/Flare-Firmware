@@ -42,8 +42,8 @@ HAL_StatusTypeDef Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
 {
     uint32_t instruction = 0;
 
-    instruction |= kRdMask;
-    addr &= kAddrMask;
+    instruction |= RDMASK;
+    addr &= ADDRMASK;
     instruction |= addr;
 
     return sendReadFromBitInstruction(instruction, out);
@@ -54,8 +54,8 @@ HAL_StatusTypeDef Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 {
     uint32_t instruction = 0;
 
-    instruction |= kWrMask;
-    addr &= kAddrMask;
+    instruction |= WRMASK;
+    addr &= ADDRMASK;
     instruction |= (addr << 8);
     instruction |= byte;
 
@@ -64,17 +64,17 @@ HAL_StatusTypeDef Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
 
 HAL_StatusTypeDef Eeprom93AA46::sendEWEN()
 {
-    return spi_.transmit(&kEwen[0], kEwen.size());
+    return spi_.transmit(&EWEN[0], EWEN.size());
 }
 
 HAL_StatusTypeDef Eeprom93AA46::sendEWDS()
 {
-    return spi_.transmit(&kEwds[0], kEwds.size());
+    return spi_.transmit(&EWDS[0], EWDS.size());
 }
 
 HAL_StatusTypeDef Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
 {
-    std::array<uint8_t, kWLen> bytes_arr{};
+    std::array<uint8_t, WLEN> bytes_arr{};
 
     bytes_arr[0] = static_cast<uint8_t>(instr >> 16);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
@@ -85,7 +85,7 @@ HAL_StatusTypeDef Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
 
 HAL_StatusTypeDef Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
 {
-    std::array<uint8_t, kRLen> bytes_arr{};
+    std::array<uint8_t, RLEN> bytes_arr{};
 
     bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
     bytes_arr[1] = static_cast<uint8_t>(instr >> 0);
