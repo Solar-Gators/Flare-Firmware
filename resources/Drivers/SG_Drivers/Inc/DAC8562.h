@@ -40,6 +40,15 @@ private:
     // command bytes is made of 2 bits dont care, 3 bits command, 3 bits address, some examples are above
     HAL_StatusTypeDef writeRegister(uint8_t cmd_byte, uint16_t data_bytes);
 
+public:
+    // software reset
+    HAL_StatusTypeDef init();
+
+    // dac with 16 bit resolution, val should be 0 to 65,535
+    HAL_StatusTypeDef setChannelA(uint16_t val);
+
+    // dac with 16 bit resolution, val should be 0 to 65,535
+    HAL_StatusTypeDef setChannelB(uint16_t val);
 };
 
 } // namespace sg
