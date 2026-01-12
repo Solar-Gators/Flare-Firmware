@@ -7,4 +7,4 @@ repos:
         language: system
         types_or: [c, c++]
         files: '^(firmware/.*/user/|resources/Drivers/SG_Drivers/).*.(c|cpp|h|hpp)$'
-        args: [--style=file]
+        args: [-i, --style=file]
