@@ -1,9 +1,13 @@
 #pragma once
 
 #if defined(STM32L476xx)
+#include "cmsis_os.h"
+
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_can.h"
 #elif defined(STM32U575xx)
+#include "cmsis_os2.h"
+
 #include "stm32u5xx_hal.h"
 #include "stm32u5xx_hal_fdcan.h"
 #else

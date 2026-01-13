@@ -9,9 +9,8 @@
 #pragma once
 #include <string.h>
 
-#include "cmsis_os.h"
-
 #include "CanDriverApi.hpp"
+#include "FreeRTOS.h"
 
 #include <queue>
 #include <vector>

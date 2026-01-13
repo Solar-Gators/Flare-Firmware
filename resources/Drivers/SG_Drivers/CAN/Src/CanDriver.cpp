@@ -6,7 +6,7 @@
  * @date 2025-09-08 
  */
 
-#include "../Inc/CanDriver.hpp"
+#include "CanDriver.hpp"
 
 #include <algorithm>
 
