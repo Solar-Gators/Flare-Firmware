@@ -8,9 +8,7 @@
 
 #include "CanDriver.hpp"
 
-#include <algorithm>
-
-namespace CANDriver
+namespace sg
 {
 
 #define TRY(x)                \
@@ -491,6 +489,14 @@ void CANDevice::addCallbackAll(CanCallback cb)
     allCallback_ = cb;
 }
 
+/*!
+ * @brief Finds callback connected to a single id
+ *
+ * @details Finds registered callback for single CAN Id
+ *
+ * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
+ * @return const CanCallback* if found, nullptr if no connected callback
+ */
 const CanCallback* CANDevice::find_by_id(uint32_t id)
 {
     for (const auto& idEntry : idCallbacks_)
@@ -502,6 +508,15 @@ const CanCallback* CANDevice::find_by_id(uint32_t id)
     }
     return nullptr;
 }
+
+/*!
+ * @brief Finds callback connected to id within range filter
+ *
+ * @details Finds registered callback for id within range of CAN Identifiers
+ *
+ * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
+ * @return const CanCallback* if found, nullptr if no connected callback
+ */
 const CanCallback* CANDevice::find_by_range(uint32_t id)
 {
     for (const auto& rangeEntry : rangeCallbacks_)
@@ -701,7 +716,7 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
         }
 }
 
-};  // namespace CANDriver
+};  // namespace sg
 
 #if defined(HAL_CAN_MODULE_ENABLED)
 /**
@@ -720,6 +735,6 @@ extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
  */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef* hcan, uint32_t RxFifo0ITs)
 {
-    CANDriver::CANDevice::RxCallback(hcan);
+    sg::CANDevice::RxCallback(hcan);
 }
 #endif

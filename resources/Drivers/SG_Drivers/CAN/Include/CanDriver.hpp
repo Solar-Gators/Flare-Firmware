@@ -15,7 +15,7 @@
 #include <queue>
 #include <vector>
 
-namespace CANDriver
+namespace sg
 {
 
 #define THREAD_PRIORITY osPriorityAboveNormal /* Priority of Rx and Tx threads */
@@ -228,26 +228,6 @@ class CANDevice
     void addCallbackAll(CanCallback cb);
 
     /*!
-     * @brief Finds callback connected to a single id
-     *
-     * @details Finds registered callback for single CAN Id
-     * 
-     * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
-     * @return const CanCallback* if found, nullptr if no connected callback
-     */
-    const CanCallback* find_by_id(uint32_t id);
-
-    /*!
-     * @brief Finds callback connected to id within range filter
-     *
-     * @details Finds registered callback for id within range of CAN Identifiers
-     * 
-     * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
-     * @return const CanCallback* if found, nullptr if no connected callback
-     */
-    const CanCallback* find_by_range(uint32_t id);
-
-    /*!
      * @brief 
      *
      * @details
@@ -283,6 +263,8 @@ class CANDevice
     static CANDevice* findByHandle(CanHandle_t* h);
     static bool registerHandle(CanHandle_t* h, CANDevice* d);
     static void unregisterHandle(CanHandle_t* h);
+    const CanCallback* find_by_id(uint32_t id);
+    const CanCallback* find_by_range(uint32_t id);
 
     // ====== Tx and Rx Methods ======
 
@@ -322,4 +304,4 @@ class CANDevice
     };
 };
 
-};  // namespace CANDriver
+};  // namespace sg
