@@ -3,14 +3,11 @@ TODO: note about needing to do make clean after messing with ioc
 
 # Solar Gators Flare Firmware
 
-- **CMake** + **Ninja** build system
-- Shared **resources** (HAL, CMSIS, FreeRTOS, toolchains, Drivers)
-- **pre-commit** hook enforcing **clang-format**
-- **Unified** intellisense for all firmware subfolders using root cmakelists.txt
+- Below are some setup options, the CLion one is preferred, and you are able to set this up in any way you want the only absolute requirements are arm-none-eabi-gcc, cmake+ninja, and jlink to flash.
 
 ---
 
-## 🧩 CLion Setup (You can install arm-none-eabi with a package manager as well)
+## 🧩 CLion Setup (SUPER SIMPLE) (You can install arm-none-eabi with a package manager as well)
 
 You can also build and debug projects directly in **JetBrains CLion** using the official **ARM GNU Toolchain** from Arm Developer.
 
@@ -20,16 +17,24 @@ You can also build and debug projects directly in **JetBrains CLion** using the 
 - **Download ARM GNU Toolchain (non-EABI)**:  
   [https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
 - During installing, a popup will ask to add to PATH, make sure to check that box.
+- If it doesn't you'll need to add it to your system/user path manually.
 
 2. **Open the Project in CLion**
-1. Launch CLion and open the **Flare-Firmware** repository root.
-2. Go to **File → Settings → Build, Execution, Deployment → CMake**.
-3. Enable the existing **Debug** and **Release** build presets that are already configured in the repository.
-4. Click **Apply** and then reload your cmake (this should be a button somewhere) to configure the environment.
+- Launch CLion and open the **Flare-Firmware** repository root.
+- Go to **File → Settings → Build, Execution, Deployment → CMake** (This will also appear as a popup the first time you open the project.
+- SPECIFICALLY ENABLE the existing **debug - debug** and **release - release** build presets that are already configured in the repository. The ones labeled just debug and release will not work.
+- At this point you should be able to build any project by selecting one in the top righish of your screen and pressing the hammer icon.
+
+3. **Flashing and Debugging in CLion**
+- Download JLink for your device: https://www.segger.com/downloads/jlink/. Either add to path
+- Make sure the tools get added to the path and you are able to type JLinkExe in the terminal and something happens.
+- Follow only the first few instructions from here to make a debug server in CLion: https://www.jetbrains.com/help/clion/debug-servers.html#configure-debug-servers
+- Once you make the SEGGAR J-Link Debug Server make sure you put device as STM32U575RG, transport interface as swd, and upload at something like 4000. (If you added to path in first step it should have found executable for you, if not manually find it to the j link tools you installed maybe a bin folder or something) 
+- You can now use the run and debug buttons on a particular project
 
 Once configured, you can select any project inside the `firmware/` subfolders as the active CMake target and build it using the top-right build dropdown in CLion.
 
-## 🚀 Quick Start (Windows) (Can be done on linux type OS too using whatever package manager you have and regular terminal)
+## 🚀 Way more difficult vscode setup example. (Windows) (Can be done on linux type OS too using whatever package manager you have and regular terminal)
 
 1. **Install MSYS2**  
    Download: https://www.msys2.org/  
