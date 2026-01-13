@@ -14,7 +14,6 @@
 namespace sg
 {
 
-// this eeprom has a start bit before it begins reading bits it receives on its mosi line, which means you can prepend as many zeros as you like so that it correctly aligns with the 8 bit at a time send protocol of the HAL_SPI functions
 enum class ActivationLevel
 {
     ActiveLow = GPIO_PIN_RESET,

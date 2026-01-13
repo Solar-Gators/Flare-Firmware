@@ -21,7 +21,7 @@ class Eeprom93AA46 final : public Eeprom
     Eeprom93AA46(SPI_HandleTypeDef* hspi,
                  GPIO_TypeDef* cs_port,
                  uint16_t cs_pin,
-                 ActivationLevel al)
+                 ActivationLevel al = ActivationLevel::ActiveHigh)
         : spi_(hspi, cs_port, cs_pin, al)
     {
     }
@@ -66,20 +66,20 @@ class Eeprom93AA46 final : public Eeprom
     SpiDevice spi_;
 
     // EWEN  -> 1 00 1 1 X X X X X
-    static inline constexpr std::array<uint8_t, 2> kEwen = {0b00000010, 0b01100000};
+    static constexpr std::array<uint8_t, 2> EWEN = {0b00000010, 0b01100000};
     // EWDS  -> 1 00 0 0 XXXXX
-    static inline constexpr std::array<uint8_t, 2> kEwds = {0b00000010, 0b00000000};
+    static constexpr std::array<uint8_t, 2> EWDS = {0b00000010, 0b00000000};
 
     // start bit and opcode for read, length is byte length of instruction
-    static inline constexpr uint32_t kRdMask = (0b110 << 7);
-    static inline constexpr size_t kRLen = 2;
+    static constexpr uint32_t RDMASK = (0b110 << 7);
+    static constexpr size_t RLEN = 2;
 
     // start bit and opcode for write, length in byte length of instruction
-    static inline constexpr uint32_t kWrMask = (0b101 << 15);
-    static inline constexpr size_t kWLen = 3;
+    static constexpr uint32_t WRMASK = (0b101 << 15);
+    static constexpr size_t WLEN = 3;
 
     // address is 7 bits
-    static inline constexpr uint8_t kAddrMask = 0b01111111;
+    static constexpr uint8_t ADDRMASK = 0b01111111;
 
     // helper functions that send one of the commands to the eeprom
     HAL_StatusTypeDef sendRead(uint32_t addr, uint8_t& out);
