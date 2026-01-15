@@ -159,7 +159,16 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
 #endif
 }
 
-CANDevice::CANDevice(CanHandle_t* hcan) : hcan_(hcan), tx_queue_(nullptr), rx_queue_(nullptr)
+CANDevice::CANDevice(CanHandle_t* hcan)
+    : hcan_(hcan),
+      tx_queue_(nullptr),
+      rx_queue_(nullptr),
+      rx_task_handle(nullptr),
+      rx_task_stack{},
+      tx_tcb(),
+      rx_tcb(),
+      tx_task_handle(nullptr),
+      tx_task_stack{}
 {
     filters_.reserve(NUM_FILTER_BANKS);
     idCallbacks_.reserve(NUM_CAN_CALLBACKS);
@@ -608,7 +617,7 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     // Read ALL messages from FIFO in the ISR
     while (CAN_RxFifoLevel(hcan) > 0)
     {
-        CANFrame msg;  // Simple struct, no mutex
+        CANFrame msg{};  // Simple struct, no mutex
 
         CAN_ReadOne(hcan, msg);
 
@@ -669,7 +678,7 @@ void CANDevice::HandleTxTrampoline(void* arg)
 
 [[noreturn]] void CANDevice::HandleTx()
 {
-    CANFrame tx_msg;
+    CANFrame tx_msg{};
     for (;;)
     {
         osMessageQueueGet(tx_queue_, &tx_msg, nullptr, osWaitForever);
