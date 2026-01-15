@@ -57,6 +57,26 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define OK_LED_Pin GPIO_PIN_0
+#define OK_LED_GPIO_Port GPIOC
+#define RADIO_LED_Pin GPIO_PIN_1
+#define RADIO_LED_GPIO_Port GPIOC
+#define RL_CTRL_Pin GPIO_PIN_7
+#define RL_CTRL_GPIO_Port GPIOA
+#define STROBE_CTRL_Pin GPIO_PIN_4
+#define STROBE_CTRL_GPIO_Port GPIOC
+#define RR_CTRL_Pin GPIO_PIN_5
+#define RR_CTRL_GPIO_Port GPIOC
+#define KILL_SW_INPUT_Pin GPIO_PIN_12
+#define KILL_SW_INPUT_GPIO_Port GPIOB
+#define RADIO_CTS_Pin GPIO_PIN_14
+#define RADIO_CTS_GPIO_Port GPIOB
+#define EEPROM_CS_Pin GPIO_PIN_15
+#define EEPROM_CS_GPIO_Port GPIOA
+#define ERROR_LED_Pin GPIO_PIN_4
+#define ERROR_LED_GPIO_Port GPIOB
+#define GPS_LED_Pin GPIO_PIN_5
+#define GPS_LED_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
