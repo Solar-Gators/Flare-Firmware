@@ -25,7 +25,7 @@ extern "C"
     namespace sg
     {
     // forces user to pick one of the available ones
-    enum class CANFrameLen
+    enum class CANFrameLen : uint8_t
     {
         BYTES_0 = 0,
         BYTES_1 = 1,
@@ -70,14 +70,24 @@ typedef int CanHandle_t;
 typedef int CanFilter_t;
 #endif
 
-#define SG_CAN_ID_STD 0u
-#define SG_CAN_ID_EXT 1u
-
-#define SG_CAN_PRIORITY_HIGH 0u
-#define SG_CAN_PRIORITY_LOW 1u
-
-#define SG_CAN_RTR_DATA 0u
-#define SG_CAN_RTR_REMOTE 1u
+    namespace sg
+    {
+    enum class CANFrameIDType : uint8_t
+    {
+        STANDARD = 0,
+        EXTENDED = 1
+    };
+    enum class CANFramePriority : uint8_t
+    {
+        HIGH = 0,
+        LOW = 1
+    };
+    enum class CANFrameRTRMode : uint8_t
+    {
+        DATA = 0,
+        REMOTE = 1
+    };
+    }  // namespace sg
 
 #ifdef __cplusplus
 }  // extern "C"

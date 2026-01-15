@@ -46,11 +46,11 @@ class CANFrame
         memcpy(this->data, data, copy_len);
     }
 
-    uint32_t can_id;     /* CAN ID, can be standard or extended */
-    uint32_t id_type;    /* CAN ID type, 0 if standard ID, 4 if extended ID */
-    uint32_t rtr_mode;   /* RTR mode, 0 if not RTR message, 2 if RTR */
-    CANFrameLen len;     /* payload data length */
-    uint32_t timestamp_; /* timestamp of last message received */
+    uint32_t can_id;          /* CAN ID, can be either 11 bits for standard or 29 for extended */
+    CANFrameIDType id_type;   /* CAN ID type */
+    CANFrameRTRMode rtr_mode; /* RTR (remote transmission request) mode */
+    CANFrameLen len;          /* payload data length */
+    uint32_t timestamp;       /* timestamp of last message received */
 
 #if defined(HAL_FDCAN_MODULE_ENABLED)
     uint8_t data[64];           /* payload data array, maximum of 64 bytes */
@@ -112,19 +112,18 @@ class CANDevice
      *          the specified FIFO for reception.
      *
      * @param can_id    CAN identifier to filter on (11-bit or 29-bit depending on @p id_type).
-     * @param id_type   Identifier type: use CAN_ID_STD for standard (11-bit) or
-     *                  CAN_ID_EXT for extended (29-bit) frames.
-     * @param rtr_mode  Frame type: data frame or remote transmission request (RTR).
+     * @param id_type   Identifier type: use sg::CANFrameIDType::STANDARD for standard (11-bit) or
+     *                  sg::CANFrameIDType::EXTENDED for extended (29-bit) frames.
+     * @param rtr_mode  Frame type: data frame or remote transmission request (RTR). Use sg::CANFrameRTRMode::...
      *                  Note: in FDCAN, RTR matching is configured globally, not per-filter.
-     * @param priority  FIFO assignment: typically 0 = high priority (FIFO0),
-     *                  1 = low priority (FIFO1).
+     * @param priority  FIFO assignment: sg::CANFramePriority::High or sg::CANFramePriority::Low. Chooses hardware FIFO to be routed into.
      *
      * @return HAL_OK if the filter was successfully added, or an error/status code if not.
      */
     HAL_StatusTypeDef AddFilterId(uint32_t can_id,
-                                  uint32_t id_type,
-                                  uint32_t rtr_mode,
-                                  uint32_t priority);
+                                  CANFrameIDType id_type,
+                                  CANFrameRTRMode rtr_mode,
+                                  CANFramePriority priority);
 
     /*!
      * @brief Adds a hardware filter to accept a range of CAN identifiers.
@@ -147,9 +146,9 @@ class CANDevice
      */
     HAL_StatusTypeDef AddFilterRange(uint32_t can_id,
                                      uint32_t range,
-                                     uint32_t id_type,
-                                     uint32_t rtr_mode,
-                                     uint32_t priority);
+                                     sg::CANFrameIDType id_type,
+                                     sg::CANFrameRTRMode rtr_mode,
+                                     sg::CANFramePriority priority);
 
     /*!
      * @brief Adds a callback function for a single CAN identifier.
@@ -168,7 +167,10 @@ class CANDevice
      * @return true  If the callback was successfully registered.
      * @return false If registration failed (e.g., maximum number of callbacks reached).
      */
-    bool addCallbackId(uint32_t can_id, uint32_t id_type, CanCallback cb, void* ctx = nullptr);
+    bool addCallbackId(uint32_t can_id,
+                       sg::CANFrameIDType id_type,
+                       CanCallback cb,
+                       void* ctx = nullptr);
 
     /*!
      * @brief Adds a callback function for a range of CAN identifiers.
@@ -191,7 +193,7 @@ class CANDevice
      */
     bool addCallbackRange(uint32_t start_id,
                           uint32_t range,
-                          uint32_t id_type,
+                          sg::CANFrameIDType id_type,
                           CanCallback cb,
                           void* ctx = nullptr);
 

@@ -70,6 +70,8 @@ static inline CANFrameLen CAN_DlcToBytes(uint32_t dlc)
             return sg::CANFrameLen::BYTES_0;
     }
 #else
+    if (dlc > 8)
+        dlc = 0;
     return static_cast<CANFrameLen>(dlc);  // bxCAN: DLC equals byte length (0..8)
 #endif
 }
@@ -127,10 +129,12 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
         return false;
     // out.hcan = h;
     out.can_id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
-    out.id_type = (hdr.IDE == CAN_ID_EXT) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
-    out.rtr_mode = (hdr.RTR == CAN_RTR_REMOTE);
-    out.dl_code = hdr.DLC;
-    out.timestamp_ = 0;  // bxCAN timestamping not filled here (optional: use TIM if needed)
+    out.id_type =
+        (hdr.IDE == CAN_ID_EXT) ? sg::CANFrameIDType::EXTENDED : sg::CANFrameIDType::STANDARD;
+    out.rtr_mode =
+        (hdr.RTR == CAN_RTR_REMOTE) ? sg::CANFrameRTRMode::REMOTE : sg::CANFrameRTRMode::DATA;
+    out.len = CAN_DlcToBytes(hdr.DLC);
+    out.timestamp = 0;  // bxCAN timestamping not filled here (optional: use TIM if needed)
 
     return true;
 
@@ -140,10 +144,12 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
         return false;
     //out.hcan = h;
     out.can_id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
-    out.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
-    out.rtr_mode = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
+    out.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? sg::CANFrameIDType::EXTENDED
+                                                    : sg::CANFrameIDType::STANDARD;
+    out.rtr_mode = (hdr.RxFrameType == FDCAN_REMOTE_FRAME) ? sg::CANFrameRTRMode::REMOTE
+                                                           : sg::CANFrameRTRMode::DATA;
     out.len = CAN_DlcToBytes(hdr.DataLength);
-    out.timestamp_ =
+    out.timestamp =
         0;  // If timestamping enabled, you can capture from peripheral or a systick here
     return true;
 #else
@@ -169,14 +175,14 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
 
     if (!tx_queue_)
     {
-        tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame), NULL);
+        tx_queue_ = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame), nullptr);
         if (!tx_queue_)
             return HAL_ERROR;
     }
 
     if (!rx_queue_)
     {
-        rx_queue_ = osMessageQueueNew(RX_QUEUE_SIZE, sizeof(CANFrame), NULL);
+        rx_queue_ = osMessageQueueNew(RX_QUEUE_SIZE, sizeof(CANFrame), nullptr);
         if (!rx_queue_)
             return HAL_ERROR;
     }
@@ -261,9 +267,9 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
 }
 
 HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
-                                         uint32_t id_type,
-                                         uint32_t rtr_mode,
-                                         uint32_t priority)
+                                         CANFrameIDType id_type,
+                                         CANFrameRTRMode rtr_mode,
+                                         CANFramePriority priority)
 {
     if (filters_.size() >= NUM_FILTER_BANKS)
         return HAL_ERROR;
@@ -271,9 +277,10 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
 #if defined(HAL_CAN_MODULE_ENABLED)
     // ===================== bxCAN =====================
     // Validate & map RTR for bxCAN
-    const uint32_t hal_rtr = (rtr_mode == SG_CAN_RTR_REMOTE) ? CAN_RTR_REMOTE : CAN_RTR_DATA;
+    const uint32_t hal_rtr =
+        (rtr_mode == sg::CANFrameRTRMode::REMOTE) ? CAN_RTR_REMOTE : CAN_RTR_DATA;
 
-    if (id_type == SG_CAN_ID_STD)
+    if (id_type == sg::CANFrameIDType::STANDARD)
     {
         if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
@@ -288,7 +295,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         f.FilterMaskIdHigh = (filter_mask >> 16) & 0xFFFFu;
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
-            (priority == SG_CAN_PRIORITY_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+            (priority == sg::CANFramePriority::HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
         f.FilterBank = filters_.size();
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -297,7 +304,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         filters_.push_back(f);
         return HAL_OK;
     }
-    else if (id_type == SG_CAN_ID_EXT)
+    else if (id_type == sg::CANFrameIDType::EXTENDED)
     {
         if (can_id > 0x1FFFFFFFu)
             return HAL_ERROR;
@@ -313,7 +320,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         f.FilterMaskIdHigh = (filter_mask >> 16) & 0xFFFFu;
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
-            (priority == SG_CAN_PRIORITY_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+            (priority == sg::CANFramePriority::HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
         f.FilterBank = filters_.size();
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -331,7 +338,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
     // ===================== FDCAN (M_CAN) =====================
 
     FDCAN_FilterTypeDef f = {};
-    if (id_type == SG_CAN_ID_STD)
+    if (id_type == sg::CANFrameIDType::STANDARD)
     {
         if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
@@ -342,7 +349,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
         f.FilterID1 = can_id;
         f.FilterID2 = can_id;
     }
-    else if (id_type == SG_CAN_ID_EXT)
+    else if (id_type == sg::CANFrameIDType::EXTENDED)
     {
         if (can_id > 0x1FFFFFFFu)
             return HAL_ERROR;
@@ -358,8 +365,8 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
     }
 
     f.FilterIndex = filters_.size();
-    f.FilterConfig =
-        (priority == SG_CAN_PRIORITY_HIGH) ? FDCAN_FILTER_TO_RXFIFO0 : FDCAN_FILTER_TO_RXFIFO1;
+    f.FilterConfig = (priority == sg::CANFramePriority::HIGH) ? FDCAN_FILTER_TO_RXFIFO0
+                                                              : FDCAN_FILTER_TO_RXFIFO1;
 
     filters_.push_back(f);
     return HAL_OK;
@@ -371,9 +378,9 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
 
 HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
                                             uint32_t range,
-                                            uint32_t id_type,
-                                            uint32_t rtr_mode,
-                                            uint32_t priority)
+                                            sg::CANFrameIDType id_type,
+                                            sg::CANFrameRTRMode rtr_mode,
+                                            sg::CANFramePriority priority)
 {
     if (filters_.size() >= NUM_FILTER_BANKS || range == 0)
         return HAL_ERROR;
@@ -396,7 +403,10 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
 #if defined(HAL_CAN_MODULE_ENABLED)
     // ===================== bxCAN =====================
 
-    if (id_type == SG_CAN_ID_STD)
+    const uint32_t hal_rtr =
+        (rtr_mode == sg::CANFrameRTRMode::REMOTE) ? CAN_RTR_REMOTE : CAN_RTR_DATA;
+
+    if (id_type == sg::CANFrameIDType::STANDARD)
     {
         if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
@@ -404,7 +414,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
             end_inc = MAX_CAN_ID;
 
         // bxCAN 32-bit IDMASK packing (STD: ID at bits 31..21)
-        uint32_t filter_id = ((base & MAX_CAN_ID) << 21) | id_type | rtr_mode;
+        uint32_t filter_id = ((base & MAX_CAN_ID) << 21) | CAN_ID_STD | hal_rtr;
         uint32_t filter_mask = ((id_mask & MAX_CAN_ID) << 21) | 0b110;  // match IDE & RTR
 
         CanFilter_t f = {};
@@ -413,7 +423,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
         f.FilterMaskIdHigh = (filter_mask >> 16) & 0xFFFFu;
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
-            (priority == SG_CAN_PRIORITY_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+            (priority == sg::CANFramePriority::HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
         f.FilterBank = filters_.size();  // ensure unique index upstream or here
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -422,7 +432,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
         filters_.push_back(f);
         return HAL_OK;
     }
-    else if (id_type == SG_CAN_ID_EXT)
+    else if (id_type == sg::CANFrameIDType::EXTENDED)
     {
         if (can_id > 0x1FFFFFFFu)
             return HAL_ERROR;
@@ -430,7 +440,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
             end_inc = 0x1FFFFFFFu;
 
         // bxCAN 32-bit IDMASK packing (EXT: ID at bits 31..3)
-        uint32_t filter_id = ((base & 0x1FFFFFFFu) << 3) | id_type | rtr_mode;
+        uint32_t filter_id = ((base & 0x1FFFFFFFu) << 3) | CAN_ID_EXT | hal_rtr;
         uint32_t filter_mask = ((id_mask & 0x1FFFFFFFu) << 3) | 0b110;  // match IDE & RTR
 
         CanFilter_t f = {};
@@ -439,7 +449,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
         f.FilterMaskIdHigh = (filter_mask >> 16) & 0xFFFFu;
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
-            (priority == SG_CAN_PRIORITY_HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+            (priority == sg::CANFramePriority::HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
         f.FilterBank = filters_.size();
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -457,7 +467,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
     // ===================== FDCAN (M_CAN) =====================
 
     CanFilter_t f = {};
-    if (id_type == SG_CAN_ID_STD)
+    if (id_type == sg::CANFrameIDType::STANDARD)
     {
         if (can_id > MAX_CAN_ID)
             return HAL_ERROR;
@@ -469,7 +479,7 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
         f.FilterID1 = base;
         f.FilterID2 = end_inc;
     }
-    else if (id_type == SG_CAN_ID_EXT)
+    else if (id_type == sg::CANFrameIDType::EXTENDED)
     {
         if (can_id > 0x1FFFFFFFu)
             return HAL_ERROR;
@@ -487,8 +497,8 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
     }
 
     f.FilterIndex = filters_.size();  // ensure unique index
-    f.FilterConfig =
-        (priority == SG_CAN_PRIORITY_HIGH) ? FDCAN_FILTER_TO_RXFIFO0 : FDCAN_FILTER_TO_RXFIFO1;
+    f.FilterConfig = (priority == sg::CANFramePriority::HIGH) ? FDCAN_FILTER_TO_RXFIFO0
+                                                              : FDCAN_FILTER_TO_RXFIFO1;
 
     filters_.push_back(f);
     return HAL_OK;
@@ -498,7 +508,10 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
 #endif
 }
 
-bool CANDevice::addCallbackId(uint32_t can_id, uint32_t id_type, CanCallback cb, void* ctx)
+bool CANDevice::addCallbackId(uint32_t can_id,
+                              sg::CANFrameIDType id_type,
+                              CanCallback cb,
+                              void* ctx)
 {
     if (idCallbacks_.size() >= NUM_CAN_CALLBACKS)
         return false;
@@ -513,7 +526,7 @@ bool CANDevice::addCallbackId(uint32_t can_id, uint32_t id_type, CanCallback cb,
 
 bool CANDevice::addCallbackRange(uint32_t start_id,
                                  uint32_t range,
-                                 uint32_t id_type,
+                                 sg::CANFrameIDType id_type,
                                  CanCallback cb,
                                  void* ctx)
 {
@@ -663,15 +676,18 @@ void CANDevice::HandleTx()
         while (!HAL_FDCAN_GetTxFifoFreeLevel(hcan_))
             ;
 
-        FDCAN_TxHeaderTypeDef txHeader = {.Identifier = tx_msg.can_id,
-                                          .IdType = tx_msg.id_type,
-                                          .TxFrameType = tx_msg.rtr_mode,
-                                          .DataLength = CAN_BytesToDlc(tx_msg.len),
-                                          .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
-                                          .BitRateSwitch = FDCAN_BRS_ON,
-                                          .FDFormat = FDCAN_FD_CAN,
-                                          .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
-                                          .MessageMarker = 0};
+        FDCAN_TxHeaderTypeDef txHeader = {
+            .Identifier = tx_msg.can_id,
+            .IdType = (tx_msg.id_type == sg::CANFrameIDType::STANDARD) ? FDCAN_STANDARD_ID
+                                                                       : FDCAN_EXTENDED_ID,
+            .TxFrameType = (tx_msg.rtr_mode == sg::CANFrameRTRMode::REMOTE) ? FDCAN_REMOTE_FRAME
+                                                                            : FDCAN_DATA_FRAME,
+            .DataLength = CAN_BytesToDlc(tx_msg.len),
+            .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+            .BitRateSwitch = FDCAN_BRS_ON,
+            .FDFormat = FDCAN_FD_CAN,
+            .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
+            .MessageMarker = 0};
 
         // Request HAL message send
         HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg.data);
@@ -682,8 +698,8 @@ void CANDevice::HandleTx()
         CAN_TxHeaderTypeDef txHeader = {
             .StdId = tx_msg.can_id,
             .ExtId = tx_msg.can_id,
-            .IDE = tx_msg.id_type,
-            .RTR = tx_msg.rtr_mode,
+            .IDE = (tx_msg.id_type == sg::CANFrameIDType::STANDARD) ? CAN_ID_STD : CAN_ID_EXT,
+            .RTR = (tx_msg.rtr_mode == sg::CANFrameRTRMode::REMOTE) ? CAN_RTR_REMOTE : CAN_RTR_DATA,
             .DLC = CAN_BytesToDlc(tx_msg.len),
             .TransmitGlobalTime = DISABLE,
         };
