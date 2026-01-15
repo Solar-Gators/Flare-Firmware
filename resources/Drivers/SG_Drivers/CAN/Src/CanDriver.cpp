@@ -84,7 +84,7 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
     out.can_id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
     out.id_type = (hdr.IDE == CAN_ID_EXT) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
     out.rtr_mode = (hdr.RTR == CAN_RTR_REMOTE);
-    out.len = CAN_DlcToBytes(hdr.DLC);
+    out.dl_code = hdr.DLC;
     out.timestamp_ = 0;  // bxCAN timestamping not filled here (optional: use TIM if needed)
 
     return true;
@@ -97,7 +97,7 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
     out.can_id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
     out.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
     out.rtr_mode = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
-    out.len = CAN_DlcToBytes(hdr.DataLength);
+    out.dl_code = hdr.DataLength;
     out.timestamp_ =
         0;  // If timestamping enabled, you can capture from peripheral or a systick here
     return true;
@@ -547,7 +547,7 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     // Read ALL messages from FIFO in the ISR
     while (CAN_RxFifoLevel(hcan) > 0)
     {
-        CANFrame msg{};  // Simple struct, no mutex
+        CANFrame msg;  // Simple struct, no mutex
 
         CAN_ReadOne(hcan, msg);
 
@@ -608,24 +608,20 @@ void CANDevice::HandleTxTrampoline(void* arg)
 
 void CANDevice::HandleTx()
 {
-    CANFrame* tx_msg;
+    CANFrame tx_msg;
     for (;;)
     {
-        osMessageQueueGet(tx_queue_, &tx_msg, NULL, osWaitForever);
-
-        // Release lock on message, lock was acquired in CANDevice::Send()
-        osMutexRelease(tx_msg->mutex_id_);
+        osMessageQueueGet(tx_queue_, &tx_msg, nullptr, osWaitForever);
 
         // Spinlock until a tx mailbox is empty
-
 #if defined(HAL_FDCAN_MODULE_ENABLED)
         while (!HAL_FDCAN_GetTxFifoFreeLevel(hcan_))
             ;
 
-        FDCAN_TxHeaderTypeDef txHeader = {.Identifier = tx_msg->can_id,
-                                          .IdType = tx_msg->id_type,
-                                          .TxFrameType = tx_msg->rtr_mode,
-                                          .DataLength = tx_msg->len,
+        FDCAN_TxHeaderTypeDef txHeader = {.Identifier = tx_msg.can_id,
+                                          .IdType = tx_msg.id_type,
+                                          .TxFrameType = tx_msg.rtr_mode,
+                                          .DataLength = tx_msg.dl_code,
                                           .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
                                           .BitRateSwitch = FDCAN_BRS_ON,
                                           .FDFormat = FDCAN_FD_CAN,
@@ -633,40 +629,35 @@ void CANDevice::HandleTx()
                                           .MessageMarker = 0};
 
         // Request HAL message send
-        HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg->data);
+        HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg.data);
 #else
         while (!HAL_CAN_GetTxMailboxesFreeLevel(hcan_))
             ;
 
         CAN_TxHeaderTypeDef txHeader = {
-            .StdId = tx_msg->can_id,
-            .ExtId = tx_msg->can_id,
-            .IDE = tx_msg->id_type,
-            .RTR = tx_msg->rtr_mode,
-            .DLC = tx_msg->len,
+            .StdId = tx_msg.can_id,
+            .ExtId = tx_msg.can_id,
+            .IDE = tx_msg.id_type,
+            .RTR = tx_msg.rtr_mode,
+            .DLC = tx_msg.dl_code,
             .TransmitGlobalTime = DISABLE,
         };
 
         uint32_t txMailbox;
 
         // Request HAL message send
-        HAL_CAN_AddTxMessage(hcan_, &txHeader, tx_msg->data, &txMailbox);
+        HAL_CAN_AddTxMessage(hcan_, &txHeader, tx_msg.data, &txMailbox);
 #endif
     }
 }
 
-HAL_StatusTypeDef CANDevice::Send(CANFrame* msg)
+HAL_StatusTypeDef CANDevice::Send(const CANFrame& msg)
 {
-    // Locking to prevent editing while in queue
-    msg->Lock();
-
     if (osMessageQueuePut(tx_queue_, &msg, 0, TX_TIMEOUT) != osOK)
     {
         //HandleTxTimeout();
-        msg->Unlock();
         return HAL_ERROR;
     }
-    msg->Unlock();
 
     return HAL_OK;
 }

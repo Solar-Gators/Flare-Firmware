@@ -33,11 +33,12 @@ void StartDefaultTask_user(void* argument)
 
     CAN.StartCANDevice();
 
-    sg::CANFrame msg1(0x100, SG_CAN_ID_STD, SG_CAN_RTR_DATA, FDCAN_DLC_BYTES_64);
+    sg::CANFrame msg1{0x100, SG_CAN_ID_STD, SG_CAN_RTR_DATA, FDCAN_DLC_BYTES_64, 0};
     uint8_t data[64] = {};
     msg1.LoadData(data, 64);
 
-    CAN.Send(&msg1);
+    // driver now holds a copy for simplicity, allows msg1 to be destructed
+    CAN.Send(msg1);
 
     for (;;)
     {

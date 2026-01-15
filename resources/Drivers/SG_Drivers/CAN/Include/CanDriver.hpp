@@ -38,35 +38,7 @@ namespace sg
 class CANFrame
 {
    public:
-    CANFrame(uint32_t can_id, uint32_t id_type, uint32_t rtr_mode, uint32_t len)
-        : can_id(can_id), id_type(id_type), rtr_mode(rtr_mode), len(len)
-    {
-        const osMutexAttr_t attr = {
-            .name = "CANFrameMutex",
-            .attr_bits = osMutexRecursive | osMutexPrioInherit,
-            .cb_mem = nullptr,
-            .cb_size = 0,
-        };
-        mutex_id_ = osMutexNew(&attr);
-    };
-
-    CANFrame()
-    {
-        const osMutexAttr_t attr = {
-            .name = "CANFrameMutex",
-            .attr_bits = osMutexRecursive | osMutexPrioInherit,
-            .cb_mem = nullptr,
-            .cb_size = 0,
-        };
-        mutex_id_ = osMutexNew(&attr);
-    }
-
-    inline osStatus_t Lock(uint32_t timeout = osWaitForever)
-    {
-        return osMutexAcquire(mutex_id_, timeout);
-    }
-
-    inline osStatus_t Unlock() { return osMutexRelease(mutex_id_); }
+    // no constructor allows aggregate initialization
 
     void LoadData(uint8_t data[], uint32_t len)
     {
@@ -77,7 +49,7 @@ class CANFrame
     uint32_t can_id;     /* CAN ID, can be standard or extended */
     uint32_t id_type;    /* CAN ID type, 0 if standard ID, 4 if extended ID */
     uint32_t rtr_mode;   /* RTR mode, 0 if not RTR message, 2 if RTR */
-    uint32_t len;        /* payload data length */
+    uint32_t dl_code;    /* payload data length, from stm32 macro such as FDCAN_DLC_BYTES_8 */
     uint32_t timestamp_; /* timestamp of last message received */
 
 #if defined(HAL_FDCAN_MODULE_ENABLED)
@@ -87,8 +59,6 @@ class CANFrame
     uint8_t data[8];           /* payload data array, maximum of 8 bytes */
     const uint8_t max_len = 8; /* maximum payload length */
 #endif
-
-    osMutexId_t mutex_id_; /* CMSIS-RTOS2 mutex handle */
 };
 
 using CanCallback = HAL_StatusTypeDef (*)(const CANFrame& msg, void* ctx);
@@ -235,7 +205,7 @@ class CANDevice
      * @param msg 
      * @return HAL_StatusTypeDef 
      */
-    HAL_StatusTypeDef Send(CANFrame* msg);
+    HAL_StatusTypeDef Send(const CANFrame& msg);
 
     static HAL_StatusTypeDef RxCallback(CanHandle_t* hcan);
 
