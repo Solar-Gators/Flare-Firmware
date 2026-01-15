@@ -198,17 +198,22 @@ class CANDevice
 
     void addCallbackAll(CanCallback cb);
 
-    /*!
-     * @brief 
-     *
-     * @details
-     * 
-     * @param msg 
-     * @return HAL_StatusTypeDef 
+    /**
+     * @brief Sends a CANFrame message.
+     * @details Adds a CANFrame to a FreeRTOS queue object to be later consumed and sent by the background tx thread.
+     * @param msg message to be sent, CANDevice stores a copy of it in a buffer
+     * @return HAL error code, HAL_OK if pushed to queue successfully
      */
     HAL_StatusTypeDef Send(const CANFrame& msg);
 
+    // should be unused by user
     static HAL_StatusTypeDef RxCallback(CanHandle_t* hcan);
+
+    // one instance should be tied to each can peripheral
+    CANDevice(const CANDevice&) = delete;
+    CANDevice& operator=(const CANDevice&) = delete;
+    CANDevice(CANDevice&&) = delete;
+    CANDevice& operator=(CANDevice&&) = delete;
 
    private:
     CanHandle_t* hcan_ = nullptr;
@@ -220,9 +225,6 @@ class CANDevice
 
     osMessageQueueId_t tx_queue_;  // = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
     osMessageQueueId_t rx_queue_;
-
-    CANDevice(const CANDevice&) = delete;
-    CANDevice& operator=(const CANDevice&) = delete;
 
     struct Entry
     {
@@ -245,13 +247,13 @@ class CANDevice
     static void HandleTxTrampoline(void* arg);
     [[noreturn]] void HandleTx();
 
-    inline static osThreadId_t rx_task_handle;
-    alignas(8) inline static uint32_t rx_task_stack[THREAD_STACK_SIZE_WORDS];
+    osThreadId_t rx_task_handle;
+    alignas(8) uint32_t rx_task_stack[THREAD_STACK_SIZE_WORDS];
 
-    inline static StaticTask_t tx_tcb;
-    inline static StaticTask_t rx_tcb;
+    StaticTask_t tx_tcb;
+    StaticTask_t rx_tcb;
 
-    static constexpr osThreadAttr_t rx_task_attributes_ = {
+    const osThreadAttr_t rx_task_attributes_ = {
         .name = "CAN Rx Task",
         .attr_bits = osThreadDetached,
         .cb_mem = &rx_tcb,
@@ -261,10 +263,10 @@ class CANDevice
         .priority = osPriorityHigh,
     };
 
-    inline static osThreadId_t tx_task_handle;
-    alignas(8) inline static uint32_t tx_task_stack[THREAD_STACK_SIZE_WORDS];
+    osThreadId_t tx_task_handle;
+    alignas(8) uint32_t tx_task_stack[THREAD_STACK_SIZE_WORDS];
 
-    static constexpr osThreadAttr_t tx_task_attributes_ = {
+    const osThreadAttr_t tx_task_attributes_ = {
         .name = "CAN Tx Task",
         .attr_bits = osThreadDetached,
         .cb_mem = &tx_tcb,
