@@ -44,7 +44,7 @@ void StartDefaultTask_user(void* argument)
                       sg::CANFrameLen::BYTES_64,
                       0};
     uint8_t data[64] = {};
-    msg1.LoadData(data, 64);
+    msg1.LoadData(data, sg::CANFrameLen::BYTES_64);
 
     // driver now holds a copy for simplicity, allows msg1 to be destructed
     CAN.Send(msg1);

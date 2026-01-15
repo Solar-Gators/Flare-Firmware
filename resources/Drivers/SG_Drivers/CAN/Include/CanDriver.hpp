@@ -28,7 +28,8 @@ namespace sg
 #define RX_QUEUE_SIZE 5 /* Size of Tx message queue */
 #define TX_TIMEOUT 10   /* Timeout for tx thread in ms */
 
-#define MAX_CAN_ID 0x7FFu
+#define MAX_CAN_ID_STD 0x7FFu
+#define MAX_CAN_ID_EXT 0x1FFFFFFF
 
 #ifndef CANDEVICE_MAX_BUSES
 #define CANDEVICE_MAX_BUSES 2
@@ -39,9 +40,10 @@ class CANFrame
    public:
     // no constructor allows aggregate initialization
 
-    void LoadData(uint8_t data[], uint32_t len)
+    void LoadData(uint8_t data[], sg::CANFrameLen len)
     {
-        uint8_t copy_len = max_len < len ? max_len : len;
+        uint8_t copy_len =
+            (max_len < static_cast<uint8_t>(len)) ? max_len : static_cast<uint8_t>(len);
         memcpy(this->data, data, copy_len);
     }
 
@@ -52,11 +54,11 @@ class CANFrame
     uint32_t timestamp;       /* timestamp of last message received */
 
 #if defined(HAL_FDCAN_MODULE_ENABLED)
-    uint8_t data[64];           /* payload data array, maximum of 64 bytes */
-    const uint8_t max_len = 64; /* maximum payload length */
+    uint8_t data[64];                      /* payload data array, maximum of 64 bytes */
+    static constexpr uint8_t max_len = 64; /* maximum payload length */
 #else
-    uint8_t data[8];           /* payload data array, maximum of 8 bytes */
-    const uint8_t max_len = 8; /* maximum payload length */
+    uint8_t data[8];                      /* payload data array, maximum of 8 bytes */
+    static constexpr uint8_t max_len = 8; /* maximum payload length */
 #endif
 };
 

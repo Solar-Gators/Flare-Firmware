@@ -240,9 +240,20 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
         filter.FilterType = FDCAN_FILTER_RANGE;
         filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
         filter.FilterID1 = 0x0000;
-        filter.FilterID2 = MAX_CAN_ID;
+        filter.FilterID2 = MAX_CAN_ID_STD;
 
         TRY(HAL_FDCAN_ConfigFilter(hcan_, &filter));
+
+        CanFilter_t filter2 = {};
+
+        filter2.IdType = FDCAN_EXTENDED_ID;
+        filter2.FilterIndex = 0;
+        filter2.FilterType = FDCAN_FILTER_RANGE;
+        filter2.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+        filter2.FilterID1 = 0x0000;
+        filter2.FilterID2 = MAX_CAN_ID_EXT;
+
+        TRY(HAL_FDCAN_ConfigFilter(hcan_, &filter2));
     }
     else
     {
@@ -340,7 +351,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
     FDCAN_FilterTypeDef f = {};
     if (id_type == sg::CANFrameIDType::STANDARD)
     {
-        if (can_id > MAX_CAN_ID)
+        if (can_id > MAX_CAN_ID_STD)
             return HAL_ERROR;
 
         // Easiest exact match on FDCAN: RANGE with start==end
@@ -351,7 +362,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
     }
     else if (id_type == sg::CANFrameIDType::EXTENDED)
     {
-        if (can_id > 0x1FFFFFFFu)
+        if (can_id > MAX_CAN_ID_EXT)
             return HAL_ERROR;
 
         f.IdType = FDCAN_EXTENDED_ID;
@@ -469,10 +480,10 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
     CanFilter_t f = {};
     if (id_type == sg::CANFrameIDType::STANDARD)
     {
-        if (can_id > MAX_CAN_ID)
+        if (can_id > MAX_CAN_ID_STD)
             return HAL_ERROR;
-        if (end_inc > MAX_CAN_ID)
-            end_inc = MAX_CAN_ID;
+        if (end_inc > MAX_CAN_ID_STD)
+            end_inc = MAX_CAN_ID_STD;
 
         f.IdType = FDCAN_STANDARD_ID;
         f.FilterType = FDCAN_FILTER_RANGE;  // inclusive [ID1..ID2]
@@ -481,10 +492,10 @@ HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
     }
     else if (id_type == sg::CANFrameIDType::EXTENDED)
     {
-        if (can_id > 0x1FFFFFFFu)
+        if (can_id > MAX_CAN_ID_EXT)
             return HAL_ERROR;
-        if (end_inc > 0x1FFFFFFFu)
-            end_inc = 0x1FFFFFFFu;
+        if (end_inc > MAX_CAN_ID_EXT)
+            end_inc = MAX_CAN_ID_EXT;
 
         f.IdType = FDCAN_EXTENDED_ID;
         f.FilterType = FDCAN_FILTER_RANGE;  // inclusive [ID1..ID2]
@@ -579,7 +590,7 @@ const CanCallback* CANDevice::find_by_range(uint32_t id)
 {
     for (const auto& rangeEntry : rangeCallbacks_)
     {
-        if (id <= rangeEntry.start && id <= rangeEntry.end)
+        if (id >= rangeEntry.start && id <= rangeEntry.end)
         {
             return &rangeEntry.cb;
         }
