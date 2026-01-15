@@ -218,9 +218,11 @@ class CANDevice
    private:
     CanHandle_t* hcan_ = nullptr;
 
+    // TODO: Change to std::array
     std::vector<CanFilter_t> filters_;
     std::vector<IdEntry> idCallbacks_;
     std::vector<RangeEntry> rangeCallbacks_;
+
     CanCallback allCallback_ = nullptr;
 
     osMessageQueueId_t tx_queue_;  // = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
