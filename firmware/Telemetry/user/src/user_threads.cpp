@@ -5,8 +5,32 @@
 
 void StartDefaultTask_user(void* argument)
 {
-    for (;;)
+    while (1)
     {
         osDelay(500);
+    }
+}
+
+void StartGPSReadBuffer_user(void* argument)
+{
+    while (1)
+    {
+        ;
+    }
+}
+
+void StartGPSParseNMEA_user(void* argument)
+{
+    while (1)
+    {
+        ;
+    }
+}
+
+void StartStartTXRadio_user(void* argument)
+{
+    while (1)
+    {
+        ;
     }
 }
