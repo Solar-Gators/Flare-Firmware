@@ -29,48 +29,93 @@ static inline int CAN_RxFifoLevel(CanHandle_t* h)
 #endif
 }
 
-static inline uint8_t CAN_DlcToBytes(uint32_t dlcOrLen)
+static inline CANFrameLen CAN_DlcToBytes(uint32_t dlc)
 {
 #if defined(HAL_FDCAN_MODULE_ENABLED)
-    switch (dlcOrLen)
+    switch (dlc)
     {
         case FDCAN_DLC_BYTES_0:
-            return 0;
+            return sg::CANFrameLen::BYTES_0;
         case FDCAN_DLC_BYTES_1:
-            return 1;
+            return sg::CANFrameLen::BYTES_1;
         case FDCAN_DLC_BYTES_2:
-            return 2;
+            return sg::CANFrameLen::BYTES_2;
         case FDCAN_DLC_BYTES_3:
-            return 3;
+            return sg::CANFrameLen::BYTES_3;
         case FDCAN_DLC_BYTES_4:
-            return 4;
+            return sg::CANFrameLen::BYTES_4;
         case FDCAN_DLC_BYTES_5:
-            return 5;
+            return sg::CANFrameLen::BYTES_5;
         case FDCAN_DLC_BYTES_6:
-            return 6;
+            return sg::CANFrameLen::BYTES_6;
         case FDCAN_DLC_BYTES_7:
-            return 7;
+            return sg::CANFrameLen::BYTES_7;
         case FDCAN_DLC_BYTES_8:
-            return 8;
+            return sg::CANFrameLen::BYTES_8;
         case FDCAN_DLC_BYTES_12:
-            return 12;
+            return sg::CANFrameLen::BYTES_12;
         case FDCAN_DLC_BYTES_16:
-            return 16;
+            return sg::CANFrameLen::BYTES_16;
         case FDCAN_DLC_BYTES_20:
-            return 20;
+            return sg::CANFrameLen::BYTES_20;
         case FDCAN_DLC_BYTES_24:
-            return 24;
+            return sg::CANFrameLen::BYTES_24;
         case FDCAN_DLC_BYTES_32:
-            return 32;
+            return sg::CANFrameLen::BYTES_32;
         case FDCAN_DLC_BYTES_48:
-            return 48;
+            return sg::CANFrameLen::BYTES_48;
         case FDCAN_DLC_BYTES_64:
-            return 64;
+            return sg::CANFrameLen::BYTES_64;
         default:
-            return 0;
+            return sg::CANFrameLen::BYTES_0;
     }
 #else
-    return static_cast<uint8_t>(dlcOrLen);  // bxCAN: DLC equals byte length (0..8)
+    return static_cast<CANFrameLen>(dlc);  // bxCAN: DLC equals byte length (0..8)
+#endif
+}
+
+static inline uint32_t CAN_BytesToDlc(CANFrameLen len)
+{
+#if defined(HAL_FDCAN_MODULE_ENABLED)
+    switch (len)
+    {
+        case sg::CANFrameLen::BYTES_0:
+            return FDCAN_DLC_BYTES_0;
+        case sg::CANFrameLen::BYTES_1:
+            return FDCAN_DLC_BYTES_1;
+        case sg::CANFrameLen::BYTES_2:
+            return FDCAN_DLC_BYTES_2;
+        case sg::CANFrameLen::BYTES_3:
+            return FDCAN_DLC_BYTES_3;
+        case sg::CANFrameLen::BYTES_4:
+            return FDCAN_DLC_BYTES_4;
+        case sg::CANFrameLen::BYTES_5:
+            return FDCAN_DLC_BYTES_5;
+        case sg::CANFrameLen::BYTES_6:
+            return FDCAN_DLC_BYTES_6;
+        case sg::CANFrameLen::BYTES_7:
+            return FDCAN_DLC_BYTES_7;
+        case sg::CANFrameLen::BYTES_8:
+            return FDCAN_DLC_BYTES_8;
+        case sg::CANFrameLen::BYTES_12:
+            return FDCAN_DLC_BYTES_12;
+        case sg::CANFrameLen::BYTES_16:
+            return FDCAN_DLC_BYTES_16;
+        case sg::CANFrameLen::BYTES_20:
+            return FDCAN_DLC_BYTES_20;
+        case sg::CANFrameLen::BYTES_24:
+            return FDCAN_DLC_BYTES_24;
+        case sg::CANFrameLen::BYTES_32:
+            return FDCAN_DLC_BYTES_32;
+        case sg::CANFrameLen::BYTES_48:
+            return FDCAN_DLC_BYTES_48;
+        case sg::CANFrameLen::BYTES_64:
+            return FDCAN_DLC_BYTES_64;
+        default:
+            return FDCAN_DLC_BYTES_0;
+    }
+#else
+    return static_cast<uint32_t>(len);  // bxCAN: DLC equals byte length (0..8)
 #endif
 }
 
@@ -97,7 +142,7 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
     out.can_id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
     out.id_type = (hdr.IdType == FDCAN_EXTENDED_ID) ? SG_CAN_ID_EXT : SG_CAN_ID_STD;
     out.rtr_mode = (hdr.RxFrameType == FDCAN_REMOTE_FRAME);
-    out.dl_code = hdr.DataLength;
+    out.len = CAN_DlcToBytes(hdr.DataLength);
     out.timestamp_ =
         0;  // If timestamping enabled, you can capture from peripheral or a systick here
     return true;
@@ -108,7 +153,7 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
 #endif
 }
 
-CANDevice::CANDevice(CanHandle_t* hcan) : hcan_(hcan)
+CANDevice::CANDevice(CanHandle_t* hcan) : hcan_(hcan), tx_queue_(nullptr), rx_queue_(nullptr)
 {
     filters_.reserve(NUM_FILTER_BANKS);
     idCallbacks_.reserve(NUM_CAN_CALLBACKS);
@@ -621,7 +666,7 @@ void CANDevice::HandleTx()
         FDCAN_TxHeaderTypeDef txHeader = {.Identifier = tx_msg.can_id,
                                           .IdType = tx_msg.id_type,
                                           .TxFrameType = tx_msg.rtr_mode,
-                                          .DataLength = tx_msg.dl_code,
+                                          .DataLength = CAN_BytesToDlc(tx_msg.len),
                                           .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
                                           .BitRateSwitch = FDCAN_BRS_ON,
                                           .FDFormat = FDCAN_FD_CAN,
@@ -639,7 +684,7 @@ void CANDevice::HandleTx()
             .ExtId = tx_msg.can_id,
             .IDE = tx_msg.id_type,
             .RTR = tx_msg.rtr_mode,
-            .DLC = tx_msg.dl_code,
+            .DLC = CAN_BytesToDlc(tx_msg.len),
             .TransmitGlobalTime = DISABLE,
         };
 

@@ -22,9 +22,48 @@ extern "C"
 #if defined(HAL_FDCAN_MODULE_ENABLED)
     typedef FDCAN_HandleTypeDef CanHandle_t;
     typedef FDCAN_FilterTypeDef CanFilter_t;
+    namespace sg
+    {
+    // forces user to pick one of the available ones
+    enum class CANFrameLen
+    {
+        BYTES_0 = 0,
+        BYTES_1 = 1,
+        BYTES_2 = 2,
+        BYTES_3 = 3,
+        BYTES_4 = 4,
+        BYTES_5 = 5,
+        BYTES_6 = 6,
+        BYTES_7 = 7,
+        BYTES_8 = 8,
+        BYTES_12 = 12,
+        BYTES_16 = 16,
+        BYTES_20 = 20,
+        BYTES_24 = 24,
+        BYTES_32 = 32,
+        BYTES_48 = 48,
+        BYTES_64 = 64
+    };
+    }  // namespace sg
 #elif defined(HAL_CAN_MODULE_ENABLED)
 typedef CAN_HandleTypeDef CanHandle_t;
 typedef CAN_FilterTypeDef CanFilter_t;
+namespace sg
+{
+// forces user to pick one of the available ones
+enum class CANFrameLen
+{
+    BYTES_0 = 0,
+    BYTES_1 = 1,
+    BYTES_2 = 2,
+    BYTES_3 = 3,
+    BYTES_4 = 4,
+    BYTES_5 = 5,
+    BYTES_6 = 6,
+    BYTES_7 = 7,
+    BYTES_8 = 8,
+};
+}  // namespace sg
 #else
 // #error "Enable HAL_FDCAN_MODULE_ENABLED or HAL_CAN_MODULE_ENABLED in stm32*_hal_conf.h"
 typedef int CanHandle_t;

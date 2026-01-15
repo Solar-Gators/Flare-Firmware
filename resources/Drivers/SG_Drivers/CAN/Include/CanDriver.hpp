@@ -49,7 +49,7 @@ class CANFrame
     uint32_t can_id;     /* CAN ID, can be standard or extended */
     uint32_t id_type;    /* CAN ID type, 0 if standard ID, 4 if extended ID */
     uint32_t rtr_mode;   /* RTR mode, 0 if not RTR message, 2 if RTR */
-    uint32_t dl_code;    /* payload data length, from stm32 macro such as FDCAN_DLC_BYTES_8 */
+    CANFrameLen len;     /* payload data length */
     uint32_t timestamp_; /* timestamp of last message received */
 
 #if defined(HAL_FDCAN_MODULE_ENABLED)
