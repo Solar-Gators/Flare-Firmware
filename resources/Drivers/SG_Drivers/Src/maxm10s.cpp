@@ -1,5 +1,7 @@
 #include "maxm10s.hpp"
 
+#include "main.h"
+
 MaxM10S::MaxM10S(I2C_HandleTypeDef* hi2c)
 {
     i2c_handle = hi2c;

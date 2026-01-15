@@ -9,13 +9,7 @@ Ublox MAX M10S Driver
 
 #include <stdlib.h>
 
-#if defined(STM32U575xx)
-#include "stm32u5xx_hal.h"
-#include "stm32u5xx_hal_i2c.h"
-#elif defined(STM32L467xx)
-#include "stm32l4xx_hal.h"
-#include "stm32l4xx_hal_i2c.h"
-#endif
+#include "main.h"
 
 #include <string>
 
