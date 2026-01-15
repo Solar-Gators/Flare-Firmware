@@ -579,15 +579,7 @@ const CanCallback* CANDevice::find_by_range(uint32_t id)
 {
     for (const auto& rangeEntry : rangeCallbacks_)
     {
-        if (id < rangeEntry.start)
-        {
-            continue;
-        }
-        else if (id > rangeEntry.end)
-        {
-            continue;
-        }
-        else
+        if (id <= rangeEntry.start && id <= rangeEntry.end)
         {
             return &rangeEntry.cb;
         }
@@ -627,14 +619,14 @@ void CANDevice::HandleRxTrampoline(void* arg)
     static_cast<CANDevice*>(arg)->HandleRx();
 }
 
-void CANDevice::HandleRx()
+[[noreturn]] void CANDevice::HandleRx()
 {
     CANFrame msg{};
 
     for (;;)
     {
         // Wait for message in queue (blocking)
-        if (osMessageQueueGet(rx_queue_, &msg, NULL, osWaitForever) == osOK)
+        if (osMessageQueueGet(rx_queue_, &msg, nullptr, osWaitForever) == osOK)
         {
             // Process the message
             const CanCallback* cb = find_by_id(msg.can_id);
@@ -664,7 +656,7 @@ void CANDevice::HandleTxTrampoline(void* arg)
     static_cast<CANDevice*>(arg)->HandleTx();
 }
 
-void CANDevice::HandleTx()
+[[noreturn]] void CANDevice::HandleTx()
 {
     CANFrame tx_msg;
     for (;;)

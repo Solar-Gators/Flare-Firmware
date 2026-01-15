@@ -12,7 +12,6 @@
 #include "CanDriverApi.hpp"
 #include "FreeRTOS.h"
 
-#include <queue>
 #include <vector>
 
 namespace sg
@@ -241,10 +240,10 @@ class CANDevice
     // ====== Tx and Rx Methods ======
 
     static void HandleRxTrampoline(void* arg);
-    void HandleRx();
+    [[noreturn]] void HandleRx();
 
     static void HandleTxTrampoline(void* arg);
-    void HandleTx();
+    [[noreturn]] void HandleTx();
 
     inline static osThreadId_t rx_task_handle;
     alignas(8) inline static uint32_t rx_task_stack[THREAD_STACK_SIZE_WORDS];
