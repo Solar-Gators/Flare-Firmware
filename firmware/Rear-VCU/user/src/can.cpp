@@ -17,12 +17,11 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
-inline void can_init()
+void can_init()
 {
     // throttle
     can_device.addCallbackId(
         0x040, sg::CANFrameIDType::STANDARD, &throttleMessageCallback, nullptr);
-
     // all the user inputs from steering wheel
     can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &driverMessageCallback, nullptr);
 }

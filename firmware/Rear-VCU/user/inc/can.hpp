@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CanDriver.hpp"
 #include "rearvcu_state.h"
 
@@ -13,4 +12,4 @@ inline sg::CANDevice can_device(
 HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx);
 
-inline void can_init();
+void can_init();

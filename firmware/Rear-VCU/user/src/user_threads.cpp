@@ -10,13 +10,15 @@
 // initialize devices here and such
 void init_user()
 {
-    // can
-    can_init();
-
     // assert atomics work
     static_assert(std::atomic<uint32_t>::is_always_lock_free);
     static_assert(std::atomic<uint16_t>::is_always_lock_free);
     static_assert(std::atomic<uint8_t>::is_always_lock_free);
+
+    // can
+    can_init();
+
+    // maybe need to initialize ina chip here or something
 }
 
 void startHeartbeatTask_user(void* argument)
