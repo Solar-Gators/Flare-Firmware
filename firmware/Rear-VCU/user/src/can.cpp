@@ -16,6 +16,10 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     return HAL_OK;
 }
+HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
+{
+    return HAL_OK;
+}
 
 void can_init()
 {

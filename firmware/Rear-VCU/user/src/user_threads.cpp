@@ -26,9 +26,17 @@ void startHeartbeatTask_user(void* argument)
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
-        osDelay(500);
+
+        // send mitsuba request for frame0 to get wheel rpm, shouldnt be sent faster than every 500ms
+        can_device.Send(mitsuba_frame0_request);
+
+        // could get voltage of supp batt here
+        vcu_state.supp_battery_voltage_mv = 12000;  // dummy
+
+        osDelay(550);
     }
 }
+
 void startRegenThrottleTask_user(void* argument)
 {
     for (;;)
@@ -37,6 +45,6 @@ void startRegenThrottleTask_user(void* argument)
         // throttle value over can
         // regen value over can
         // cruise control stuff
-        osDelay(1000);
+        osDelay(100);
     }
 }
