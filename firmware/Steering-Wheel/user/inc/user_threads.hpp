@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-    void StartDefaultTask_user(void *argument);
+    void StartDefaultTask_user(void* argument);
 
 #ifdef __cplusplus
 }

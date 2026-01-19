@@ -55,6 +55,9 @@ extern "C" {
 
 /* USER CODE END EM */
 extern osThreadId_t defaultTaskHandle;
+extern osThreadId_t GPSReadBufferHandle;
+extern osThreadId_t GPSParseNMEAHandle;
+extern osThreadId_t TXRadioHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -62,6 +65,9 @@ extern osThreadId_t defaultTaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void StartGPSReadBuffer(void *argument);
+void StartGPSParseNMEA(void *argument);
+void StartTXRadio(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
