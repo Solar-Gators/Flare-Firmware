@@ -8,9 +8,9 @@ extern "C"
 
     void init_user();
 
-    void startHeartbeatTask_user(void *argument);
-    void startRegenThrottleTask_user(void *argument);
-    void startOutputsTask_user(void *argument);
+    [[noreturn]] void startHeartbeatTask_user(void *argument);
+    [[noreturn]] void startRegenThrottleTask_user(void *argument);
+    [[noreturn]] void startOutputsTask_user(void *argument);
 
 #ifdef __cplusplus
 }

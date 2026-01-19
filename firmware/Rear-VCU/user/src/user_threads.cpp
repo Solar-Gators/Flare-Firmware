@@ -37,7 +37,7 @@ void init_user()
     // maybe need to initialize ina chip here or something
 }
 
-void startHeartbeatTask_user(void* argument)
+[[noreturn]] void startHeartbeatTask_user(void* argument)
 {
     for (;;)
     {
@@ -54,7 +54,7 @@ void startHeartbeatTask_user(void* argument)
     }
 }
 
-void startRegenThrottleTask_user(void* argument)
+[[noreturn]] void startRegenThrottleTask_user(void* argument)
 {
     for (;;)
     {
@@ -71,7 +71,7 @@ void startRegenThrottleTask_user(void* argument)
     }
 }
 
-void startOutputsTask_user(void* argument)
+[[noreturn]] void startOutputsTask_user(void* argument)
 {
     ArrayContactors array_contactors = ArrayContactors::BOTH_OPEN;
 
