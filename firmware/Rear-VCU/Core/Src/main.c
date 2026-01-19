@@ -18,10 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
 #include "cmsis_os2.h"
-
-#include "user_threads.hpp"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -564,7 +561,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(DAC_SPI_SS_GPIO_Port, DAC_SPI_SS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
+  HAL_GPIO_WritePin(GPIOA, MAIN_ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
                           |MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -580,9 +577,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DAC_SPI_SS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ARRAY_CTRL_Pin PRE_ARRAY_CTRL_Pin THROTTLE_SRC_SEL_Pin MC_FWD_REV_CTRL_Pin
+  /*Configure GPIO pins : MAIN_ARRAY_CTRL_Pin PRE_ARRAY_CTRL_Pin THROTTLE_SRC_SEL_Pin MC_FWD_REV_CTRL_Pin
                            MC_MAIN_CTRL_Pin EEPROM_SPI_SS_Pin */
-  GPIO_InitStruct.Pin = ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
+  GPIO_InitStruct.Pin = MAIN_ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
                           |MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

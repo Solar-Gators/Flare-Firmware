@@ -24,13 +24,15 @@ enum class MCPowerMode : uint8_t
 
 struct VCUState
 {
-    std::atomic<uint16_t> throttle{};                 // 0 - 65535
+    std::atomic<uint16_t> throttle{};                 // 0 - 65535 from front vcu
     std::atomic<uint8_t> regen{};                     // 0 - 255
     std::atomic<uint16_t> supp_battery_voltage_mv{};  // millivolts
-    std::atomic<bool> mc_enabled;                     // true if enabled
-    std::atomic<ArrayContactors> array_contactors{};
-    std::atomic<Direction> direction{};
-    std::atomic<MCPowerMode> mc_power_mode{};
+    std::atomic<uint8_t> cc_mph{};
+
+    std::atomic<bool> mc_enabled_requested;  // true if requested enabled
+    std::atomic<bool> array_contactors_requested_closed{};
+    std::atomic<Direction> direction_requested{};
+    std::atomic<MCPowerMode> mc_power_mode_requested{};
 
     std::atomic<uint32_t> can_messages_received{};
     std::atomic<uint32_t> can_messages_sent{};

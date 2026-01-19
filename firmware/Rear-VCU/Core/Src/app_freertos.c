@@ -69,6 +69,18 @@ const osThreadAttr_t regenThrottleTask_attributes = {
   .cb_size = sizeof(regenThrottleTaskCB),
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for outputsTask */
+osThreadId_t outputsTaskHandle;
+uint32_t outputsTaskBuffer[ 128 ];
+osStaticThreadDef_t outputsTaskCB;
+const osThreadAttr_t outputsTask_attributes = {
+  .name = "outputsTask",
+  .stack_mem = &outputsTaskBuffer[0],
+  .stack_size = sizeof(outputsTaskBuffer),
+  .cb_mem = &outputsTaskCB,
+  .cb_size = sizeof(outputsTaskCB),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -106,6 +118,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of regenThrottleTask */
   regenThrottleTaskHandle = osThreadNew(startRegenThrottleTask, NULL, &regenThrottleTask_attributes);
 
+  /* creation of outputsTask */
+  outputsTaskHandle = osThreadNew(startOutputsTask, NULL, &outputsTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -141,6 +156,24 @@ void startRegenThrottleTask(void *argument)
   /* USER CODE BEGIN regenThrottleTask */
     startRegenThrottleTask_user(argument);
   /* USER CODE END regenThrottleTask */
+}
+
+/* USER CODE BEGIN Header_startOutputsTask */
+/**
+* @brief Function implementing the outputsTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_startOutputsTask */
+void startOutputsTask(void *argument)
+{
+  /* USER CODE BEGIN outputsTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END outputsTask */
 }
 
 /* Private application code --------------------------------------------------*/

@@ -61,8 +61,8 @@ void Error_Handler(void);
 #define SUPP_BATT_V_GPIO_Port GPIOC
 #define DAC_SPI_SS_Pin GPIO_PIN_3
 #define DAC_SPI_SS_GPIO_Port GPIOC
-#define ARRAY_CTRL_Pin GPIO_PIN_0
-#define ARRAY_CTRL_GPIO_Port GPIOA
+#define MAIN_ARRAY_CTRL_Pin GPIO_PIN_0
+#define MAIN_ARRAY_CTRL_GPIO_Port GPIOA
 #define PRE_ARRAY_CTRL_Pin GPIO_PIN_2
 #define PRE_ARRAY_CTRL_GPIO_Port GPIOA
 #define THROTTLE_SRC_SEL_Pin GPIO_PIN_3

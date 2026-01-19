@@ -56,6 +56,7 @@ extern "C" {
 /* USER CODE END EM */
 extern osThreadId_t hearbeatTaskHandle;
 extern osThreadId_t regenThrottleTaskHandle;
+extern osThreadId_t outputsTaskHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -64,6 +65,7 @@ extern osThreadId_t regenThrottleTaskHandle;
 
 void startHeartbeatTask(void *argument);
 void startRegenThrottleTask(void *argument);
+void startOutputsTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 

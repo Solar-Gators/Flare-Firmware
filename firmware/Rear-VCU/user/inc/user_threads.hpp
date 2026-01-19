@@ -10,6 +10,7 @@ extern "C"
 
     void startHeartbeatTask_user(void *argument);
     void startRegenThrottleTask_user(void *argument);
+    void startOutputsTask_user(void *argument);
 
 #ifdef __cplusplus
 }
