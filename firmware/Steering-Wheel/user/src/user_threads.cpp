@@ -21,3 +21,14 @@ void startScreenTask_user(void* argument)
         osDelay(500);
     }
 }
+
+void startPollButtons_user(void* argument)
+{
+    uint8_t button_states = 0xFF;
+    while (1)
+    {
+        // poll buttons
+
+        osDelay(10);
+    }
+}

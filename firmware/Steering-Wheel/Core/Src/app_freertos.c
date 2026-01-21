@@ -69,6 +69,13 @@ const osThreadAttr_t screenTask_attributes = {
   .cb_size = sizeof(screenTaskCB),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
+/* Definitions for PollButtons */
+osThreadId_t PollButtonsHandle;
+const osThreadAttr_t PollButtons_attributes = {
+  .name = "PollButtons",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -106,6 +113,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of screenTask */
   screenTaskHandle = osThreadNew(startScreenTask, NULL, &screenTask_attributes);
 
+  /* creation of PollButtons */
+  PollButtonsHandle = osThreadNew(StartPollButtons, NULL, &PollButtons_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -141,6 +151,20 @@ void startScreenTask(void *argument)
   /* USER CODE BEGIN screenTask */
     startScreenTask_user(argument);
   /* USER CODE END screenTask */
+}
+
+/* USER CODE BEGIN Header_StartPollButtons */
+/**
+* @brief Function implementing the PollButtons thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartPollButtons */
+void StartPollButtons(void *argument)
+{
+  /* USER CODE BEGIN PollButtons */
+    startPollButtons_user(argument);
+  /* USER CODE END PollButtons */
 }
 
 /* Private application code --------------------------------------------------*/
