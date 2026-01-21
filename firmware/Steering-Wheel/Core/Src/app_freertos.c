@@ -26,6 +26,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -44,12 +45,29 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
+/* Definitions for heartbeatTask */
+osThreadId_t heartbeatTaskHandle;
+uint32_t heartbeatTaskBuffer[ 128 ];
+osStaticThreadDef_t heartbeatTaskCB;
+const osThreadAttr_t heartbeatTask_attributes = {
+  .name = "heartbeatTask",
+  .stack_mem = &heartbeatTaskBuffer[0],
+  .stack_size = sizeof(heartbeatTaskBuffer),
+  .cb_mem = &heartbeatTaskCB,
+  .cb_size = sizeof(heartbeatTaskCB),
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+};
+/* Definitions for screenTask */
+osThreadId_t screenTaskHandle;
+uint32_t screenTaskBuffer[ 128 ];
+osStaticThreadDef_t screenTaskCB;
+const osThreadAttr_t screenTask_attributes = {
+  .name = "screenTask",
+  .stack_mem = &screenTaskBuffer[0],
+  .stack_size = sizeof(screenTaskBuffer),
+  .cb_mem = &screenTaskCB,
+  .cb_size = sizeof(screenTaskCB),
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,8 +100,11 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of heartbeatTask */
+  heartbeatTaskHandle = osThreadNew(startHeartbeatTask, NULL, &heartbeatTask_attributes);
+
+  /* creation of screenTask */
+  screenTaskHandle = osThreadNew(startScreenTask, NULL, &screenTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -94,19 +115,32 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_startHeartbeatTask */
 /**
-* @brief Function implementing the defaultTask thread.
+* @brief Function implementing the heartbeatTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_startHeartbeatTask */
+void startHeartbeatTask(void *argument)
 {
-  /* USER CODE BEGIN defaultTask */
-  /* Infinite loop */
-  StartDefaultTask_user(argument);
-  /* USER CODE END defaultTask */
+  /* USER CODE BEGIN heartbeatTask */
+    startHeartbeatTask_user(argument);
+  /* USER CODE END heartbeatTask */
+}
+
+/* USER CODE BEGIN Header_startScreenTask */
+/**
+* @brief Function implementing the screenTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_startScreenTask */
+void startScreenTask(void *argument)
+{
+  /* USER CODE BEGIN screenTask */
+    startScreenTask_user(argument);
+  /* USER CODE END screenTask */
 }
 
 /* Private application code --------------------------------------------------*/
