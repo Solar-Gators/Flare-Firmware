@@ -1,0 +1,123 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "firmware/NUCLEOL476RG-FreeRTOS-ExampleProject",
+					"jsonFile" : "directory-firmware.NUCLEOL476RG-FreeRTOS-ExampleProject-Debug-f8cc4b6c31c825e62cb0.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "firmware/NUCLEOL476RG-FreeRTOS-ExampleProject",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "firmware/CAN-DevBoard",
+					"jsonFile" : "directory-firmware.CAN-DevBoard-Debug-2fc3bfb03ee3ca5cdff5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 2,
+					"source" : "firmware/CAN-DevBoard",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "SolarGatorsSTM32Projects"
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "NUCLEOL476RG-FreeRTOS-ExampleProject",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "CAN-DevBoard",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "CAN-DevBoard::@7a69ed9e7b6ac441504e",
+					"jsonFile" : "target-CAN-DevBoard-Debug-e81c246c9fd67dae0c73.json",
+					"name" : "CAN-DevBoard",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NUCLEOL476RG-FreeRTOS-ExampleProject::@e68b4024026568ce0433",
+					"jsonFile" : "target-NUCLEOL476RG-FreeRTOS-ExampleProject-Debug-a49118a9975d61ffa65f.json",
+					"name" : "NUCLEOL476RG-FreeRTOS-ExampleProject",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/msys64/home/natha/Flare-Firmware/cmake-build-debug",
+		"source" : "C:/msys64/home/natha/Flare-Firmware"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
