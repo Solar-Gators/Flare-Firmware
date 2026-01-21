@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define THROTTLE_SRC_SEL_GPIO_Port GPIOA
 #define MC_FWD_REV_CTRL_Pin GPIO_PIN_4
 #define MC_FWD_REV_CTRL_GPIO_Port GPIOA
+#define MC_PWR_ECO_CTRL_Pin GPIO_PIN_5
+#define MC_PWR_ECO_CTRL_GPIO_Port GPIOA
 #define MC_MAIN_CTRL_Pin GPIO_PIN_6
 #define MC_MAIN_CTRL_GPIO_Port GPIOA
 #define THROTTLE_V_Pin GPIO_PIN_4

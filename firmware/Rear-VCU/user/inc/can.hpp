@@ -1,6 +1,5 @@
 #pragma once
 #include "CanDriver.hpp"
-#include "rearvcu_state.h"
 
 extern FDCAN_HandleTypeDef hfdcan1;
 
