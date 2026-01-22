@@ -8,16 +8,16 @@ set(BOARD_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/")  # Where we want the a
 set(USER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/user)
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../resources)
 
-set(MCU_FAMILY STM32L4xx)
-set(MCU_MODEL STM32L476xx)
+set(MCU_FAMILY STM32U5xx)
+set(MCU_MODEL STM32U575xx)
 set(CPU_PARAMETERS
-    -mcpu=cortex-m4
+    -mcpu=cortex-m33
     -mthumb
-    -mfpu=fpv4-sp-d16
+    -mfpu=fpv5-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32l476xx.s)
-set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32L476XX_FLASH.ld)
+set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s)
+set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32U575xx_FLASH.ld)
 # ##############################################################################
 set(EXECUTABLE ${SOURCE_DIR_NAME})
 enable_language(C CXX ASM)
@@ -35,26 +35,29 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
     ${RESOURCES_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
     ${RESOURCES_DIR}/Drivers/CMSIS/Include
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/include
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F)
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/CMSIS/RTOS2/Include
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/include
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${USER_DIR}/inc)
-
+    ${USER_DIR}/inc
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Inc
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.tpp)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/*.c
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
-    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c)
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/*.c
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
-    ${USER_DIR}/src/*.c)
+    ${USER_DIR}/src/*.c
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}
@@ -70,7 +73,7 @@ set_target_properties(${EXECUTABLE} PROPERTIES
 
 # Strict warnings only for user sources
 set_source_files_properties(${PROJECT_SOURCES} PROPERTIES
-    COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Wsuggest-override"
+    COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Wsuggest-override;-Wno-unused-parameter;-Wno-pedantic"
 )
 
 # Relaxed / suppressed for Cube/HAL
@@ -91,11 +94,6 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # Supresses warnings fro
 # Compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wno-unused-parameter
-    -Wno-pedantic
     $<$<COMPILE_LANGUAGE:CXX>:
         -Wno-volatile
         -Wold-style-cast
@@ -115,15 +113,6 @@ target_link_options(${EXECUTABLE} PRIVATE
     -lstdc++
     -Wl,--end-group
     -Wl,--print-memory-usage)
-
-add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
-
-add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.bin)
 
 # Size is fine, it uses $<TARGET_FILE> which already points to BOARD_BUILD_DIR
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD

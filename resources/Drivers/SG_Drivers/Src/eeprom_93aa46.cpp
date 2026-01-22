@@ -1,0 +1,96 @@
+#include "eeprom93aa46.hpp"
+
+#include <array>
+
+#define TRY(x)             \
+    do                     \
+    {                      \
+        if ((x) != HAL_OK) \
+            return x;      \
+    } while (0)
+
+namespace sg
+{
+
+// read can only do one byte at a time on this device
+HAL_StatusTypeDef Eeprom93AA46::read(uint32_t addr, uint8_t* buf, size_t len)
+{
+    for (size_t i = 0; i < len; i++)
+    {
+        TRY(sendRead(addr + i, buf[i]));
+    }
+
+    return HAL_OK;
+}
+
+// write can only do one byte at a time on this device
+HAL_StatusTypeDef Eeprom93AA46::write(uint32_t addr, const uint8_t* buf, size_t len)
+{
+    TRY(sendEWEN());
+
+    for (size_t i = 0; i < len; i++)
+    {
+        TRY(sendWrite(addr + i, buf[i]));
+    }
+
+    TRY(sendEWDS());
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef Eeprom93AA46::sendRead(uint32_t addr, uint8_t& out)
+{
+    uint32_t instruction = 0;
+
+    instruction |= RDMASK;
+    addr &= ADDRMASK;
+    instruction |= addr;
+
+    return sendReadFromBitInstruction(instruction, out);
+}
+
+// need write enable sent before this, this does not send the write enable, so it should not be called by the user
+HAL_StatusTypeDef Eeprom93AA46::sendWrite(uint32_t addr, const uint8_t& byte)
+{
+    uint32_t instruction = 0;
+
+    instruction |= WRMASK;
+    addr &= ADDRMASK;
+    instruction |= (addr << 8);
+    instruction |= byte;
+
+    return sendWriteFromBitInstruction(instruction);
+}
+
+HAL_StatusTypeDef Eeprom93AA46::sendEWEN()
+{
+    return spi_.transmit(&EWEN[0], EWEN.size());
+}
+
+HAL_StatusTypeDef Eeprom93AA46::sendEWDS()
+{
+    return spi_.transmit(&EWDS[0], EWDS.size());
+}
+
+HAL_StatusTypeDef Eeprom93AA46::sendWriteFromBitInstruction(uint32_t instr)
+{
+    std::array<uint8_t, WLEN> bytes_arr{};
+
+    bytes_arr[0] = static_cast<uint8_t>(instr >> 16);
+    bytes_arr[1] = static_cast<uint8_t>(instr >> 8);
+    bytes_arr[2] = static_cast<uint8_t>(instr >> 0);
+
+    return spi_.transmit(bytes_arr.data(), bytes_arr.size());
+}
+
+HAL_StatusTypeDef Eeprom93AA46::sendReadFromBitInstruction(uint32_t instr, uint8_t& out)
+{
+    std::array<uint8_t, RLEN> bytes_arr{};
+
+    bytes_arr[0] = static_cast<uint8_t>(instr >> 8);
+    bytes_arr[1] = static_cast<uint8_t>(instr >> 0);
+
+    return spi_.transmitReceive(&bytes_arr[0], bytes_arr.size(), &out, programGranularity());
+}
+
+}  // namespace sg
