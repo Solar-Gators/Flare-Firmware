@@ -37,6 +37,7 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
     vcu_state.direction_requested.store(static_cast<Direction>(msg.data[0] & 0b00000001));
     vcu_state.array_contactors_requested_closed.store(static_cast<bool>(msg.data[2] & 0b00000010));
     vcu_state.regen_requested.store(msg.data[5]);
+    vcu_state.mc_power_mode_requested.store(static_cast<MCPowerMode>(msg.data[6]));
 
     ++vcu_state.can_messages_received;
 
