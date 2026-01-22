@@ -25,9 +25,12 @@ void startScreenTask_user(void* argument)
 void startPollButtons_user(void* argument)
 {
     uint8_t button_states = 0xFF;
-    while (1)
+    for (;;)
     {
         // poll buttons
+
+        // send can continuously regarding button states to tell car about status like
+        // cc, lights, regen strength, direction, array contactors, etc,
 
         osDelay(10);
     }
