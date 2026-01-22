@@ -1,5 +1,25 @@
 #include "can.h"
 
-void can_init() {}
+#include "CanDriver.hpp"
+#include "steering_state.h"
 
-HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx) {}
+void can_init()
+{
+    // recieve message from rear vcu
+    can_device.addCallbackId(
+        0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr);
+}
+
+HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
+{
+    steering_state.array_contactors_status.store(static_cast<ArrayContactors>(msg.data[3]));
+
+    uint16_t supp_batt_voltage = (msg.data[4]) | (static_cast<uint16_t>(msg.data[5]) << 8);
+    steering_state.supp_batt_voltage.store(supp_batt_voltage);
+
+    steering_state.car_speed.store(msg.data[8]);
+
+    ++steering_state.can_messages_received;
+
+    return HAL_OK;
+}
