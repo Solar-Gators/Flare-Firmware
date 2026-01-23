@@ -2,7 +2,12 @@
 //#include
 
 #include "main.h"
-#include <vector>
+
+// In car IV, this was referenced directly from GitHub or smtg like that
+// #include "etl/vector.h"
+#include "cmsis_os2.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 //#ifndef MAX_BUTTONS
 #define MAX_BUTTONS 8
@@ -33,13 +38,27 @@ class Steering_wheel_buttons
     static inline Steering_wheel_buttons *triggered_button;
 
     // TODO: define button trigger semaphore
+    static inline osSemaphoreId_t button_semaphore;
 
     // TODO: define global button list
-    //static inline std::vector<Steering_wheel_buttons*, MAX_BUTTONS> button_list
+    static inline Steering_wheel_buttons* button_list[MAX_BUTTONS];
 
    private:
 
     // TODO: Button handler thread definitions
+    static void HandleEvent();
+
+    static inline uint32_t handle_press_task_buffer[BUTTON_THREAD_STACK_SIZE];
+    static inline StaticTask_t handle_press_task_tcb;
+
+    static constexpr osThreadAttr_t handle_press_task_attributes = {
+        .name = "Steering Button Thread",
+        .cb_mem = &handle_press_task_tcb,
+        .cb_size = sizeof(handle_press_task_tcb),
+        .stack_mem = handle_press_task_buffer,
+        .stack_size = sizeof(handle_press_task_buffer),
+        .priority = (osPriority_t)osPriorityAboveNormal,
+    };
 
     void DisableInterrupt();
     void EnableInterrupt();
@@ -54,8 +73,9 @@ class Steering_wheel_buttons
     GPIO_PinState default_state;    // default pin state
     bool toggle_state;              // toggle state of button
 
-    void (*normal_callback)(void); // User-provided callback function
+    void (*normal_callback)(void);  // User-provided callback function
 
+    uint32_t last_press_time;       // Last time valid event was recorded on button
 };
 
 }
