@@ -4,8 +4,11 @@
 #include <stm32u5xx_hal.h>
 
 #include "CanDriver.hpp"
+#include "ILI9341.hpp"
 #include "main.h"
 #include "steering_state.h"
+
+ILI9341 display(320, 240);
 
 void startHeartbeatTask_user(void* argument)
 {
@@ -18,8 +21,10 @@ void startHeartbeatTask_user(void* argument)
 
 void startScreenTask_user(void* argument)
 {
-    for (;;)
+    display.Init();
+    while (1)
     {
+        display.FillRect(50, 50, 50, 50, RGB565_RED);
         osDelay(500);
     }
 }

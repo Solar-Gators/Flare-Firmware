@@ -8,8 +8,8 @@
 #ifndef SOLARGATORSBSP_DRIVERS_INC_ILI9341_HPP_
 #define SOLARGATORSBSP_DRIVERS_INC_ILI9341_HPP_
 
-#include "etl/string.h"
 #include "main.h"
+#include "string.h"
 
 #define UI_USE_HAL 1
 
@@ -122,43 +122,43 @@ class ILI9341
 
    private:
     // Data
-    static constexpr uint16_t LCD_DATA7_Pin_ = GPIO_PIN_13;
+    static constexpr uint16_t LCD_DATA7_Pin_ = GPIO_PIN_7;
     static constexpr uint16_t LCD_DATA7_Pos_ = 7;
-    GPIO_TypeDef* LCD_DATA7_GPIO_Port_ = GPIOC;
-    static constexpr uint16_t LCD_DATA6_Pin_ = GPIO_PIN_14;
+    GPIO_TypeDef* LCD_DATA7_GPIO_Port_ = GPIOA;
+    static constexpr uint16_t LCD_DATA6_Pin_ = GPIO_PIN_6;
     static constexpr uint16_t LCD_DATA6_Pos_ = 6;
-    GPIO_TypeDef* LCD_DATA6_GPIO_Port_ = GPIOC;
-    static constexpr uint16_t LCD_DATA5_Pin_ = GPIO_PIN_15;
+    GPIO_TypeDef* LCD_DATA6_GPIO_Port_ = GPIOA;
+    static constexpr uint16_t LCD_DATA5_Pin_ = GPIO_PIN_5;
     static constexpr uint16_t LCD_DATA5_Pos_ = 5;
-    GPIO_TypeDef* LCD_DATA5_GPIO_Port_ = GPIOC;
-    static constexpr uint16_t LCD_DATA4_Pin_ = GPIO_PIN_0;
+    GPIO_TypeDef* LCD_DATA5_GPIO_Port_ = GPIOA;
+    static constexpr uint16_t LCD_DATA4_Pin_ = GPIO_PIN_4;
     static constexpr uint16_t LCD_DATA4_Pos_ = 4;
-    GPIO_TypeDef* LCD_DATA4_GPIO_Port_ = GPIOH;
-    static constexpr uint16_t LCD_DATA3_Pin_ = GPIO_PIN_1;
+    GPIO_TypeDef* LCD_DATA4_GPIO_Port_ = GPIOA;
+    static constexpr uint16_t LCD_DATA3_Pin_ = GPIO_PIN_3;
     static constexpr uint16_t LCD_DATA3_Pos_ = 3;
-    GPIO_TypeDef* LCD_DATA3_GPIO_Port_ = GPIOH;
-    static constexpr uint16_t LCD_DATA2_Pin_ = GPIO_PIN_0;
+    GPIO_TypeDef* LCD_DATA3_GPIO_Port_ = GPIOA;
+    static constexpr uint16_t LCD_DATA2_Pin_ = GPIO_PIN_2;
     static constexpr uint16_t LCD_DATA2_Pos_ = 2;
-    GPIO_TypeDef* LCD_DATA2_GPIO_Port_ = GPIOC;
+    GPIO_TypeDef* LCD_DATA2_GPIO_Port_ = GPIOA;
     static constexpr uint16_t LCD_DATA1_Pin_ = GPIO_PIN_1;
     static constexpr uint16_t LCD_DATA1_Pos_ = 1;
-    GPIO_TypeDef* LCD_DATA1_GPIO_Port_ = GPIOC;
-    static constexpr uint16_t LCD_DATA0_Pin_ = GPIO_PIN_2;
+    GPIO_TypeDef* LCD_DATA1_GPIO_Port_ = GPIOA;
+    static constexpr uint16_t LCD_DATA0_Pin_ = GPIO_PIN_0;
     static constexpr uint16_t LCD_DATA0_Pos_ = 0;
-    GPIO_TypeDef* LCD_DATA0_GPIO_Port_ = GPIOC;
+    GPIO_TypeDef* LCD_DATA0_GPIO_Port_ = GPIOA;
     // Read / Write
-    uint16_t LCD_READ_Pin_ = GPIO_PIN_1;
-    GPIO_TypeDef* LCD_READ_GPIO_Port_ = GPIOA;
-    uint16_t LCD_WRITE_Pin_ = GPIO_PIN_2;
-    GPIO_TypeDef* LCD_WRITE_GPIO_Port_ = GPIOA;
+    uint16_t LCD_READ_Pin_ = GPIO_PIN_8;
+    GPIO_TypeDef* LCD_READ_GPIO_Port_ = GPIOC;
+    uint16_t LCD_WRITE_Pin_ = GPIO_PIN_4;
+    GPIO_TypeDef* LCD_WRITE_GPIO_Port_ = GPIOC;
     // Command / Data
-    uint16_t LCD_CD_Pin_ = GPIO_PIN_3;
-    GPIO_TypeDef* LCD_CD_GPIO_Port_ = GPIOA;
+    uint16_t LCD_CD_Pin_ = GPIO_PIN_5;
+    GPIO_TypeDef* LCD_CD_GPIO_Port_ = GPIOC;
     // Chip Select
-    uint16_t LCD_CS_Pin_ = GPIO_PIN_4;
+    uint16_t LCD_CS_Pin_ = GPIO_PIN_6;
     GPIO_TypeDef* LCD_CS_GPIO_Port_ = GPIOC;
     // Reset
-    uint16_t LCD_RST_Pin_ = GPIO_PIN_0;
+    uint16_t LCD_RST_Pin_ = GPIO_PIN_9;
     GPIO_TypeDef* LCD_RST_GPIO_Port_ = GPIOA;
 };
 
