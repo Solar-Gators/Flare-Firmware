@@ -1,10 +1,8 @@
 #pragma once
-//#include
 
-#include "main.h"
-//#include <stm32u5xx_hal.h>
-#include "cmsis_os2.h"
 #include "FreeRTOS.h"
+#include "cmsis_os2.h"
+#include "main.h"
 #include "task.h"
 
 #define MAX_BUTTONS 8
@@ -12,7 +10,6 @@
 
 namespace sg
 {
-
 class Button
 {
    public:
@@ -20,13 +17,10 @@ class Button
            GPIO_PinState default_state = GPIO_PIN_SET, bool initial_toggle_state = false);
 
     void RegisterNormalPressCallback(void (*callback)(void));
-    void RegisterLongPressCallback(void (*callback)(void),
-                                   uint32_t long_press_time_ms = 500,
+    void RegisterLongPressCallback(void (*callback)(void), uint32_t long_press_time_ms = 500,
                                    bool initial_toggle_state = false);
-    void RegisterDoublePressCallback(void (*callback)(void),
-                                     uint32_t double_press_time_ms = 500,
+    void RegisterDoublePressCallback(void (*callback)(void), uint32_t double_press_time_ms = 500,
                                      bool initial_toggle_state = false);
-
 
     uint32_t GetPin();
     GPIO_PinState ReadPin();
@@ -44,10 +38,9 @@ class Button
     static inline osSemaphoreId_t button_semaphore_id_ = osSemaphoreNew(1, 0, NULL);
 
     // Global button list (Fixed array instead of vector)
-    static inline Button* button_list_[MAX_BUTTONS] = { nullptr };
+    static inline Button *button_list_[MAX_BUTTONS] = {nullptr};
 
    private:
-
     // Button handler thread definitions
     static void HandleEvent(void *argument);
     static inline uint32_t handle_press_task_buffer_[BUTTON_THREAD_STACK_SIZE];
@@ -64,7 +57,8 @@ class Button
     };
 
     // This static initialization spawns the thread automatically
-    static inline osThreadId_t handle_press_task_id_ = osThreadNew(HandleEvent, NULL, &handle_press_task_attributes_);
+    static inline osThreadId_t handle_press_task_id_ =
+        osThreadNew(HandleEvent, NULL, &handle_press_task_attributes_);
 
     void DisableInterrupt();
     void EnableInterrupt();
@@ -73,23 +67,23 @@ class Button
     void PollForLongPress();
     void HandlePress();
 
-    //Peripheral information
-    GPIO_TypeDef *port_;             // HAL GPIO port
-    uint16_t pin_;                   // Pin number
-    uint32_t debounce_time_ms_;      // debounce time in ms
-    GPIO_PinState default_state_;    // default pin state
-    bool toggle_state_;              // toggle state of button, toggled on single and double press
-    bool long_toggle_state_;        // toggle state of button, toggled on long press
-    bool double_toggle_state_;      // toggle state of button, toggled on double press
+    // Peripheral information
+    GPIO_TypeDef *port_;           // HAL GPIO port
+    uint16_t pin_;                 // Pin number
+    uint32_t debounce_time_ms_;    // debounce time in ms
+    GPIO_PinState default_state_;  // default pin state
+    bool toggle_state_;            // toggle state of button
+    bool long_toggle_state_;       // toggle state of button
+    bool double_toggle_state_;     // toggle state of button
 
-    void (*normal_callback_)(void);  // User-provided callback function
-    void (*long_press_callback_)(void) = nullptr;   // User-provided callback function for long press
-    void (*double_press_callback_)(void) = nullptr; // User-provided callback function for double press
+    void (*normal_callback_)(void) = nullptr;        // User-provided callback function
+    void (*long_press_callback_)(void) = nullptr;    // User-provided callback function
+    void (*double_press_callback_)(void) = nullptr;  // User-provided callback function
 
     uint32_t long_press_time_ms_ = 0;    // time to count as a long press
-    uint32_t double_press_time_ms_ = 0; // time between presses
+    uint32_t double_press_time_ms_ = 0;  // time between presses
 
-    uint32_t last_press_time_ = 0;       // Last time valid event was recorded on button
+    uint32_t last_press_time_ = 0;  // Last time valid event was recorded on button
 };
 
-}
+}  // namespace sg
