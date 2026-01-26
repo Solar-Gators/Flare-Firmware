@@ -85,4 +85,7 @@ void can_init()
     // mitsuba frame 0 comes from mc
     can_device.addCallbackId(
         0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr);
+
+    // start
+    can_device.StartCANDevice();
 }

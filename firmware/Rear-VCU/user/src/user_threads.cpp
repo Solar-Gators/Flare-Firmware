@@ -39,6 +39,13 @@ void init_user()
     // turn on mc
     HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin, GPIO_PIN_SET);
 
+    // select analog throttle
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+    // initialize test values
+    vcu_state.direction_requested.store(Direction::FORWARD);
+    vcu_state.array_contactors_requested_closed.store(true);
+    vcu_state.mc_power_mode_requested.store(MCPowerMode::POWER);
+
     // TODO: initialize ina chip here
 }
 
