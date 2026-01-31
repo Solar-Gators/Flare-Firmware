@@ -2,7 +2,10 @@
 
 namespace sg
 {
-Button::Button(GPIO_TypeDef *port, uint16_t pin, uint32_t debounce_time_ms, GPIO_PinState default_state,
+Button::Button(GPIO_TypeDef *port,
+               uint16_t pin,
+               uint32_t debounce_time_ms,
+               GPIO_PinState default_state,
                bool initial_toggle_state)
     : port_(port),
       pin_(pin),
@@ -34,7 +37,8 @@ void Button::RegisterNormalPressCallback(void (*callback)(void))
     normal_callback_ = callback;
 }
 
-void Button::RegisterLongPressCallback(void (*callback)(void), uint32_t long_press_time_ms,
+void Button::RegisterLongPressCallback(void (*callback)(void),
+                                       uint32_t long_press_time_ms,
                                        bool initial_toggle_state)
 {
     long_press_callback_ = callback;
@@ -42,7 +46,8 @@ void Button::RegisterLongPressCallback(void (*callback)(void), uint32_t long_pre
     long_toggle_state_ = initial_toggle_state;
 }
 
-void Button::RegisterDoublePressCallback(void (*callback)(void), uint32_t double_press_time_ms,
+void Button::RegisterDoublePressCallback(void (*callback)(void),
+                                         uint32_t double_press_time_ms,
                                          bool initial_toggle_state)
 {
     double_press_callback_ = callback;
@@ -92,7 +97,7 @@ GPIO_PinState Button::ReadPin()
 
 void Button::HandleEvent(void *argument)
 {
-    (void)argument;
+    (void) argument;
     while (1)
     {
         osSemaphoreAcquire(button_semaphore_id_, osWaitForever);
@@ -175,23 +180,56 @@ void Button::DisableInterrupt()
     IRQn_Type irq;
     switch (pin_)
     {
-        case GPIO_PIN_0: irq = EXTI0_IRQn; break;
-        case GPIO_PIN_1: irq = EXTI1_IRQn; break;
-        case GPIO_PIN_2: irq = EXTI2_IRQn; break;
-        case GPIO_PIN_3: irq = EXTI3_IRQn; break;
-        case GPIO_PIN_4: irq = EXTI4_IRQn; break;
-        case GPIO_PIN_5: irq = EXTI5_IRQn; break;
-        case GPIO_PIN_6: irq = EXTI6_IRQn; break;
-        case GPIO_PIN_7: irq = EXTI7_IRQn; break;
-        case GPIO_PIN_8: irq = EXTI8_IRQn; break;
-        case GPIO_PIN_9: irq = EXTI9_IRQn; break;
-        case GPIO_PIN_10: irq = EXTI10_IRQn; break;
-        case GPIO_PIN_11: irq = EXTI11_IRQn; break;
-        case GPIO_PIN_12: irq = EXTI12_IRQn; break;
-        case GPIO_PIN_13: irq = EXTI13_IRQn; break;
-        case GPIO_PIN_14: irq = EXTI14_IRQn; break;
-        case GPIO_PIN_15: irq = EXTI15_IRQn; break;
-        default: return;
+        case GPIO_PIN_0:
+            irq = EXTI0_IRQn;
+            break;
+        case GPIO_PIN_1:
+            irq = EXTI1_IRQn;
+            break;
+        case GPIO_PIN_2:
+            irq = EXTI2_IRQn;
+            break;
+        case GPIO_PIN_3:
+            irq = EXTI3_IRQn;
+            break;
+        case GPIO_PIN_4:
+            irq = EXTI4_IRQn;
+            break;
+        case GPIO_PIN_5:
+            irq = EXTI5_IRQn;
+            break;
+        case GPIO_PIN_6:
+            irq = EXTI6_IRQn;
+            break;
+        case GPIO_PIN_7:
+            irq = EXTI7_IRQn;
+            break;
+        case GPIO_PIN_8:
+            irq = EXTI8_IRQn;
+            break;
+        case GPIO_PIN_9:
+            irq = EXTI9_IRQn;
+            break;
+        case GPIO_PIN_10:
+            irq = EXTI10_IRQn;
+            break;
+        case GPIO_PIN_11:
+            irq = EXTI11_IRQn;
+            break;
+        case GPIO_PIN_12:
+            irq = EXTI12_IRQn;
+            break;
+        case GPIO_PIN_13:
+            irq = EXTI13_IRQn;
+            break;
+        case GPIO_PIN_14:
+            irq = EXTI14_IRQn;
+            break;
+        case GPIO_PIN_15:
+            irq = EXTI15_IRQn;
+            break;
+        default:
+            return;
     }
     HAL_NVIC_DisableIRQ(irq);
 }
@@ -201,23 +239,56 @@ void Button::EnableInterrupt()
     IRQn_Type irq;
     switch (pin_)
     {
-        case GPIO_PIN_0: irq = EXTI0_IRQn; break;
-        case GPIO_PIN_1: irq = EXTI1_IRQn; break;
-        case GPIO_PIN_2: irq = EXTI2_IRQn; break;
-        case GPIO_PIN_3: irq = EXTI3_IRQn; break;
-        case GPIO_PIN_4: irq = EXTI4_IRQn; break;
-        case GPIO_PIN_5: irq = EXTI5_IRQn; break;
-        case GPIO_PIN_6: irq = EXTI6_IRQn; break;
-        case GPIO_PIN_7: irq = EXTI7_IRQn; break;
-        case GPIO_PIN_8: irq = EXTI8_IRQn; break;
-        case GPIO_PIN_9: irq = EXTI9_IRQn; break;
-        case GPIO_PIN_10: irq = EXTI10_IRQn; break;
-        case GPIO_PIN_11: irq = EXTI11_IRQn; break;
-        case GPIO_PIN_12: irq = EXTI12_IRQn; break;
-        case GPIO_PIN_13: irq = EXTI13_IRQn; break;
-        case GPIO_PIN_14: irq = EXTI14_IRQn; break;
-        case GPIO_PIN_15: irq = EXTI15_IRQn; break;
-        default: return;
+        case GPIO_PIN_0:
+            irq = EXTI0_IRQn;
+            break;
+        case GPIO_PIN_1:
+            irq = EXTI1_IRQn;
+            break;
+        case GPIO_PIN_2:
+            irq = EXTI2_IRQn;
+            break;
+        case GPIO_PIN_3:
+            irq = EXTI3_IRQn;
+            break;
+        case GPIO_PIN_4:
+            irq = EXTI4_IRQn;
+            break;
+        case GPIO_PIN_5:
+            irq = EXTI5_IRQn;
+            break;
+        case GPIO_PIN_6:
+            irq = EXTI6_IRQn;
+            break;
+        case GPIO_PIN_7:
+            irq = EXTI7_IRQn;
+            break;
+        case GPIO_PIN_8:
+            irq = EXTI8_IRQn;
+            break;
+        case GPIO_PIN_9:
+            irq = EXTI9_IRQn;
+            break;
+        case GPIO_PIN_10:
+            irq = EXTI10_IRQn;
+            break;
+        case GPIO_PIN_11:
+            irq = EXTI11_IRQn;
+            break;
+        case GPIO_PIN_12:
+            irq = EXTI12_IRQn;
+            break;
+        case GPIO_PIN_13:
+            irq = EXTI13_IRQn;
+            break;
+        case GPIO_PIN_14:
+            irq = EXTI14_IRQn;
+            break;
+        case GPIO_PIN_15:
+            irq = EXTI15_IRQn;
+            break;
+        default:
+            return;
     }
     HAL_NVIC_SetPriority(irq, 5, 0);
     HAL_NVIC_EnableIRQ(irq);
@@ -228,22 +299,22 @@ void Button::ClearInterrupt()
     __HAL_GPIO_EXTI_CLEAR_FLAG(pin_);
 }
 
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+}  // namespace sg
+
+extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
     for (int i = 0; i < MAX_BUTTONS; i++)
     {
-        Button *button = Button::button_list_[i];
+        sg::Button *button = sg::Button::button_list_[i];
         if (button == nullptr)
         {
             break;
         }
         if (button->GetPin() == GPIO_Pin && button->ReadPin() != button->GetDefaultState())
         {
-            Button::triggered_button_ = button;
-            osSemaphoreRelease(Button::button_semaphore_id_);
+            sg::Button::triggered_button_ = button;
+            osSemaphoreRelease(sg::Button::button_semaphore_id_);
             break;
         }
     }
 }
-
-}  // namespace sg
