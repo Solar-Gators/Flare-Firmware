@@ -41,6 +41,7 @@ struct SteeringState
     std::atomic<bool> headlights_requested_on{};
     std::atomic<Direction> direction_requested{};
     std::atomic<MCPowerMode> mc_power_mode_requested{};
+    std::atomic<TurnSignals> turn_signals_requested{};
 
     // recieving
     std::atomic<uint8_t> car_speed{};
