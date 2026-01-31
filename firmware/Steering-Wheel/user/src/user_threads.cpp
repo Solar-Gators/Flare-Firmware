@@ -31,7 +31,7 @@ void button6PressedCallback(void)
 }
 void button7PressedCallback(void)
 {
-    HAL_GPIO_TogglePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin);
+    //HAL_GPIO_TogglePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin);
 }
 void button8PressedCallback(void)
 {

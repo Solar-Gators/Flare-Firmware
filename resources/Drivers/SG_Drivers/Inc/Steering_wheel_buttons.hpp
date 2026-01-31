@@ -1,7 +1,8 @@
 #pragma once
 
-#include "FreeRTOS.h"
 #include "cmsis_os2.h"
+
+#include "FreeRTOS.h"
 #include "main.h"
 #include "task.h"
 
@@ -13,13 +14,18 @@ namespace sg
 class Button
 {
    public:
-    Button(GPIO_TypeDef *port, uint16_t pin, uint32_t debounce_time_ms = 50,
-           GPIO_PinState default_state = GPIO_PIN_SET, bool initial_toggle_state = false);
+    Button(GPIO_TypeDef *port,
+           uint16_t pin,
+           uint32_t debounce_time_ms = 50,
+           GPIO_PinState default_state = GPIO_PIN_SET,
+           bool initial_toggle_state = false);
 
     void RegisterNormalPressCallback(void (*callback)(void));
-    void RegisterLongPressCallback(void (*callback)(void), uint32_t long_press_time_ms = 500,
+    void RegisterLongPressCallback(void (*callback)(void),
+                                   uint32_t long_press_time_ms = 500,
                                    bool initial_toggle_state = false);
-    void RegisterDoublePressCallback(void (*callback)(void), uint32_t double_press_time_ms = 500,
+    void RegisterDoublePressCallback(void (*callback)(void),
+                                     uint32_t double_press_time_ms = 500,
                                      bool initial_toggle_state = false);
 
     uint32_t GetPin();
@@ -53,7 +59,7 @@ class Button
         .cb_size = sizeof(handle_press_task_tcb_),
         .stack_mem = handle_press_task_buffer_,
         .stack_size = sizeof(handle_press_task_buffer_),
-        .priority = (osPriority_t)osPriorityAboveNormal,
+        .priority = (osPriority_t) osPriorityAboveNormal,
     };
 
     // This static initialization spawns the thread automatically
