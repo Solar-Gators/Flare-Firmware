@@ -36,7 +36,10 @@ void init_user()
     HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
 
-    // maybe need to initialize ina chip here or something
+    // turn on mc
+    HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin, GPIO_PIN_SET);
+
+    // TODO: initialize ina chip here
 }
 
 [[noreturn]] void startHeartbeatTask_user(void* argument)
@@ -86,14 +89,16 @@ void init_user()
 
     for (;;)
     {
+        /*
+        // test block for outputs
+        HAL_GPIO_TogglePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin);
+        HAL_GPIO_TogglePin(MC_PWR_ECO_CTRL_GPIO_Port, MC_PWR_ECO_CTRL_Pin);
+        HAL_GPIO_TogglePin(MC_FWD_REV_CTRL_GPIO_Port, MC_FWD_REV_CTRL_Pin);
+        HAL_GPIO_TogglePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin);
+        HAL_GPIO_TogglePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin);
+        */
+
         // TODO: can make these writes less frequent using flag, only call writepin on change yk
-
-        // mc enable
-        uint8_t mc_enable_requested = vcu_state.mc_enabled_requested.load();
-        HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port,
-                          MC_MAIN_CTRL_Pin,
-                          static_cast<GPIO_PinState>(mc_enable_requested));
-
         // power eco pin
         MCPowerMode mc_power_mode_requested = vcu_state.mc_power_mode_requested.load();
         HAL_GPIO_WritePin(MC_PWR_ECO_CTRL_GPIO_Port,
@@ -134,13 +139,14 @@ void init_user()
         }
 
         // TODO: could get voltage of supp batt here
-        uint16_t supp_batt_voltage_mv = 12000;  // dummy
+        uint16_t supp_batt_voltage_mv = 0x0F0F;  // dummy
 
         // TODO: could get current draw of supp batt here
-        uint16_t supp_batt_current = 0;  // dummy
+        uint16_t supp_batt_current = 0x0F0F;  // dummy
 
         // setup and send diagnostic can message
-        rearvcu_statuses_frame.data[0] = mc_enable_requested;
+        rearvcu_statuses_frame.data[0] =
+            1;  // should always be enabled if this board is alive, written to at startup
         rearvcu_statuses_frame.data[1] = static_cast<uint8_t>(direction_requested);
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
@@ -151,6 +157,7 @@ void init_user()
         rearvcu_statuses_frame.data[8] = vcu_state.car_speed.load();
         can_device.Send(rearvcu_statuses_frame);
 
-        osDelay(60);
+        osDelay(1000);
+        //osDelay(60);
     }
 }
