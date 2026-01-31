@@ -455,8 +455,8 @@ static void MX_GPIO_Init(void)
                            BUTTON8_Pin BUTTON4_Pin BUTTON3_Pin BUTTON5_Pin */
   GPIO_InitStruct.Pin = BUTTON1_Pin|BUTTON2_Pin|BUTTON6_Pin|BUTTON7_Pin
                           |BUTTON8_Pin|BUTTON4_Pin|BUTTON3_Pin|BUTTON5_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BUTTON1_LED_Pin BUTTON6_LED_Pin BUTTON7_LED_Pin BUTTON4_LED_Pin
@@ -474,6 +474,31 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI6_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI6_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI8_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI8_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI10_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI10_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI13_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI13_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
