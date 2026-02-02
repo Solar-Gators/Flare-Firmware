@@ -8,6 +8,8 @@ void can_init()
     // recieve message from rear vcu
     can_device.addCallbackId(
         0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr);
+
+    can_device.StartCANDevice();
 }
 
 HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)

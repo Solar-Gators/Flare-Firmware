@@ -10,6 +10,11 @@
 #include "main.h"
 #include "steering_state.h"
 
+void init_user()
+{
+    can_init();
+}
+
 void startHeartbeatTask_user(void* argument)
 {
     for (;;)
