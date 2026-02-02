@@ -113,6 +113,8 @@ int main(void)
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
+    init_user();
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -559,8 +561,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(DAC_SPI_SS_GPIO_Port, DAC_SPI_SS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
-                          |MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, MAIN_ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
+                          |MC_PWR_ECO_CTRL_Pin|MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, WATCHDOG_INPUT_Pin|WATCHDOG_SET0_Pin|WATCHDOG_SET1_Pin|OK_LED_Pin, GPIO_PIN_RESET);
@@ -575,10 +577,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DAC_SPI_SS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ARRAY_CTRL_Pin PRE_ARRAY_CTRL_Pin THROTTLE_SRC_SEL_Pin MC_FWD_REV_CTRL_Pin
-                           MC_MAIN_CTRL_Pin EEPROM_SPI_SS_Pin */
-  GPIO_InitStruct.Pin = ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
-                          |MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin;
+  /*Configure GPIO pins : MAIN_ARRAY_CTRL_Pin PRE_ARRAY_CTRL_Pin THROTTLE_SRC_SEL_Pin MC_FWD_REV_CTRL_Pin
+                           MC_PWR_ECO_CTRL_Pin MC_MAIN_CTRL_Pin EEPROM_SPI_SS_Pin */
+  GPIO_InitStruct.Pin = MAIN_ARRAY_CTRL_Pin|PRE_ARRAY_CTRL_Pin|THROTTLE_SRC_SEL_Pin|MC_FWD_REV_CTRL_Pin
+                          |MC_PWR_ECO_CTRL_Pin|MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

@@ -6,7 +6,11 @@ extern "C"
 {
 #endif
 
-    void StartDefaultTask_user(void *argument);
+    void init_user();
+
+    [[noreturn]] void startHeartbeatTask_user(void *argument);
+    [[noreturn]] void startRegenThrottleTask_user(void *argument);
+    [[noreturn]] void startOutputsTask_user(void *argument);
 
 #ifdef __cplusplus
 }
