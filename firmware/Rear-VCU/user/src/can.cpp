@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "main.h"
 #include "rearvcu_state.h"
 
 // from old dashboard defines
@@ -18,6 +19,13 @@
     19  // 0 = plus current (discharge), 1 = minus current (charge)
 
 #define WHEEL_CIRCUMFERENCE_INCHES 69.12
+
+#define ASSERT_HAL_OK(statement) \
+    if (statement != HAL_OK)     \
+        Error_Handler();
+#define ASSERT_TRUE(statement) \
+    if (statement != true)     \
+        Error_Handler();
 
 HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
@@ -76,16 +84,17 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
 void can_init()
 {
     // throttle
-    can_device.addCallbackId(
-        0x040, sg::CANFrameIDType::STANDARD, &throttleMessageCallback, nullptr);
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x040, sg::CANFrameIDType::STANDARD, &throttleMessageCallback, nullptr));
 
     // all the user inputs from steering wheel
-    can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &driverMessageCallback, nullptr);
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x064, sg::CANFrameIDType::STANDARD, &driverMessageCallback, nullptr));
 
     // mitsuba frame 0 comes from mc
-    can_device.addCallbackId(
-        0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr);
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
 
     // start
-    can_device.StartCANDevice();
+    ASSERT_HAL_OK(can_device.StartCANDevice());
 }
