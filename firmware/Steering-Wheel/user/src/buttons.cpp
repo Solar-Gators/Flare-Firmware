@@ -96,6 +96,16 @@ void button6PressedCallback()
 void button7PressedCallback()
 {
     // don't toggle this light this light is messing with other stuff i think its hardware issues
+    /*
+    if (buttons[6].GetToggleState())
+    {
+        HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_RESET);
+    }
+    */
 }
 
 // cc-
