@@ -4,16 +4,20 @@
 #include "main.h"
 #include "steering_state.h"
 
-#define ASSERT(statement)    \
-    if (statement != HAL_OK) \
+#define ASSERT_HAL_OK(statement) \
+    if (statement != HAL_OK)     \
+        Error_Handler();
+
+#define ASSERT_TRUE(statement) \
+    if (!statement)            \
         Error_Handler();
 
 void can_init()
 {
     // recieve message from rear vcu
-    ASSERT(can_device.addCallbackId(
+    ASSERT_TRUE(can_device.addCallbackId(
         0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr));
-    ASSERT(can_device.StartCANDevice());
+    ASSERT_HAL_OK(can_device.StartCANDevice());
 }
 
 HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
