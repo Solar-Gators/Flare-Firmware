@@ -3,9 +3,13 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
+#include "can.h"
 #include "main.h"
 
-void init_user() {}
+void init_user()
+{
+    can_init();
+}
 
 void startDefaultTask_user(void* argument)
 {
