@@ -148,7 +148,7 @@ void StartDefaultTask(void *argument)
 void StartGPSReadBuffer(void *argument)
 {
   /* USER CODE BEGIN GPSReadBuffer */
-    startDefaultTask_user(argument);
+    startGPSReadBuffer_user(argument);
   /* USER CODE END GPSReadBuffer */
 }
 

@@ -27,7 +27,7 @@ void startGPSReadBuffer_user(void* argument)
 {
     for (;;)
     {
-        osDelay(100);
+        osDelay(1000);
     }
 }
 
@@ -35,7 +35,7 @@ void startGPSParseNMEA_user(void* argument)
 {
     for (;;)
     {
-        osDelay(100);
+        osDelay(1000);
     }
 }
 
@@ -43,6 +43,6 @@ void startTXRadio_user(void* argument)
 {
     for (;;)
     {
-        osDelay(100);
+        osDelay(1000);
     }
 }
