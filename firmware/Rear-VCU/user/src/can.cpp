@@ -23,8 +23,9 @@
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
         Error_Handler();
+
 #define ASSERT_TRUE(statement) \
-    if (statement != true)     \
+    if (!statement)            \
         Error_Handler();
 
 HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx)
