@@ -17,9 +17,6 @@ void init_user()
     static_assert(std::atomic<uint16_t>::is_always_lock_free);
     static_assert(std::atomic<uint8_t>::is_always_lock_free);
 
-    // can
-    can_init();
-
     // watchdog init
     HAL_GPIO_WritePin(WATCHDOG_SET1_GPIO_Port,
                       WATCHDOG_SET1_Pin,
@@ -47,6 +44,9 @@ void init_user()
     vcu_state.mc_power_mode_requested.store(MCPowerMode::POWER);
 
     // TODO: initialize ina chip here
+
+    // can
+    can_init();
 }
 
 [[noreturn]] void startHeartbeatTask_user(void* argument)
