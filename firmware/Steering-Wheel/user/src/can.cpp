@@ -1,15 +1,19 @@
 #include "can.h"
 
 #include "CanDriver.hpp"
+#include "main.h"
 #include "steering_state.h"
+
+#define ASSERT(statement)    \
+    if (statement != HAL_OK) \
+        Error_Handler();
 
 void can_init()
 {
     // recieve message from rear vcu
-    can_device.addCallbackId(
-        0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr);
-
-    can_device.StartCANDevice();
+    ASSERT(can_device.addCallbackId(
+        0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr));
+    ASSERT(can_device.StartCANDevice());
 }
 
 HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)

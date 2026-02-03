@@ -75,8 +75,8 @@ void startPollButtons_user(void* argument)
         // cc mph
         frame.data[7] = 0;
 
-        can_device.Send(frame);
-        ++steering_state.can_messages_sent;
+        if (can_device.Send(frame) == HAL_OK)
+            ++steering_state.can_messages_sent;
 
         osDelay(20);
     }
