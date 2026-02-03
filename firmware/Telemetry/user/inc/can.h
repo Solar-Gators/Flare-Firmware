@@ -9,4 +9,4 @@ inline sg::CANDevice can_device(&hfdcan1);
 
 void can_init();
 
-void steeringRequestsCallback(sg::CANFrame frame);
+HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx);

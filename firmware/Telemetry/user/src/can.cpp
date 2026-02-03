@@ -2,9 +2,20 @@
 
 #include "CanDriver.hpp"
 
+#define ASSERT(statement)    \
+    if (statement != HAL_OK) \
+        Error_Handler();
+
 void can_init()
 {
-    can_device.addCallbackId() can_device.StartCANDevice();
+    ASSERT(
+        can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
+    ASSERT(can_device.StartCANDevice());
 }
 
-void steeringRequestsCallback() {}
+HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
+{
+    // do stuff
+    volatile int x = 5;
+    return HAL_OK;
+}
