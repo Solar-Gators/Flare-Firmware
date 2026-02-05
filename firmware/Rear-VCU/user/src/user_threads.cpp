@@ -38,10 +38,6 @@ void init_user()
 
     // select analog throttle
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
-    // initialize test values
-    vcu_state.direction_requested.store(Direction::FORWARD);
-    vcu_state.array_contactors_requested_closed.store(true);
-    vcu_state.mc_power_mode_requested.store(MCPowerMode::POWER);
 
     // TODO: initialize ina chip here
 
@@ -131,8 +127,8 @@ void init_user()
         else
         {
             // open both contactors
-            HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
             array_contactors = ArrayContactors::BOTH_OPEN;
         }
 
@@ -155,6 +151,6 @@ void init_user()
         rearvcu_statuses_frame.data[8] = vcu_state.car_speed.load();
         can_device.Send(rearvcu_statuses_frame);
 
-        osDelay(60);
+        osDelay(50);
     }
 }
