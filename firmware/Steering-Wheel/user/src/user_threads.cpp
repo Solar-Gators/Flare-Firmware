@@ -26,7 +26,29 @@ void startScreenTask_user(void* argument)
 
     for (;;)
     {
+        //240 320
         display.FillRect(50, 50, 50, 50, RGB565_RED);
+
+        display.FillRect(0, 0, 50, 50, RGB565_RED);
+
+        // one of the CAN messages to be recieved and displayed is car_speed{}
+        //uint8_t speed = steering_state.car_speed.load();
+
+        // display.DrawText(uint16_t x, uint16_t y, const char* str, uint16_t color);
+        // display.DrawText(100, 100, (speed), RGB565_RED);
+        display.DrawText(150, 150, "0", RGB565_RED);
+        // possible solutions - snprintf normal but more lines of code
+        // to_string then .c_str, uses heap, not best practice for embedded
+        // itoa, not standard and may not be avaliable
+
+
+        // display.SetTextColor(uint16_t color);
+        // display.SetTextSize(uint8_t size);
+        // display.FillScreen(uint16_t color);
+        // display.ClearScreen(uint16_t color);
+        // also has lines, circles, triangles
+        // use draw rect to refresh the lcd to make smoother with things like speed
+        // maybe different screens
 
         osDelay(500);
     }
