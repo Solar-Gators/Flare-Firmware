@@ -66,7 +66,7 @@ void init_user()
     {
         // kick watchdog by sending a falling edge
         HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_RESET);
-        HAL_Delay(1);
+        osDelay(1);
         HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_SET);
 
         // consistently update throttle and regen here based on..
@@ -151,6 +151,6 @@ void init_user()
         rearvcu_statuses_frame.data[8] = vcu_state.car_speed.load();
         can_device.Send(rearvcu_statuses_frame);
 
-        osDelay(50);
+        osDelay(200);
     }
 }

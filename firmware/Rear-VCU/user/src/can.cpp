@@ -43,7 +43,7 @@ HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx)
 
 HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
-    vcu_state.direction_requested.store(static_cast<Direction>(msg.data[0]));
+    vcu_state.direction_requested.store(static_cast<Direction>(msg.data[1]));
     vcu_state.array_contactors_requested_closed.store(static_cast<bool>(msg.data[2]));
     vcu_state.regen_requested.store(msg.data[5]);
     vcu_state.mc_power_mode_requested.store(static_cast<MCPowerMode>(msg.data[6]));

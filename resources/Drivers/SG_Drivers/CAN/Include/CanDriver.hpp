@@ -227,7 +227,7 @@ class CANDevice
 
     CanCallback allCallback_ = nullptr;
 
-    osMessageQueueId_t tx_queue_;  // = osMessageQueueNew(TX_QUEUE_SIZE, sizeof(CANFrame*), NULL);
+    osMessageQueueId_t tx_queue_;
     osMessageQueueId_t rx_queue_;
 
     struct Entry
