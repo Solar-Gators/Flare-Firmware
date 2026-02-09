@@ -14,10 +14,19 @@ void can_init()
 {
     ASSERT_TRUE(
         can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
+    ASSERT_TRUE(
+        can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
     ASSERT_HAL_OK(can_device.StartCANDevice());
 }
 
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
+{
+    // do stuff
+    volatile int x = 5;
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef rearVCUStatusCallback(const sg::CANFrame& frame, void* ctx)
 {
     // do stuff
     volatile int x = 5;
