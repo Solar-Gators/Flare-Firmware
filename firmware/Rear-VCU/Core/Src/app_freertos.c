@@ -67,7 +67,7 @@ const osThreadAttr_t regenThrottleTask_attributes = {
   .stack_size = sizeof(regenThrottleTaskBuffer),
   .cb_mem = &regenThrottleTaskCB,
   .cb_size = sizeof(regenThrottleTaskCB),
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for outputsTask */
 osThreadId_t outputsTaskHandle;
@@ -79,7 +79,7 @@ const osThreadAttr_t outputsTask_attributes = {
   .stack_size = sizeof(outputsTaskBuffer),
   .cb_mem = &outputsTaskCB,
   .cb_size = sizeof(outputsTaskCB),
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -168,7 +168,11 @@ void startRegenThrottleTask(void *argument)
 void startOutputsTask(void *argument)
 {
   /* USER CODE BEGIN outputsTask */
-    startOutputsTask_user(argument);
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
   /* USER CODE END outputsTask */
 }
 

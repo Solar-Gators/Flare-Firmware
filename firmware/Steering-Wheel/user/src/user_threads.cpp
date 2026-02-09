@@ -3,74 +3,81 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
-#include "Steering_wheel_buttons.hpp"
+#include "CanDriver.hpp"
+#include "ILI9341.hpp"
+#include "buttons.h"
+#include "can.h"
+#include "main.h"
+#include "steering_state.h"
 
-void button1PressedCallback(void)
+void init_user()
 {
-    HAL_GPIO_TogglePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin);
-}
-void button2PressedCallback(void)
-{
-    HAL_GPIO_TogglePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin);
-}
-void button3PressedCallback(void)
-{
-    HAL_GPIO_TogglePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin);
-}
-void button4PressedCallback(void)
-{
-    HAL_GPIO_TogglePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin);
-}
-void button5PressedCallback(void)
-{
-    HAL_GPIO_TogglePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin);
-}
-void button6PressedCallback(void)
-{
-    HAL_GPIO_TogglePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin);
-}
-void button7PressedCallback(void)
-{
-    //HAL_GPIO_TogglePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin);
-}
-void button8PressedCallback(void)
-{
-    HAL_GPIO_TogglePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin);
+    can_init();
 }
 
-void StartDefaultTask_user(void* argument)
+void startHeartbeatTask_user(void* argument)
 {
-    sg::Button button1(BUTTON1_GPIO_Port, BUTTON1_Pin);
-    button1.RegisterNormalPressCallback(&button1PressedCallback);
+    for (;;)
+    {
+        HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
+        osDelay(500);
+    }
+}
 
-    sg::Button button2(BUTTON2_GPIO_Port, BUTTON2_Pin);
-    button2.RegisterNormalPressCallback(&button2PressedCallback);
-
-    sg::Button button3(BUTTON3_GPIO_Port, BUTTON3_Pin);
-    button3.RegisterNormalPressCallback(&button3PressedCallback);
-
-    sg::Button button4(BUTTON4_GPIO_Port, BUTTON4_Pin);
-    button4.RegisterNormalPressCallback(&button4PressedCallback);
-
-    sg::Button button5(BUTTON5_GPIO_Port, BUTTON5_Pin);
-    button5.RegisterNormalPressCallback(&button5PressedCallback);
-
-    sg::Button button6(BUTTON6_GPIO_Port, BUTTON6_Pin);
-    button6.RegisterNormalPressCallback(&button6PressedCallback);
-
-    sg::Button button7(BUTTON7_GPIO_Port, BUTTON7_Pin);
-    button7.RegisterNormalPressCallback(&button7PressedCallback);
-
-    sg::Button button8(BUTTON8_GPIO_Port, BUTTON8_Pin);
-    button8.RegisterNormalPressCallback(&button8PressedCallback);
+void startScreenTask_user(void* argument)
+{
+    ILI9341 display(320, 240);
+    display.Init();
 
     for (;;)
     {
-        volatile GPIO_PinState pin = HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin);
-        if (!pin)
-        {
-            volatile int x = 50;
-        }
+        display.FillRect(50, 50, 50, 50, RGB565_RED);
+
         osDelay(500);
+    }
+}
+
+void startPollButtons_user(void* argument)
+{
+    sg::CANFrame frame{0x064,
+                       sg::CANFrameIDType::STANDARD,
+                       sg::CANFrameRTRMode::DATA,
+                       sg::CANFrameLen::BYTES_8,
+                       0,
+                       {}};
+
+    initButtons();
+
+    for (;;)
+    {
+        // turn signals
+        frame.data[0] = static_cast<uint8_t>(steering_state.turn_signals_requested.load());
+
+        // frwrd / reverse
+        frame.data[1] = static_cast<uint8_t>(steering_state.direction_requested.load());
+
+        // array
+        frame.data[2] =
+            static_cast<uint8_t>(steering_state.array_contactors_requested_closed.load());
+
+        // horn
+        frame.data[3] = static_cast<uint8_t>(!HAL_GPIO_ReadPin(HORN_PORT, HORN_PIN));
+
+        // headlights
+        frame.data[4] = static_cast<uint8_t>(steering_state.headlights_requested_on.load());
+
+        // regen breaking strength
+        frame.data[5] = 0;
+
+        // pwr/eco request
+        frame.data[6] = static_cast<uint8_t>(steering_state.mc_power_mode_requested.load());
+
+        // cc mph
+        frame.data[7] = 0;
+
+        if (can_device.Send(frame) == HAL_OK)
+            ++steering_state.can_messages_sent;
+
+        osDelay(20);
     }
 }

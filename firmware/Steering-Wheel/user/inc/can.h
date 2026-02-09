@@ -1,8 +1,10 @@
-//
-// Created by justin on 1/21/26.
-//
+#pragma once
+#include "CanDriver.hpp"
 
-#ifndef SOLARGATORSSTM32PROJECTS_CAN_H
-#define SOLARGATORSSTM32PROJECTS_CAN_H
+extern FDCAN_HandleTypeDef hfdcan1;
 
-#endif  //SOLARGATORSSTM32PROJECTS_CAN_H
+inline sg::CANDevice can_device(&hfdcan1);
+
+void can_init();
+
+HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx);

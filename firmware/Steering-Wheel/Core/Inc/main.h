@@ -116,8 +116,8 @@ void Error_Handler(void);
 #define ERROR_LED_GPIO_Port GPIOC
 #define REGEN_DECREASE_Pin GPIO_PIN_9
 #define REGEN_DECREASE_GPIO_Port GPIOC
-#define SCREEN_BRIGHTNESS_PWM_Pin GPIO_PIN_8
-#define SCREEN_BRIGHTNESS_PWM_GPIO_Port GPIOA
+#define Backlight_PWM_Pin GPIO_PIN_8
+#define Backlight_PWM_GPIO_Port GPIOA
 #define SCREEN_nRST_Pin GPIO_PIN_9
 #define SCREEN_nRST_GPIO_Port GPIOA
 #define SCREEN_DC_SEL_Pin GPIO_PIN_15
