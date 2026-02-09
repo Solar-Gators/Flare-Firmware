@@ -24,30 +24,35 @@ void startScreenTask_user(void* argument)
     ILI9341 display(320, 240);
     display.Init();
 
+    //
+    char buf[4];
+
+    //TODO: clear/fill on reset maybe?
+    // display.FillScreen(uint16_t color);
+    // display.ClearScreen(uint16_t color);
+
+
     for (;;)
     {
-        //240 320
-        display.FillRect(50, 50, 50, 50, RGB565_RED);
+        //w:320 h:240
+        display.FillRect(0, 0, 20, 20, RGB565_RED);
+        display.FillRect(200, 0, 20, 20, RGB565_PURPLE);
+        display.FillRect(0, 200, 20, 20, RGB565_GREEN);
+        display.FillRect(200, 200, 20, 20, RGB565_BLACK);
 
-        display.FillRect(0, 0, 50, 50, RGB565_RED);
+        // used to test for now
+        uint8_t speed = steering_state.car_speed.load();
 
-        // one of the CAN messages to be recieved and displayed is car_speed{}
-        //uint8_t speed = steering_state.car_speed.load();
-
-        // display.DrawText(uint16_t x, uint16_t y, const char* str, uint16_t color);
-        // display.DrawText(100, 100, (speed), RGB565_RED);
-        display.DrawText(150, 150, "0", RGB565_RED);
-        // possible solutions - snprintf normal but more lines of code
-        // to_string then .c_str, uses heap, not best practice for embedded
-        // itoa, not standard and may not be avaliable
-
+        // TODO: create indicators for the right buttons to turn on as the lights on the actual buttons arent working
+        // TODO: important info, such as cruise control and regenerative breaking
 
         // display.SetTextColor(uint16_t color);
         // display.SetTextSize(uint8_t size);
-        // display.FillScreen(uint16_t color);
-        // display.ClearScreen(uint16_t color);
-        // also has lines, circles, triangles
-        // use draw rect to refresh the lcd to make smoother with things like speed
+        itoa(speed, buf, 10);
+        display.DrawText(150, 150, buf, RGB565_RED);
+        // alternative is snprintf but not integrated yet
+        // use fill rect to clear old values
+
         // maybe different screens
 
         osDelay(500);
