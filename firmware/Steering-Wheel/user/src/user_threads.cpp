@@ -21,36 +21,32 @@ void startHeartbeatTask_user(void* argument)
 
 void startScreenTask_user(void* argument)
 {
+    // Top Right (0,0)
+    // Bottom Right (240, 0)
+    // Top Left (320, 0)
+    // Bottom Left (320, 240)
+    // Items build from top right to bottom left
+
     ILI9341 display(320, 240);
     display.Init();
+    display.ClearScreen(RGB565_RED);
 
-    //
-    char buf[4];
-
-    //TODO: clear/fill on reset maybe?
-    // display.FillScreen(uint16_t color);
-    // display.ClearScreen(uint16_t color);
-
+    uint8_t speed = steering_state.car_speed.load(); // delete after testing
 
     for (;;)
     {
-        //w:320 h:240
         display.FillRect(0, 0, 20, 20, RGB565_RED);
-        display.FillRect(200, 0, 20, 20, RGB565_PURPLE);
-        display.FillRect(0, 200, 20, 20, RGB565_GREEN);
-        display.FillRect(200, 200, 20, 20, RGB565_BLACK);
 
-        // used to test for now
-        uint8_t speed = steering_state.car_speed.load();
+        // uint8_t speed = steering_state.car_speed.load();
+        speed++;
 
         // TODO: create indicators for the right buttons to turn on as the lights on the actual buttons arent working
         // TODO: important info, such as cruise control and regenerative breaking
 
-        // display.SetTextColor(uint16_t color);
         // display.SetTextSize(uint8_t size);
+        char buf[4];
         itoa(speed, buf, 10);
         display.DrawText(150, 150, buf, RGB565_RED);
-        // alternative is snprintf but not integrated yet
         // use fill rect to clear old values
 
         // maybe different screens

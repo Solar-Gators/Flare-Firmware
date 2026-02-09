@@ -87,7 +87,7 @@ class ILI9341
     void SetTextColor(uint16_t color, uint16_t backgroundcolor);
     void SetTextSize(uint8_t size);
     void SetTextWrap(bool w);
-    void FillScreen(uint16_t color);
+    void FillScreen(uint16_t color); // not an implemented function
     char DrawPixel(uint16_t x, uint16_t y, uint16_t color);
     void ClearScreen(uint16_t color);
     void SetRotation(uint8_t x);
