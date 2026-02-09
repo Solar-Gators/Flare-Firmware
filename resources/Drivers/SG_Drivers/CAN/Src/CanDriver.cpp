@@ -687,16 +687,8 @@ void CANDevice::HandleTxTrampoline(void* arg)
 #if defined(HAL_FDCAN_MODULE_ENABLED)
         while (!HAL_FDCAN_GetTxFifoFreeLevel(hcan_))
         {
-            volatile uint32_t g_primask;
-            volatile uint32_t g_basepri;
-            volatile uint32_t g_faultmask;
-            volatile uint32_t g_ipsr;
-
-            __asm volatile("MRS %0, PRIMASK" : "=r"(g_primask));
-            __asm volatile("MRS %0, BASEPRI" : "=r"(g_basepri));
-            __asm volatile("MRS %0, FAULTMASK" : "=r"(g_faultmask));
-            __asm volatile("MRS %0, IPSR" : "=r"(g_ipsr));
-        }
+            osDelay(1);
+        }  // TODO: add maybe some sort of event/interrupt +sem system here so this thread blocks when no room in mailbox
 
         FDCAN_TxHeaderTypeDef txHeader = {
             .Identifier = tx_msg.can_id,
