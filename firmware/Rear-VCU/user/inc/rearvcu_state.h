@@ -34,9 +34,6 @@ struct VCUState
     std::atomic<bool> array_contactors_requested_closed{};
     std::atomic<Direction> direction_requested{};
     std::atomic<MCPowerMode> mc_power_mode_requested{};
-
-    std::atomic<uint32_t> can_messages_received{};
-    std::atomic<uint32_t> can_messages_sent{};
 };
 
 inline VCUState vcu_state;

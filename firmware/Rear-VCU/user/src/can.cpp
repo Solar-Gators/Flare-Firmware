@@ -36,8 +36,6 @@ HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx)
         (static_cast<uint16_t>(throttle_high) << 8) | static_cast<uint16_t>(throttle_low);
     vcu_state.throttle_requested.store(throttle_value);
 
-    ++vcu_state.can_messages_received;
-
     return HAL_OK;
 }
 
@@ -47,8 +45,6 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
     vcu_state.array_contactors_requested_closed.store(static_cast<bool>(msg.data[2]));
     vcu_state.regen_requested.store(msg.data[5]);
     vcu_state.mc_power_mode_requested.store(static_cast<MCPowerMode>(msg.data[6]));
-
-    ++vcu_state.can_messages_received;
 
     return HAL_OK;
 }
@@ -77,8 +73,6 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
 
     vcu_state.car_speed.store(static_cast<uint8_t>(std::round(miles_per_hour)));
 
-    ++vcu_state.can_messages_received;
-
     return HAL_OK;
 }
 
@@ -97,5 +91,5 @@ void can_init()
         0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
 
     // start
-    ASSERT_HAL_OK(can_device.StartCANDevice());
+    ASSERT_HAL_OK(can_device.startCANDevice());
 }

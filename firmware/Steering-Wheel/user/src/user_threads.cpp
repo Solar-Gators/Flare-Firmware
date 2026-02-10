@@ -39,44 +39,48 @@ void startScreenTask_user(void* argument)
 
 void startPollButtons_user(void* argument)
 {
-    sg::CANFrame frame{0x064,
-                       sg::CANFrameIDType::STANDARD,
-                       sg::CANFrameRTRMode::DATA,
-                       sg::CANFrameLen::BYTES_8,
-                       0,
-                       {}};
+    sg::CANFrame steering_requests_frame{0x064,
+                                         sg::CANFrameIDType::STANDARD,
+                                         sg::CANFrameRTRMode::DATA,
+                                         sg::CANFrameLen::BYTES_8,
+                                         0,
+                                         {}};
 
     initButtons();
 
     for (;;)
     {
         // turn signals
-        frame.data[0] = static_cast<uint8_t>(steering_state.turn_signals_requested.load());
+        steering_requests_frame.data[0] =
+            static_cast<uint8_t>(steering_state.turn_signals_requested.load());
 
         // frwrd / reverse
-        frame.data[1] = static_cast<uint8_t>(steering_state.direction_requested.load());
+        steering_requests_frame.data[1] =
+            static_cast<uint8_t>(steering_state.direction_requested.load());
 
         // array
-        frame.data[2] =
+        steering_requests_frame.data[2] =
             static_cast<uint8_t>(steering_state.array_contactors_requested_closed.load());
 
         // horn
-        frame.data[3] = static_cast<uint8_t>(!HAL_GPIO_ReadPin(HORN_PORT, HORN_PIN));
+        steering_requests_frame.data[3] =
+            static_cast<uint8_t>(!HAL_GPIO_ReadPin(HORN_PORT, HORN_PIN));
 
         // headlights
-        frame.data[4] = static_cast<uint8_t>(steering_state.headlights_requested_on.load());
+        steering_requests_frame.data[4] =
+            static_cast<uint8_t>(steering_state.headlights_requested_on.load());
 
         // regen breaking strength
-        frame.data[5] = 0;
+        steering_requests_frame.data[5] = 0;
 
         // pwr/eco request
-        frame.data[6] = static_cast<uint8_t>(steering_state.mc_power_mode_requested.load());
+        steering_requests_frame.data[6] =
+            static_cast<uint8_t>(steering_state.mc_power_mode_requested.load());
 
         // cc mph
-        frame.data[7] = 0;
+        steering_requests_frame.data[7] = 0;
 
-        if (can_device.Send(frame) == HAL_OK)
-            ++steering_state.can_messages_sent;
+        can_device.send(steering_requests_frame);
 
         osDelay(20);
     }

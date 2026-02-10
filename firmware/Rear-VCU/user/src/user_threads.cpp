@@ -47,16 +47,31 @@ void init_user()
 
 [[noreturn]] void startHeartbeatTask_user(void* argument)
 {
+    sg::CANFrame supp_batt_frame{0x021,
+                                 sg::CANFrameIDType::STANDARD,
+                                 sg::CANFrameRTRMode::DATA,
+                                 sg::CANFrameLen::BYTES_4,
+                                 0,
+                                 {}};
+
     for (;;)
     {
         // blink ok led
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
 
         // send mitsuba request for frame0 to get wheel rpm, shouldnt be sent faster than every 500ms
-        can_device.Send(mitsuba_frame0_request);
-        ++vcu_state.can_messages_sent;
+        can_device.send(mitsuba_frame0_request);
 
-        osDelay(550);
+        // supp batt voltage can be read and sent in this thread as its not as urgent/important
+        uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
+        uint16_t supp_batt_current = 0xFFFF;     // TODO: could get current draw of supp batt here
+        supp_batt_frame.data[0] = static_cast<uint8_t>(supp_batt_voltage_mv);       // lsb
+        supp_batt_frame.data[1] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
+        supp_batt_frame.data[2] = static_cast<uint8_t>(supp_batt_current);          // lsb
+        supp_batt_frame.data[3] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
+        can_device.send(supp_batt_frame);
+
+        osDelay(500);
     }
 }
 
@@ -83,7 +98,7 @@ void init_user()
     sg::CANFrame rearvcu_statuses_frame{0x020,
                                         sg::CANFrameIDType::STANDARD,
                                         sg::CANFrameRTRMode::DATA,
-                                        sg::CANFrameLen::BYTES_16,
+                                        sg::CANFrameLen::BYTES_8,
                                         0,
                                         {}};
 
@@ -132,24 +147,14 @@ void init_user()
             array_contactors = ArrayContactors::BOTH_OPEN;
         }
 
-        // TODO: could get voltage of supp batt here
-        uint16_t supp_batt_voltage_mv = 0x0F0F;  // dummy
-
-        // TODO: could get current draw of supp batt here
-        uint16_t supp_batt_current = 0x0F0F;  // dummy
-
         // setup and send diagnostic can message
         rearvcu_statuses_frame.data[0] =
             1;  // mc enable should always be enabled if this board is alive, written to at startup
         rearvcu_statuses_frame.data[1] = static_cast<uint8_t>(direction_requested);
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
-        rearvcu_statuses_frame.data[4] = static_cast<uint8_t>(supp_batt_voltage_mv);       // lsb
-        rearvcu_statuses_frame.data[5] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
-        rearvcu_statuses_frame.data[6] = static_cast<uint8_t>(supp_batt_current);          // lsb
-        rearvcu_statuses_frame.data[7] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
-        rearvcu_statuses_frame.data[8] = vcu_state.car_speed.load();
-        can_device.Send(rearvcu_statuses_frame);
+        rearvcu_statuses_frame.data[4] = vcu_state.car_speed.load();
+        can_device.send(rearvcu_statuses_frame);
 
         osDelay(200);
     }

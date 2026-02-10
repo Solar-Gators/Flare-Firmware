@@ -47,9 +47,6 @@ struct SteeringState
     std::atomic<uint8_t> car_speed{};
     std::atomic<ArrayContactors> array_contactors_status{};
     std::atomic<uint16_t> supp_batt_voltage{};
-
-    std::atomic<uint32_t> can_messages_received{};
-    std::atomic<uint32_t> can_messages_sent{};
 };
 
 inline SteeringState steering_state;

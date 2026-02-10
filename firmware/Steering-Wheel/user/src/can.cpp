@@ -17,7 +17,7 @@ void can_init()
     // recieve message from rear vcu
     ASSERT_TRUE(can_device.addCallbackId(
         0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr));
-    ASSERT_HAL_OK(can_device.StartCANDevice());
+    ASSERT_HAL_OK(can_device.startCANDevice());
 }
 
 HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
@@ -28,8 +28,6 @@ HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
     steering_state.supp_batt_voltage.store(supp_batt_voltage);
 
     steering_state.car_speed.store(msg.data[8]);
-
-    ++steering_state.can_messages_received;
 
     return HAL_OK;
 }

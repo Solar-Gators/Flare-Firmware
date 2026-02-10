@@ -12,6 +12,7 @@
 #include "CanDriverApi.hpp"
 #include "FreeRTOS.h"
 
+#include <atomic>
 #include <vector>
 
 namespace sg
@@ -103,7 +104,7 @@ class CANDevice
      *
      * @return HAL_OK on success, or an appropriate HAL error/status code if startup fails.
      */
-    HAL_StatusTypeDef StartCANDevice();
+    HAL_StatusTypeDef startCANDevice();
 
     /*!
      * @brief Adds a hardware filter to accept a single CAN identifier.
@@ -121,7 +122,7 @@ class CANDevice
      *
      * @return HAL_OK if the filter was successfully added, or an error/status code if not.
      */
-    HAL_StatusTypeDef AddFilterId(uint32_t can_id,
+    HAL_StatusTypeDef addFilterId(uint32_t can_id,
                                   CANFrameIDType id_type,
                                   CANFrameRTRMode rtr_mode,
                                   CANFramePriority priority);
@@ -145,7 +146,7 @@ class CANDevice
      *
      * @return HAL_OK if the filter was successfully added, or an error/status code if not.
      */
-    HAL_StatusTypeDef AddFilterRange(uint32_t can_id,
+    HAL_StatusTypeDef addFilterRange(uint32_t can_id,
                                      uint32_t range,
                                      sg::CANFrameIDType id_type,
                                      sg::CANFrameRTRMode rtr_mode,
@@ -206,7 +207,22 @@ class CANDevice
      * @param msg message to be sent, CANDevice stores a copy of it in a buffer
      * @return HAL error code, HAL_OK if pushed to queue successfully
      */
-    HAL_StatusTypeDef Send(const CANFrame& msg);
+    HAL_StatusTypeDef send(const CANFrame& msg);
+
+    // returns the total number of messages that have been recieved and processed (ie a callback was called on it) by the device
+    uint32_t getProcessedMessagesCount()
+    {
+        return processed_messages_count_.load(std::memory_order_relaxed);
+    }
+
+    // returns the total number of messages that have been sent by the device (ie added to a tx mailbox)
+    uint32_t getSentMessagesCount() { return sent_messages_count_.load(std::memory_order_relaxed); }
+
+    // returns total number of frames that were dropped by the device because when trying to push frame when recieved in isr the queue was full
+    uint32_t getDroppedFrameCount()
+    {
+        return dropped_rx_frame_count_.load(std::memory_order_relaxed);
+    }
 
     // should be unused by user
     static HAL_StatusTypeDef RxCallback(CanHandle_t* hcan);
@@ -229,6 +245,11 @@ class CANDevice
 
     osMessageQueueId_t tx_queue_;
     osMessageQueueId_t rx_queue_;
+
+    std::atomic<uint32_t>
+        processed_messages_count_{};               // number of messages a callback was called on
+    std::atomic<uint32_t> sent_messages_count_{};  // count of messages added to mailbox to be sent
+    std::atomic<uint32_t> dropped_rx_frame_count_{};  // count of dropped rx frames
 
     struct Entry
     {
