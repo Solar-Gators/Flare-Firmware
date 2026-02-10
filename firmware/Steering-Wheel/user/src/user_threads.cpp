@@ -23,19 +23,19 @@ void startScreenTask_user(void* argument)
 {
     // Top Right (0,0)
     // Bottom Right (240, 0)
-    // Top Left (320, 0)
-    // Bottom Left (320, 240)
+    // Top Left (0, 320)
+    // Bottom Left (240, 320)
     // Items build from top right to bottom left
 
-    ILI9341 display(320, 240);
+    ILI9341 display(240, 320);
     display.Init();
     display.ClearScreen(RGB565_RED);
-
+    //display.FillRect(220, 0, 20, 10, RGB565_GREEN);
     uint8_t speed = steering_state.car_speed.load(); // delete after testing
 
     for (;;)
     {
-        display.FillRect(0, 0, 20, 20, RGB565_RED);
+        //display.FillRect(0, 0, 20, 10, RGB565_RED);
 
         // uint8_t speed = steering_state.car_speed.load();
         speed++;
@@ -46,7 +46,7 @@ void startScreenTask_user(void* argument)
         // display.SetTextSize(uint8_t size);
         char buf[4];
         itoa(speed, buf, 10);
-        display.DrawText(150, 150, buf, RGB565_RED);
+        display.DrawText(150, 150, buf, RGB565_GREEN);
         // use fill rect to clear old values
 
         // maybe different screens
