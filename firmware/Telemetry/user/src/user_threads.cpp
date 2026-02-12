@@ -11,7 +11,7 @@ void init_user()
     can_init();
 }
 
-void StartDefaultTask_user(void* argument)
+void startDefaultTask_user(void* argument)
 {
     while (1)
     {
