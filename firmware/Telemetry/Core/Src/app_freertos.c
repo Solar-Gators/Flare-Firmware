@@ -134,8 +134,7 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-  /* Infinite loop */
-  StartDefaultTask_user(argument);
+  startDefaultTask_user(argument);
   /* USER CODE END defaultTask */
 }
 
@@ -149,11 +148,7 @@ void StartDefaultTask(void *argument)
 void StartGPSReadBuffer(void *argument)
 {
   /* USER CODE BEGIN GPSReadBuffer */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    startGPSReadBuffer_user(argument);
   /* USER CODE END GPSReadBuffer */
 }
 
@@ -167,11 +162,7 @@ void StartGPSReadBuffer(void *argument)
 void StartGPSParseNMEA(void *argument)
 {
   /* USER CODE BEGIN GPSParseNMEA */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    startGPSParseNMEA_user(argument);
   /* USER CODE END GPSParseNMEA */
 }
 
@@ -185,11 +176,7 @@ void StartGPSParseNMEA(void *argument)
 void StartTXRadio(void *argument)
 {
   /* USER CODE BEGIN TXRadio */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    startTXRadio_user(argument);
   /* USER CODE END TXRadio */
 }
 

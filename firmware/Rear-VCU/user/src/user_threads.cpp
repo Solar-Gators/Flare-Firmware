@@ -17,9 +17,6 @@ void init_user()
     static_assert(std::atomic<uint16_t>::is_always_lock_free);
     static_assert(std::atomic<uint8_t>::is_always_lock_free);
 
-    // can
-    can_init();
-
     // watchdog init
     HAL_GPIO_WritePin(WATCHDOG_SET1_GPIO_Port,
                       WATCHDOG_SET1_Pin,
@@ -39,7 +36,13 @@ void init_user()
     // turn on mc
     HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin, GPIO_PIN_SET);
 
+    // select analog throttle
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+
     // TODO: initialize ina chip here
+
+    // can
+    can_init();
 }
 
 [[noreturn]] void startHeartbeatTask_user(void* argument)
@@ -63,7 +66,7 @@ void init_user()
     {
         // kick watchdog by sending a falling edge
         HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_RESET);
-        HAL_Delay(1);
+        osDelay(1);
         HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_SET);
 
         // consistently update throttle and regen here based on..
@@ -89,15 +92,6 @@ void init_user()
 
     for (;;)
     {
-        /*
-        // test block for outputs
-        HAL_GPIO_TogglePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin);
-        HAL_GPIO_TogglePin(MC_PWR_ECO_CTRL_GPIO_Port, MC_PWR_ECO_CTRL_Pin);
-        HAL_GPIO_TogglePin(MC_FWD_REV_CTRL_GPIO_Port, MC_FWD_REV_CTRL_Pin);
-        HAL_GPIO_TogglePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin);
-        HAL_GPIO_TogglePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin);
-        */
-
         // TODO: can make these writes less frequent using flag, only call writepin on change yk
         // power eco pin
         MCPowerMode mc_power_mode_requested = vcu_state.mc_power_mode_requested.load();
@@ -133,8 +127,8 @@ void init_user()
         else
         {
             // open both contactors
-            HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
             array_contactors = ArrayContactors::BOTH_OPEN;
         }
 
@@ -146,7 +140,7 @@ void init_user()
 
         // setup and send diagnostic can message
         rearvcu_statuses_frame.data[0] =
-            1;  // should always be enabled if this board is alive, written to at startup
+            1;  // mc enable should always be enabled if this board is alive, written to at startup
         rearvcu_statuses_frame.data[1] = static_cast<uint8_t>(direction_requested);
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
@@ -157,7 +151,6 @@ void init_user()
         rearvcu_statuses_frame.data[8] = vcu_state.car_speed.load();
         can_device.Send(rearvcu_statuses_frame);
 
-        osDelay(1000);
-        //osDelay(60);
+        osDelay(200);
     }
 }

@@ -3,40 +3,46 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
+#include "can.h"
 #include "main.h"
 
-void StartDefaultTask_user(void* argument)
+void init_user()
 {
-    while (1)
+    can_init();
+}
+
+void startDefaultTask_user(void* argument)
+{
+    for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
         HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
         HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
         HAL_GPIO_TogglePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin);
+        osDelay(500);
+    }
+}
+
+void startGPSReadBuffer_user(void* argument)
+{
+    for (;;)
+    {
         osDelay(1000);
     }
 }
 
-void StartGPSReadBuffer_user(void* argument)
+void startGPSParseNMEA_user(void* argument)
 {
-    while (1)
+    for (;;)
     {
-        ;
+        osDelay(1000);
     }
 }
 
-void StartGPSParseNMEA_user(void* argument)
+void startTXRadio_user(void* argument)
 {
-    while (1)
+    for (;;)
     {
-        ;
-    }
-}
-
-void StartStartTXRadio_user(void* argument)
-{
-    while (1)
-    {
-        ;
+        osDelay(1000);
     }
 }

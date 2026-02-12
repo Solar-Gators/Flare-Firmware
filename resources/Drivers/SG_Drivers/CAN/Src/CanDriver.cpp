@@ -622,7 +622,9 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
         CAN_ReadOne(hcan, msg);
 
         // Queue the simple struct (safe to copy)
-        osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
+        osStatus_t stat = osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
+        if (stat != osOK)
+            return HAL_BUSY;
     }
 
     // Now signal the task that messages are available
