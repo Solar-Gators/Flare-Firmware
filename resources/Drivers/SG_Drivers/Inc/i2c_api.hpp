@@ -17,7 +17,7 @@ extern "C"
 class I2CDevice
 {
    public:
-    I2CDevice(I2C_HandleTypeDef* h, uint8_t addr) : i2cHandle(h), deviceAddress(addr) {};
+    I2CDevice(I2C_HandleTypeDef* h, uint8_t addr) : i2cHandle(h), deviceAddress(addr){};
 
     HAL_StatusTypeDef readN(uint8_t reg, uint8_t* buf, size_t len)
     {

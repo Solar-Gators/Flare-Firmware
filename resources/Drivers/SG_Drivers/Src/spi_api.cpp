@@ -20,7 +20,7 @@ SpiDevice::SpiDevice(SPI_HandleTypeDef* hspi,
                      GPIO_TypeDef* cs_port,
                      uint16_t cs_pin,
                      ActivationLevel al)
-    : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin), al_(al) {};
+    : hspi_(hspi), cs_port_(cs_port), cs_pin_(cs_pin), al_(al){};
 
 HAL_StatusTypeDef SpiDevice::transmit(const uint8_t* data, uint16_t len)
 {
