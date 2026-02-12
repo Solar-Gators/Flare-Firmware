@@ -14,7 +14,7 @@ namespace sg
 class Button
 {
    public:
-    Button(GPIO_TypeDef *port,
+    Button(GPIO_TypeDef* port,
            uint16_t pin,
            uint32_t debounce_time_ms = 50,
            GPIO_PinState default_state = GPIO_PIN_SET,
@@ -38,17 +38,17 @@ class Button
     GPIO_PinState GetDefaultState();
 
     // Current triggered button
-    static inline Button *triggered_button_ = nullptr;
+    static inline Button* triggered_button_ = nullptr;
 
     // Button trigger semaphore
     static inline osSemaphoreId_t button_semaphore_id_ = osSemaphoreNew(1, 0, NULL);
 
     // Global button list (Fixed array instead of vector)
-    static inline Button *button_list_[MAX_BUTTONS] = {nullptr};
+    static inline Button* button_list_[MAX_BUTTONS] = {nullptr};
 
    private:
     // Button handler thread definitions
-    static void HandleEvent(void *argument);
+    static void HandleEvent(void* argument);
     static inline uint32_t handle_press_task_buffer_[BUTTON_THREAD_STACK_SIZE];
     static inline StaticTask_t handle_press_task_tcb_;
 
@@ -74,7 +74,7 @@ class Button
     void HandlePress();
 
     // Peripheral information
-    GPIO_TypeDef *port_;           // HAL GPIO port
+    GPIO_TypeDef* port_;           // HAL GPIO port
     uint16_t pin_;                 // Pin number
     uint32_t debounce_time_ms_;    // debounce time in ms
     GPIO_PinState default_state_;  // default pin state
