@@ -53,12 +53,12 @@ void button2PressedCallback()
     if (buttons[1].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_SET);
-        steering_state.headlights_requested_on.store(true);
+        steering::state.headlights_requested_on.store(true);
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_RESET);
-        steering_state.headlights_requested_on.store(false);
+        steering::state.headlights_requested_on.store(false);
     }
 }
 
@@ -68,12 +68,12 @@ void button3PressedCallback()
     if (buttons[2].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin, GPIO_PIN_SET);
-        steering_state.array_contactors_requested_closed.store(true);
+        steering::state.array_contactors_requested_closed.store(true);
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin, GPIO_PIN_RESET);
-        steering_state.array_contactors_requested_closed.store(false);
+        steering::state.array_contactors_requested_closed.store(false);
     }
 }
 
@@ -83,12 +83,12 @@ void button6PressedCallback()
     if (buttons[5].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, GPIO_PIN_SET);
-        steering_state.direction_requested.store(Direction::FORWARD);
+        steering::state.direction_requested.store(flare_can::Direction::FORWARD);
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, GPIO_PIN_RESET);
-        steering_state.direction_requested.store(Direction::REVERSE);
+        steering::state.direction_requested.store(flare_can::Direction::REVERSE);
     }
 }
 
@@ -127,12 +127,12 @@ void button8PressedCallback()
     if (buttons[7].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-        steering_state.mc_power_mode_requested.store(MCPowerMode::POWER);
+        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::POWER);
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
-        steering_state.mc_power_mode_requested.store(MCPowerMode::ECO);
+        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
     }
 }
 
@@ -154,11 +154,11 @@ void recalculateTurnSignals()
     bool right = buttons[4].GetToggleState();
 
     if (left && right)
-        steering_state.turn_signals_requested.store(TurnSignals::HAZARDS);
+        steering::state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
     else if (left)
-        steering_state.turn_signals_requested.store(TurnSignals::LEFT);
+        steering::state.turn_signals_requested.store(flare_can::TurnSignals::LEFT);
     else if (right)
-        steering_state.turn_signals_requested.store(TurnSignals::RIGHT);
+        steering::state.turn_signals_requested.store(flare_can::TurnSignals::RIGHT);
     else
-        steering_state.turn_signals_requested.store(TurnSignals::OFF);
+        steering::state.turn_signals_requested.store(flare_can::TurnSignals::OFF);
 }

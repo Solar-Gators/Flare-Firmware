@@ -12,6 +12,12 @@
 
 void init_user()
 {
+    // check atomics
+    static_assert(std::atomic<uint32_t>::is_always_lock_free);
+    static_assert(std::atomic<uint16_t>::is_always_lock_free);
+    static_assert(std::atomic<uint8_t>::is_always_lock_free);
+
+    // start can
     can_init();
 }
 
@@ -52,15 +58,15 @@ void startPollButtons_user(void* argument)
     {
         // turn signals
         steering_requests_frame.data[0] =
-            static_cast<uint8_t>(steering_state.turn_signals_requested.load());
+            static_cast<uint8_t>(steering::state.turn_signals_requested.load());
 
         // frwrd / reverse
         steering_requests_frame.data[1] =
-            static_cast<uint8_t>(steering_state.direction_requested.load());
+            static_cast<uint8_t>(steering::state.direction_requested.load());
 
         // array
         steering_requests_frame.data[2] =
-            static_cast<uint8_t>(steering_state.array_contactors_requested_closed.load());
+            static_cast<uint8_t>(steering::state.array_contactors_requested_closed.load());
 
         // horn
         steering_requests_frame.data[3] =
@@ -68,14 +74,14 @@ void startPollButtons_user(void* argument)
 
         // headlights
         steering_requests_frame.data[4] =
-            static_cast<uint8_t>(steering_state.headlights_requested_on.load());
+            static_cast<uint8_t>(steering::state.headlights_requested_on.load());
 
         // regen breaking strength
         steering_requests_frame.data[5] = 0;
 
         // pwr/eco request
         steering_requests_frame.data[6] =
-            static_cast<uint8_t>(steering_state.mc_power_mode_requested.load());
+            static_cast<uint8_t>(steering::state.mc_power_mode_requested.load());
 
         // cc mph
         steering_requests_frame.data[7] = 0;
