@@ -30,7 +30,7 @@ HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
         static_cast<flare_can::ArrayContactors>(msg.data[3]));
 
     uint16_t supp_batt_voltage = (msg.data[4]) | (static_cast<uint16_t>(msg.data[5]) << 8);
-    steering::state.supp_batt_voltage.store(supp_batt_voltage);
+    steering::state.supp_batt_voltage_mv.store(supp_batt_voltage);
 
     steering::state.car_speed.store(msg.data[8]);
 
@@ -39,10 +39,17 @@ HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
 
 HAL_StatusTypeDef bmsBatteryVoltageMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
+    uint16_t main_batt_voltage_mv = static_cast<uint16_t>(msg.data[0] << 8) | (msg.data[1]);
+    steering::state.main_batt_voltage_cv.store(main_batt_voltage_mv);
+
     return HAL_OK;
 }
 
 HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
+    // dc here is like decicelcius
+    uint16_t highest_temp_cell_dc = static_cast<uint16_t>(msg.data[0] << 8) | (msg.data[1]);
+    steering::state.high_temp_dc.store(highest_temp_cell_dc);
+
     return HAL_OK;
 }

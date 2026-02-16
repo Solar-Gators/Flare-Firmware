@@ -10,6 +10,9 @@
 #include "main.h"
 #include "steering_state.h"
 
+#include <array>
+#include <string>
+
 void init_user()
 {
     // check atomics
@@ -37,7 +40,23 @@ void startScreenTask_user(void* argument)
 
     for (;;)
     {
-        display.FillRect(50, 50, 50, 50, RGB565_RED);
+        display.ClearScreen(RGB565_WHITE);
+
+        uint32_t cv = steering::state.main_batt_voltage_cv.load(std::memory_order_relaxed);
+        uint32_t whole = cv / 100;
+        uint32_t frac  = (cv % 100);
+        std::array<char, 16> main_batt_v{};
+        snprintf(main_batt_v.data(), sizeof(main_batt_v), "%lu.%02lu",
+                 static_cast<unsigned long>(whole), static_cast<unsigned long>(frac));
+        display.DrawText(30, 30, main_batt_v.data(), RGB565_BLACK);
+
+        uint32_t dc = steering::state.high_temp_dc.load(std::memory_order_relaxed);
+        whole = dc / 10;
+        frac  = (dc % 10);
+        std::array<char, 16> high_temp_c{};
+        snprintf(high_temp_c.data(), sizeof(high_temp_c), "%lu.%lu",
+                 static_cast<unsigned long>(whole), static_cast<unsigned long>(frac));
+        display.DrawText(30, 60, high_temp_c.data(), RGB565_BLACK);
 
         osDelay(500);
     }
