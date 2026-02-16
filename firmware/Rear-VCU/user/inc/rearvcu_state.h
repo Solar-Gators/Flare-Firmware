@@ -24,4 +24,4 @@ struct RearVCUState
 
 inline RearVCUState state;
 
-}  // namespace vcu
+}  // namespace rearvcu

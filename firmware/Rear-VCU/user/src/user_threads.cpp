@@ -109,7 +109,8 @@ void init_user()
     {
         // TODO: can make these writes less frequent using flag, only call writepin on change yk
         // power eco pin
-        flare_can::MCPowerMode mc_power_mode_requested = rearvcu::state.mc_power_mode_requested.load();
+        flare_can::MCPowerMode mc_power_mode_requested =
+            rearvcu::state.mc_power_mode_requested.load();
         HAL_GPIO_WritePin(MC_PWR_ECO_CTRL_GPIO_Port,
                           MC_PWR_ECO_CTRL_Pin,
                           static_cast<GPIO_PinState>(mc_power_mode_requested));
