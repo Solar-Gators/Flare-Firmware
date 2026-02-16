@@ -12,6 +12,9 @@
 
 // paddles do cc or regen strengths depending on mode maybe
 
+namespace steering
+{
+
 void button1PressedCallback();
 void button2PressedCallback();
 void button3PressedCallback();
@@ -24,3 +27,5 @@ void button8PressedCallback();
 void initButtons();
 
 void recalculateTurnSignals();
+
+}  // namespace steering

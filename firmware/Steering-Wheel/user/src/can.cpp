@@ -12,6 +12,9 @@
     if (!statement)            \
         Error_Handler();
 
+namespace steering
+{
+
 void can_init()
 {
     // recieve message from rear vcu
@@ -53,3 +56,5 @@ HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* c
 
     return HAL_OK;
 }
+
+}  // namespace steering

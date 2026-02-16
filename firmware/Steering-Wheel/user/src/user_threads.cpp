@@ -21,7 +21,7 @@ void init_user()
     static_assert(std::atomic<uint8_t>::is_always_lock_free);
 
     // start can
-    can_init();
+    steering::can_init();
 }
 
 void startHeartbeatTask_user(void* argument)
@@ -77,7 +77,7 @@ void startPollButtons_user(void* argument)
                                          0,
                                          {}};
 
-    initButtons();
+    steering::initButtons();
 
     for (;;)
     {
@@ -111,7 +111,7 @@ void startPollButtons_user(void* argument)
         // cc mph
         steering_requests_frame.data[7] = 0;
 
-        can_device.send(steering_requests_frame);
+        steering::can_device.send(steering_requests_frame);
 
         osDelay(20);
     }
