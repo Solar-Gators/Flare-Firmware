@@ -10,13 +10,16 @@
     if (!statement)            \
         Error_Handler();
 
+namespace telem
+{
+
 void can_init()
 {
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
-    ASSERT_HAL_OK(can_device.startCANDevice());
+    ASSERT_TRUE(telem::can_device.addCallbackId(
+        0x064, sg::CANFrameIDType::STANDARD, &telem::steeringRequestsCallback));
+    ASSERT_TRUE(telem::can_device.addCallbackId(
+        0x020, sg::CANFrameIDType::STANDARD, &telem::rearVCUStatusCallback));
+    ASSERT_HAL_OK(telem::can_device.startCANDevice());
 }
 
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
@@ -32,3 +35,5 @@ HAL_StatusTypeDef rearVCUStatusCallback(const sg::CANFrame& frame, void* ctx)
     volatile int x = 5;
     return HAL_OK;
 }
+
+}  // namespace telem

@@ -8,10 +8,10 @@
 
 void init_user()
 {
-    can_init();
+    telem::can_init();
 }
 
-void startDefaultTask_user(void* argument)
+void startHeartbeatTask_user(void* argument)
 {
     for (;;)
     {
@@ -23,7 +23,7 @@ void startDefaultTask_user(void* argument)
     }
 }
 
-void startGPSReadBuffer_user(void* argument)
+void startGPSReadBufferTask_user(void* argument)
 {
     for (;;)
     {
@@ -31,7 +31,7 @@ void startGPSReadBuffer_user(void* argument)
     }
 }
 
-void startGPSParseNMEA_user(void* argument)
+void startGPSParseNMEATask_user(void* argument)
 {
     for (;;)
     {
@@ -39,10 +39,24 @@ void startGPSParseNMEA_user(void* argument)
     }
 }
 
-void startTXRadio_user(void* argument)
+void startTXRadioTask_user(void* argument)
 {
     for (;;)
     {
         osDelay(1000);
+    }
+}
+void startKillSwitchTask_user(void* argument)
+{
+    sg::CANFrame kill_frame{0x010,
+                            sg::CANFrameIDType::STANDARD,
+                            sg::CANFrameRTRMode::DATA,
+                            sg::CANFrameLen::BYTES_1,
+                            0,
+                            {}};
+
+    for (;;)
+    {
+        osDelay(50);
     }
 }
