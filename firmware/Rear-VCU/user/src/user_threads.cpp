@@ -109,34 +109,34 @@ void init_user()
     {
         // TODO: can make these writes less frequent using flag, only call writepin on change yk
         // power eco pin
-        flare_can::MCPowerMode mc_power_mode_requested = vcu::state.mc_power_mode_requested.load();
+        flare_can::MCPowerMode mc_power_mode_requested = rearvcu::state.mc_power_mode_requested.load();
         HAL_GPIO_WritePin(MC_PWR_ECO_CTRL_GPIO_Port,
                           MC_PWR_ECO_CTRL_Pin,
                           static_cast<GPIO_PinState>(mc_power_mode_requested));
 
         // direction pin
-        flare_can::Direction direction_requested = vcu_state.direction_requested.load();
+        flare_can::Direction direction_requested = rearvcu::state.direction_requested.load();
         HAL_GPIO_WritePin(MC_FWD_REV_CTRL_GPIO_Port,
                           MC_FWD_REV_CTRL_Pin,
                           static_cast<GPIO_PinState>(direction_requested));
 
         // array contactors logic
         // TODO: user timer peripheral for consistent timer logic
-        if (vcu_state.array_contactors_requested_closed.load())
+        if (rearvcu::state.array_contactors_requested_closed.load())
         {
-            if (array_contactors == ArrayContactors::BOTH_OPEN)
+            if (array_contactors == flare_can::ArrayContactors::BOTH_OPEN)
             {
                 // close pre
                 HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_SET);
                 precharge_closed_timestamp = HAL_GetTick();
-                array_contactors = ArrayContactors::PRECHARGE_CLOSED;
+                array_contactors = flare_can::ArrayContactors::PRECHARGE_CLOSED;
             }
-            else if (array_contactors == ArrayContactors::PRECHARGE_CLOSED &&
+            else if (array_contactors == flare_can::ArrayContactors::PRECHARGE_CLOSED &&
                      HAL_GetTick() - precharge_closed_timestamp > ARRAY_PRECHARGE_HOLD_TIME_MS)
             {
                 // close main
                 HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_SET);
-                array_contactors = ArrayContactors::MAIN_CLOSED;
+                array_contactors = flare_can::ArrayContactors::MAIN_CLOSED;
             }
         }
         else
@@ -144,7 +144,7 @@ void init_user()
             // open both contactors
             HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
-            array_contactors = ArrayContactors::BOTH_OPEN;
+            array_contactors = flare_can::ArrayContactors::BOTH_OPEN;
         }
 
         // setup and send diagnostic can message
@@ -153,7 +153,7 @@ void init_user()
         rearvcu_statuses_frame.data[1] = static_cast<uint8_t>(direction_requested);
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
-        rearvcu_statuses_frame.data[4] = vcu_state.car_speed.load();
+        rearvcu_statuses_frame.data[4] = rearvcu::state.car_speed.load();
         can_device.send(rearvcu_statuses_frame);
 
         osDelay(200);

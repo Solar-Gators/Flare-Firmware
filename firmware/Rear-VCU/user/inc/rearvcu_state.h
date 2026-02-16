@@ -5,7 +5,7 @@
 
 #include <atomic>
 
-namespace vcu
+namespace rearvcu
 {
 
 struct RearVCUState
