@@ -44,7 +44,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${USER_DIR}/inc
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Inc
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.tpp)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/flare)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c

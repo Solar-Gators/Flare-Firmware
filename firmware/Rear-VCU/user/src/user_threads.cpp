@@ -102,20 +102,20 @@ void init_user()
                                         0,
                                         {}};
 
-    ArrayContactors array_contactors = ArrayContactors::BOTH_OPEN;
+    flare_can::ArrayContactors array_contactors = flare_can::ArrayContactors::BOTH_OPEN;
     uint32_t precharge_closed_timestamp = 0;
 
     for (;;)
     {
         // TODO: can make these writes less frequent using flag, only call writepin on change yk
         // power eco pin
-        MCPowerMode mc_power_mode_requested = vcu_state.mc_power_mode_requested.load();
+        flare_can::MCPowerMode mc_power_mode_requested = vcu::state.mc_power_mode_requested.load();
         HAL_GPIO_WritePin(MC_PWR_ECO_CTRL_GPIO_Port,
                           MC_PWR_ECO_CTRL_Pin,
                           static_cast<GPIO_PinState>(mc_power_mode_requested));
 
         // direction pin
-        Direction direction_requested = vcu_state.direction_requested.load();
+        flare_can::Direction direction_requested = vcu_state.direction_requested.load();
         HAL_GPIO_WritePin(MC_FWD_REV_CTRL_GPIO_Port,
                           MC_FWD_REV_CTRL_Pin,
                           static_cast<GPIO_PinState>(direction_requested));
