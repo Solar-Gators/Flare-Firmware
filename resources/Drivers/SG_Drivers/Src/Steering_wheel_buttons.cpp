@@ -2,7 +2,7 @@
 
 namespace sg
 {
-Button::Button(GPIO_TypeDef *port,
+Button::Button(GPIO_TypeDef* port,
                uint16_t pin,
                uint32_t debounce_time_ms,
                GPIO_PinState default_state,
@@ -95,13 +95,13 @@ GPIO_PinState Button::ReadPin()
     return HAL_GPIO_ReadPin(port_, pin_);
 }
 
-void Button::HandleEvent(void *argument)
+void Button::HandleEvent(void* argument)
 {
     (void) argument;
     while (1)
     {
         osSemaphoreAcquire(button_semaphore_id_, osWaitForever);
-        Button *button = triggered_button_;
+        Button* button = triggered_button_;
         if (button == nullptr)
         {
             continue;
@@ -305,7 +305,7 @@ extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
     for (int i = 0; i < MAX_BUTTONS; i++)
     {
-        sg::Button *button = sg::Button::button_list_[i];
+        sg::Button* button = sg::Button::button_list_[i];
         if (button == nullptr)
         {
             break;

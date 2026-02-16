@@ -24,7 +24,7 @@ namespace sg
 class BQ7692000PW : public I2CDevice
 {
    public:
-    BQ7692000PW(I2C_HandleTypeDef *h) : I2CDevice(h, i2c_addr){};
+    BQ7692000PW(I2C_HandleTypeDef* h) : I2CDevice(h, i2c_addr){};
 
     /**
      * @brief Enables Coulomb Counting and ADC reading on VC pins
@@ -40,7 +40,7 @@ class BQ7692000PW : public I2CDevice
      * @param vc_values list of cell voltages
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getVC(std::array<uint16_t, CELL_COUNT> &vc_values);
+    HAL_StatusTypeDef getVC(std::array<uint16_t, CELL_COUNT>& vc_values);
 
     /**
      * @brief Reads Coulomb count register after ensuring CC_Ready is true
@@ -48,7 +48,7 @@ class BQ7692000PW : public I2CDevice
      * @param [out] data Atomic value of CC
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getCC(uint16_t *data);
+    HAL_StatusTypeDef getCC(uint16_t* data);
 
     /**
      * @brief Retrieves current battery calculation
@@ -56,7 +56,7 @@ class BQ7692000PW : public I2CDevice
      * @param [out] data
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getBAT(uint16_t *data);
+    HAL_StatusTypeDef getBAT(uint16_t* data);
 
     /**
      * @brief Get the Die Temperature
@@ -64,7 +64,7 @@ class BQ7692000PW : public I2CDevice
      * @param [out] data
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getDieTemp(uint16_t *data);
+    HAL_StatusTypeDef getDieTemp(uint16_t* data);
 
     /**
      * @brief Get the Active Balancing register
@@ -72,7 +72,7 @@ class BQ7692000PW : public I2CDevice
      * @param [out] activeBal
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getActiveBalancing(uint8_t *activeBal);
+    HAL_StatusTypeDef getActiveBalancing(uint8_t* activeBal);
 
     /**
      * @brief Set the Active Balancing register
@@ -80,7 +80,7 @@ class BQ7692000PW : public I2CDevice
      * @param [in] activeBal
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef setActiveBalancing(uint8_t *activeBal);
+    HAL_StatusTypeDef setActiveBalancing(uint8_t* activeBal);
 
    private:
     /* VARIABLES */
@@ -118,7 +118,7 @@ class BQ7692000PW : public I2CDevice
      * @param [out] data
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getADCOffset(uint8_t *data);
+    HAL_StatusTypeDef getADCOffset(uint8_t* data);
 
     /**
      * @brief Gets ADC gain
@@ -126,7 +126,7 @@ class BQ7692000PW : public I2CDevice
      * @param [out] data from 0x00 to 0x1F
      * @return HAL_StatusTypeDef
      */
-    HAL_StatusTypeDef getADCGain(uint8_t *data);
+    HAL_StatusTypeDef getADCGain(uint8_t* data);
 
     /**
      * @brief Private CC start
