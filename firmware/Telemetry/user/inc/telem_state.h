@@ -16,10 +16,7 @@ namespace telem
 {
 
 inline std::atomic<flare_can::CarKilledStatus> killed_status{flare_can::CarKilledStatus::ALIVE};
-inline sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port,
-                                     KILL_SW_INPUT_Pin,
-                                     50,
-                                     GPIO_PIN_RESET);
+inline sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin, 50, GPIO_PIN_SET);
 
 inline void killSwitchPressedCallback()
 {

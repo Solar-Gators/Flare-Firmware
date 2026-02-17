@@ -48,6 +48,7 @@ void startTXRadioTask_user(void* argument)
         osDelay(1000);
     }
 }
+
 void startKillSwitchTask_user(void* argument)
 {
     sg::CANFrame kill_frame{0x010,
@@ -63,6 +64,7 @@ void startKillSwitchTask_user(void* argument)
         kill_frame.data[0] =
             static_cast<uint8_t>(telem::killed_status.load(std::memory_order_relaxed));
         telem::can_device.send(kill_frame);
+
         osDelay(50);
     }
 }
