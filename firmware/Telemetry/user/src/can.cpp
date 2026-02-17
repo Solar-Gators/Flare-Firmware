@@ -16,7 +16,7 @@ void can_init()
         can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
     ASSERT_TRUE(
         can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
-    ASSERT_HAL_OK(can_device.StartCANDevice());
+    ASSERT_HAL_OK(can_device.startCANDevice());
 }
 
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)

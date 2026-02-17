@@ -2,34 +2,12 @@
 
 #include <cstdint>
 
+#include "can_protocol.h"
+
 #include <atomic>
 
-enum class ArrayContactors : uint8_t
+namespace steering
 {
-    BOTH_OPEN = 0,
-    PRECHARGE_CLOSED = 1,
-    MAIN_CLOSED = 2
-};
-
-enum class TurnSignals : uint8_t
-{
-    OFF = 0,
-    LEFT = 1,
-    RIGHT = 1,
-    HAZARDS = 2
-};
-
-enum class Direction : uint8_t
-{
-    REVERSE = 0,
-    FORWARD = 1
-};
-
-enum class MCPowerMode : uint8_t
-{
-    ECO = 0,
-    POWER = 1
-};
 
 struct SteeringState
 {
@@ -39,17 +17,18 @@ struct SteeringState
     std::atomic<bool> array_contactors_requested_closed{};
     std::atomic<bool> horn_requested_on{};
     std::atomic<bool> headlights_requested_on{};
-    std::atomic<Direction> direction_requested{};
-    std::atomic<MCPowerMode> mc_power_mode_requested{};
-    std::atomic<TurnSignals> turn_signals_requested{};
+    std::atomic<flare_can::Direction> direction_requested{};
+    std::atomic<flare_can::MCPowerMode> mc_power_mode_requested{};
+    std::atomic<flare_can::TurnSignals> turn_signals_requested{};
 
     // recieving
     std::atomic<uint8_t> car_speed{};
-    std::atomic<ArrayContactors> array_contactors_status{};
-    std::atomic<uint16_t> supp_batt_voltage{};
-
-    std::atomic<uint32_t> can_messages_received{};
-    std::atomic<uint32_t> can_messages_sent{};
+    std::atomic<flare_can::ArrayContactors> array_contactors_status{};
+    std::atomic<uint16_t> supp_batt_voltage_mv{};
+    std::atomic<uint16_t> main_batt_voltage_cv{};  // V * 100
+    std::atomic<uint16_t> high_temp_dc{};          // C * 10
 };
 
-inline SteeringState steering_state;
+inline SteeringState state;
+
+}  // namespace steering

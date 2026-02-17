@@ -175,7 +175,7 @@ CANDevice::CANDevice(CanHandle_t* hcan)
     rangeCallbacks_.reserve(NUM_CAN_CALLBACKS);
 }
 
-HAL_StatusTypeDef CANDevice::StartCANDevice()
+HAL_StatusTypeDef CANDevice::startCANDevice()
 {
     if (!registerHandle(hcan_, this))
     {
@@ -286,7 +286,7 @@ HAL_StatusTypeDef CANDevice::StartCANDevice()
     return HAL_OK;
 }
 
-HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
+HAL_StatusTypeDef CANDevice::addFilterId(uint32_t can_id,
                                          CANFrameIDType id_type,
                                          CANFrameRTRMode rtr_mode,
                                          CANFramePriority priority)
@@ -396,7 +396,7 @@ HAL_StatusTypeDef CANDevice::AddFilterId(uint32_t can_id,
 #endif
 }
 
-HAL_StatusTypeDef CANDevice::AddFilterRange(uint32_t can_id,
+HAL_StatusTypeDef CANDevice::addFilterRange(uint32_t can_id,
                                             uint32_t range,
                                             sg::CANFrameIDType id_type,
                                             sg::CANFrameRTRMode rtr_mode,
@@ -624,7 +624,10 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
         // Queue the simple struct (safe to copy)
         osStatus_t stat = osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
         if (stat != osOK)
+        {
+            self->dropped_rx_frame_count_.fetch_add(1, std::memory_order_relaxed);
             return HAL_BUSY;
+        }
     }
 
     // Now signal the task that messages are available
@@ -651,24 +654,23 @@ void CANDevice::HandleRxTrampoline(void* arg)
         if (osMessageQueueGet(rx_queue_, &msg, nullptr, osWaitForever) == osOK)
         {
             // Process the message
-            const CanCallback* cb = find_by_id(msg.can_id);
-            if (cb)
+            if (const CanCallback* cb = find_by_id(msg.can_id); cb)
             {
                 (*cb)(msg, this);
-                continue;
             }
-
-            cb = find_by_range(msg.can_id);
-            if (cb)
+            else if (cb = find_by_range(msg.can_id); cb)
             {
                 (*cb)(msg, this);
-                continue;
             }
-
-            if (allCallback_)
+            else if (allCallback_)
             {
                 allCallback_(msg, this);
             }
+            else
+            {
+                continue;
+            }
+            processed_messages_count_.fetch_add(1, std::memory_order_relaxed);
         }
     }
 }
@@ -687,8 +689,11 @@ void CANDevice::HandleTxTrampoline(void* arg)
 
         // Spinlock until a tx mailbox is empty
 #if defined(HAL_FDCAN_MODULE_ENABLED)
+        // TODO: use event/callback/sem so thread blocks when no slot in mailbox
         while (!HAL_FDCAN_GetTxFifoFreeLevel(hcan_))
-            ;
+        {
+            osDelay(1);
+        }
 
         FDCAN_TxHeaderTypeDef txHeader = {
             .Identifier = tx_msg.can_id,
@@ -705,6 +710,7 @@ void CANDevice::HandleTxTrampoline(void* arg)
 
         // Request HAL message send
         HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg.data);
+        sent_messages_count_.fetch_add(1, std::memory_order_relaxed);
 #else
         while (!HAL_CAN_GetTxMailboxesFreeLevel(hcan_))
             ;
@@ -726,7 +732,7 @@ void CANDevice::HandleTxTrampoline(void* arg)
     }
 }
 
-HAL_StatusTypeDef CANDevice::Send(const CANFrame& msg)
+HAL_StatusTypeDef CANDevice::send(const CANFrame& msg)
 {
     if (osMessageQueuePut(tx_queue_, &msg, 0, TX_TIMEOUT) != osOK)
     {

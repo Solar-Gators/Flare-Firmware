@@ -42,21 +42,36 @@ void init_user()
     // TODO: initialize ina chip here
 
     // can
-    can_init();
+    rearvcu::can_init();
 }
 
 [[noreturn]] void startHeartbeatTask_user(void* argument)
 {
+    sg::CANFrame supp_batt_frame{0x021,
+                                 sg::CANFrameIDType::STANDARD,
+                                 sg::CANFrameRTRMode::DATA,
+                                 sg::CANFrameLen::BYTES_4,
+                                 0,
+                                 {}};
+
     for (;;)
     {
         // blink ok led
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
 
         // send mitsuba request for frame0 to get wheel rpm, shouldnt be sent faster than every 500ms
-        can_device.Send(mitsuba_frame0_request);
-        ++vcu_state.can_messages_sent;
+        rearvcu::can_device.send(rearvcu::mitsuba_frame0_request);
 
-        osDelay(550);
+        // supp batt voltage can be read and sent in this thread as its not as urgent/important
+        uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
+        uint16_t supp_batt_current = 0xFFFF;     // TODO: could get current draw of supp batt here
+        supp_batt_frame.data[0] = static_cast<uint8_t>(supp_batt_voltage_mv);       // lsb
+        supp_batt_frame.data[1] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
+        supp_batt_frame.data[2] = static_cast<uint8_t>(supp_batt_current);          // lsb
+        supp_batt_frame.data[3] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
+        rearvcu::can_device.send(supp_batt_frame);
+
+        osDelay(500);
     }
 }
 
@@ -83,45 +98,46 @@ void init_user()
     sg::CANFrame rearvcu_statuses_frame{0x020,
                                         sg::CANFrameIDType::STANDARD,
                                         sg::CANFrameRTRMode::DATA,
-                                        sg::CANFrameLen::BYTES_16,
+                                        sg::CANFrameLen::BYTES_8,
                                         0,
                                         {}};
 
-    ArrayContactors array_contactors = ArrayContactors::BOTH_OPEN;
+    flare_can::ArrayContactors array_contactors = flare_can::ArrayContactors::BOTH_OPEN;
     uint32_t precharge_closed_timestamp = 0;
 
     for (;;)
     {
         // TODO: can make these writes less frequent using flag, only call writepin on change yk
         // power eco pin
-        MCPowerMode mc_power_mode_requested = vcu_state.mc_power_mode_requested.load();
+        flare_can::MCPowerMode mc_power_mode_requested =
+            rearvcu::state.mc_power_mode_requested.load();
         HAL_GPIO_WritePin(MC_PWR_ECO_CTRL_GPIO_Port,
                           MC_PWR_ECO_CTRL_Pin,
                           static_cast<GPIO_PinState>(mc_power_mode_requested));
 
         // direction pin
-        Direction direction_requested = vcu_state.direction_requested.load();
+        flare_can::Direction direction_requested = rearvcu::state.direction_requested.load();
         HAL_GPIO_WritePin(MC_FWD_REV_CTRL_GPIO_Port,
                           MC_FWD_REV_CTRL_Pin,
                           static_cast<GPIO_PinState>(direction_requested));
 
         // array contactors logic
         // TODO: user timer peripheral for consistent timer logic
-        if (vcu_state.array_contactors_requested_closed.load())
+        if (rearvcu::state.array_contactors_requested_closed.load())
         {
-            if (array_contactors == ArrayContactors::BOTH_OPEN)
+            if (array_contactors == flare_can::ArrayContactors::BOTH_OPEN)
             {
                 // close pre
                 HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_SET);
                 precharge_closed_timestamp = HAL_GetTick();
-                array_contactors = ArrayContactors::PRECHARGE_CLOSED;
+                array_contactors = flare_can::ArrayContactors::PRECHARGE_CLOSED;
             }
-            else if (array_contactors == ArrayContactors::PRECHARGE_CLOSED &&
+            else if (array_contactors == flare_can::ArrayContactors::PRECHARGE_CLOSED &&
                      HAL_GetTick() - precharge_closed_timestamp > ARRAY_PRECHARGE_HOLD_TIME_MS)
             {
                 // close main
                 HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_SET);
-                array_contactors = ArrayContactors::MAIN_CLOSED;
+                array_contactors = flare_can::ArrayContactors::MAIN_CLOSED;
             }
         }
         else
@@ -129,14 +145,8 @@ void init_user()
             // open both contactors
             HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
-            array_contactors = ArrayContactors::BOTH_OPEN;
+            array_contactors = flare_can::ArrayContactors::BOTH_OPEN;
         }
-
-        // TODO: could get voltage of supp batt here
-        uint16_t supp_batt_voltage_mv = 0x0F0F;  // dummy
-
-        // TODO: could get current draw of supp batt here
-        uint16_t supp_batt_current = 0x0F0F;  // dummy
 
         // setup and send diagnostic can message
         rearvcu_statuses_frame.data[0] =
@@ -144,12 +154,8 @@ void init_user()
         rearvcu_statuses_frame.data[1] = static_cast<uint8_t>(direction_requested);
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
-        rearvcu_statuses_frame.data[4] = static_cast<uint8_t>(supp_batt_voltage_mv);       // lsb
-        rearvcu_statuses_frame.data[5] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
-        rearvcu_statuses_frame.data[6] = static_cast<uint8_t>(supp_batt_current);          // lsb
-        rearvcu_statuses_frame.data[7] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
-        rearvcu_statuses_frame.data[8] = vcu_state.car_speed.load();
-        can_device.Send(rearvcu_statuses_frame);
+        rearvcu_statuses_frame.data[4] = rearvcu::state.car_speed.load();
+        rearvcu::can_device.send(rearvcu_statuses_frame);
 
         osDelay(200);
     }
