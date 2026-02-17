@@ -9,8 +9,12 @@
 
 void init_user()
 {
-    // TODO: turn kill light off, no hardware for it yet lol
+    // turn lights off
     HAL_GPIO_WritePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
+    // TODO: turn off middle one here when we get it
+
     telem::killSwitchButtonInit();
     telem::canInit();
 }
@@ -40,6 +44,7 @@ void startHeartbeatTask_user(void* argument)
         {
             HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
+            // TODO: turn off middle one here when we get it
             turn_signals = new_turn_signals;
         }
         // toggle correct led's
@@ -55,6 +60,7 @@ void startHeartbeatTask_user(void* argument)
                 HAZARDS:  // works becuase we turn lights off when state changes
                 HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
                 HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
+                // TODO: toggle middle one here when we get it
             default:
                 Error_Handler();
         }
