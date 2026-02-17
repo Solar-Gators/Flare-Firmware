@@ -47,6 +47,7 @@ HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx)
     {
         telem::killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
     }
+    return HAL_OK;
 }
 
 }  // namespace telem
