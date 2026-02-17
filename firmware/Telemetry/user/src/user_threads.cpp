@@ -61,6 +61,7 @@ void startHeartbeatTask_user(void* argument)
                 HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
                 HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
                 // TODO: toggle middle one here when we get it
+                break;
             default:
                 Error_Handler();
         }
