@@ -20,6 +20,8 @@ void canInit()
         0x064, sg::CANFrameIDType::STANDARD, &telem::steeringRequestsCallback));
     ASSERT_TRUE(telem::can_device.addCallbackId(
         0x020, sg::CANFrameIDType::STANDARD, &telem::rearVCUStatusCallback));
+    ASSERT_TRUE(telem::can_device.addCallbackId(
+        0x040, sg::CANFrameIDType::STANDARD, &telem::bmsFaultsMessageCallback));
     ASSERT_HAL_OK(telem::can_device.startCANDevice());
 }
 
@@ -37,6 +39,14 @@ HAL_StatusTypeDef rearVCUStatusCallback(const sg::CANFrame& frame, void* ctx)
     // do stuff
     volatile int x = 5;
     return HAL_OK;
+}
+
+HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx)
+{
+    if (frame.data[0] != 0 || frame.data[1] != 0)
+    {
+        telem::killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
+    }
 }
 
 }  // namespace telem
