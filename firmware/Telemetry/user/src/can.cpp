@@ -1,6 +1,7 @@
 #include "can.h"
 
 #include "CanDriver.hpp"
+#include "telem_state.h"
 
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
@@ -13,7 +14,7 @@
 namespace telem
 {
 
-void can_init()
+void canInit()
 {
     ASSERT_TRUE(telem::can_device.addCallbackId(
         0x064, sg::CANFrameIDType::STANDARD, &telem::steeringRequestsCallback));
@@ -24,8 +25,10 @@ void can_init()
 
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
 {
-    // do stuff
-    volatile int x = 5;
+    // byte 0 is turn signals
+    telem::turn_signals_status.store(static_cast<flare_can::TurnSignals>(frame.data[0]),
+                                     std::memory_order_relaxed);
+
     return HAL_OK;
 }
 

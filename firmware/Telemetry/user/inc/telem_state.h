@@ -15,19 +15,20 @@
 namespace telem
 {
 
-inline std::atomic<flare_can::CarKilledStatus> killed_status{flare_can::CarKilledStatus::ALIVE};
+inline std::atomic killed_status{flare_can::CarKilledStatus::ALIVE};
 inline sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin, 50, GPIO_PIN_SET);
+inline std::atomic turn_signals_status{flare_can::TurnSignals::OFF};
 
-inline void killSwitchPressedCallback()
-{
-    killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
-}
+constexpr size_t led_toggle_period_ms = 500;
 
 inline void killSwitchButtonInit()
 {
     // when only normal press is registered, oon any button press it should call the callback
-    kill_switch_button.RegisterNormalPressCallback(&killSwitchPressedCallback);
+    kill_switch_button.RegisterNormalPressCallback(
+        []() { killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed); });
 }
+
+inline void toggleLights() {}
 
 }  // namespace telem
 

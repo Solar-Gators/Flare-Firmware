@@ -55,7 +55,7 @@ const osThreadAttr_t HeartbeatTask_attributes = {
   .stack_size = sizeof(HeartbeatTaskBuffer),
   .cb_mem = &HeartbeatTaskCB,
   .cb_size = sizeof(HeartbeatTaskCB),
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityNormal1,
 };
 /* Definitions for GPSReadBufferTask */
 osThreadId_t GPSReadBufferTaskHandle;
