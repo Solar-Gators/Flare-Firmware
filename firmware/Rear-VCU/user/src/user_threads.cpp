@@ -42,7 +42,7 @@ void init_user()
     // TODO: initialize ina chip here
 
     // can
-    can_init();
+    rearvcu::can_init();
 }
 
 [[noreturn]] void startHeartbeatTask_user(void* argument)
@@ -60,7 +60,7 @@ void init_user()
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
 
         // send mitsuba request for frame0 to get wheel rpm, shouldnt be sent faster than every 500ms
-        can_device.send(mitsuba_frame0_request);
+        rearvcu::can_device.send(rearvcu::mitsuba_frame0_request);
 
         // supp batt voltage can be read and sent in this thread as its not as urgent/important
         uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
@@ -69,7 +69,7 @@ void init_user()
         supp_batt_frame.data[1] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
         supp_batt_frame.data[2] = static_cast<uint8_t>(supp_batt_current);          // lsb
         supp_batt_frame.data[3] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
-        can_device.send(supp_batt_frame);
+        rearvcu::can_device.send(supp_batt_frame);
 
         osDelay(500);
     }
@@ -155,7 +155,7 @@ void init_user()
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
         rearvcu_statuses_frame.data[4] = rearvcu::state.car_speed.load();
-        can_device.send(rearvcu_statuses_frame);
+        rearvcu::can_device.send(rearvcu_statuses_frame);
 
         osDelay(200);
     }

@@ -20,7 +20,7 @@ HAL_StatusTypeDef BQ7692000PW::init()
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getCC(uint16_t *data)
+HAL_StatusTypeDef BQ7692000PW::getCC(uint16_t* data)
 {
     TRY(checkCC());
 
@@ -28,7 +28,7 @@ HAL_StatusTypeDef BQ7692000PW::getCC(uint16_t *data)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getVC(std::array<uint16_t, CELL_COUNT> &vc_values)
+HAL_StatusTypeDef BQ7692000PW::getVC(std::array<uint16_t, CELL_COUNT>& vc_values)
 {
     TRY(checkVC());
 
@@ -50,7 +50,7 @@ HAL_StatusTypeDef BQ7692000PW::getVC(std::array<uint16_t, CELL_COUNT> &vc_values
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getBAT(uint16_t *data)
+HAL_StatusTypeDef BQ7692000PW::getBAT(uint16_t* data)
 {
     TRY(readN(static_cast<uint8_t>(registers::BAT_HI), dataBAT_, TWO_BYTES));
 
@@ -69,7 +69,7 @@ HAL_StatusTypeDef BQ7692000PW::getBAT(uint16_t *data)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getDieTemp(uint16_t *data)
+HAL_StatusTypeDef BQ7692000PW::getDieTemp(uint16_t* data)
 {
     TRY(readN(static_cast<uint8_t>(registers::TS1_HI), dataTemp_, TWO_BYTES));
 
@@ -88,14 +88,14 @@ HAL_StatusTypeDef BQ7692000PW::getDieTemp(uint16_t *data)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getActiveBalancing(uint8_t *activeBal)
+HAL_StatusTypeDef BQ7692000PW::getActiveBalancing(uint8_t* activeBal)
 {
     TRY(readN(static_cast<uint8_t>(registers::CELL_BAL1), activeBal, ONE_BYTE));
 
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::setActiveBalancing(uint8_t *activeBal)
+HAL_StatusTypeDef BQ7692000PW::setActiveBalancing(uint8_t* activeBal)
 {
     // Ensure upper three bits are not written
     uint8_t write = *activeBal & ACTIVE_BAL_MASK;
@@ -104,7 +104,7 @@ HAL_StatusTypeDef BQ7692000PW::setActiveBalancing(uint8_t *activeBal)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getADCGain(uint8_t *data)
+HAL_StatusTypeDef BQ7692000PW::getADCGain(uint8_t* data)
 {
     uint8_t reg1;  // = (formatted_data & ADC_GAIN_REG1_MASK) >> 1;
     uint8_t reg2;  // = (formatted_data & ADC_GAIN_REG2_MASK) << 5;
@@ -117,7 +117,7 @@ HAL_StatusTypeDef BQ7692000PW::getADCGain(uint8_t *data)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef BQ7692000PW::getADCOffset(uint8_t *data)
+HAL_StatusTypeDef BQ7692000PW::getADCOffset(uint8_t* data)
 {
     TRY(readN(static_cast<uint8_t>(registers::ADCOFFSET), data, ONE_BYTE));
 
