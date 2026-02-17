@@ -4,7 +4,9 @@
 #include <stm32u5xx_hal.h>
 
 #include "can.h"
+#include "can_protocol.h"
 #include "main.h"
+#include "telem_state.h"
 
 void init_user()
 {
@@ -57,6 +59,10 @@ void startKillSwitchTask_user(void* argument)
 
     for (;;)
     {
+        // send current kill switch message
+        kill_frame.data[0] =
+            static_cast<uint8_t>(telem::killed_status.load(std::memory_order_relaxed));
+        telem::can_device.send(kill_frame);
         osDelay(50);
     }
 }

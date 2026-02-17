@@ -9,16 +9,16 @@
 
 #include <array>
 
-static std::array<sg::Button, 8> buttons = {{
-    {BUTTON1_GPIO_Port, BUTTON1_Pin},
-    {BUTTON2_GPIO_Port, BUTTON2_Pin},
-    {BUTTON3_GPIO_Port, BUTTON3_Pin},
-    {BUTTON4_GPIO_Port, BUTTON4_Pin},
-    {BUTTON5_GPIO_Port, BUTTON5_Pin},
-    {BUTTON6_GPIO_Port, BUTTON6_Pin},
-    {BUTTON7_GPIO_Port, BUTTON7_Pin},
-    {BUTTON8_GPIO_Port, BUTTON8_Pin},
-}};
+static std::array<sg::Button, 8> buttons = {
+    sg::Button(BUTTON1_GPIO_Port, BUTTON1_Pin),
+    sg::Button(BUTTON2_GPIO_Port, BUTTON2_Pin),
+    sg::Button(BUTTON3_GPIO_Port, BUTTON3_Pin),
+    sg::Button(BUTTON4_GPIO_Port, BUTTON4_Pin),
+    sg::Button(BUTTON5_GPIO_Port, BUTTON5_Pin),
+    sg::Button(BUTTON6_GPIO_Port, BUTTON6_Pin),
+    sg::Button(BUTTON7_GPIO_Port, BUTTON7_Pin),
+    sg::Button(BUTTON8_GPIO_Port, BUTTON8_Pin),
+};
 
 // left turn
 void button1PressedCallback()
