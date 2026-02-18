@@ -45,24 +45,23 @@ void startScreenTask_user(void* argument)
         uint32_t cv = steering::state.main_batt_voltage_cv.load(std::memory_order_relaxed);
         uint32_t whole = cv / 100;
         uint32_t frac = (cv % 100);
-        std::array<char, 16> main_batt_v{};
-        snprintf(main_batt_v.data(),
-                 sizeof(main_batt_v),
+        std::array<char, 16> text_buffer{};
+        snprintf(text_buffer.data(),
+                 sizeof(text_buffer),
                  "%lu.%02lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.DrawText(30, 30, main_batt_v.data(), RGB565_BLACK);
+        display.DrawText(30, 30, text_buffer.data(), RGB565_BLACK);
 
         uint32_t dc = steering::state.high_temp_dc.load(std::memory_order_relaxed);
         whole = dc / 10;
         frac = (dc % 10);
-        std::array<char, 16> high_temp_c{};
-        snprintf(high_temp_c.data(),
-                 sizeof(high_temp_c),
+        snprintf(text_buffer.data(),
+                 sizeof(text_buffer),
                  "%lu.%lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.DrawText(30, 60, high_temp_c.data(), RGB565_BLACK);
+        display.DrawText(30, 60, text_buffer.data(), RGB565_BLACK);
 
         osDelay(500);
     }
