@@ -35,12 +35,25 @@ void startHeartbeatTask_user(void* argument)
 
 void startScreenTask_user(void* argument)
 {
-    ILI9341 display(320, 240);
+    // Top Right (0,0)
+    // Bottom Right (240, 0)
+    // Top Left (0, 320)
+    // Bottom Left (240, 320)
+    // Items build from top right to bottom left
+
+    ILI9341 display(240, 320);
     display.Init();
+    display.SetRotation(3);
+    display.ClearScreen(RGB565_ORANGE);
+    display.SetTextSize(2);
+    char buf[6];
 
     for (;;)
     {
         display.ClearScreen(RGB565_WHITE);
+
+        // TODO: create indicators for the right buttons to turn on as the lights on the actual buttons arent working
+        // TODO: important info: cruise control, regenerative breaking, car speed, array connectors, sup batt voltage
 
         uint32_t cv = steering::state.main_batt_voltage_cv.load(std::memory_order_relaxed);
         uint32_t whole = cv / 100;
@@ -62,6 +75,31 @@ void startScreenTask_user(void* argument)
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
         display.DrawText(30, 60, text_buffer.data(), RGB565_BLACK);
+
+        uint8_t speed = steering::state.car_speed.load();
+        uint16_t sup_batt_volt = steering::state.supp_batt_voltage_mv.load();
+        flare_can::Direction direction = steering::state.direction_requested.load();
+
+        speed++;  //remove after testing
+
+        itoa(speed, buf, 10);
+        display.DrawText(5, 20, "Speed: ", RGB565_BLUE);
+        display.DrawText(75, 20, buf, RGB565_BLUE);
+
+        itoa(sup_batt_volt, buf, 10);
+        display.DrawText(5, 40, "Sup volt: ", RGB565_BLUE);
+        display.DrawText(115, 40, buf, RGB565_BLUE);
+
+        display.DrawText(5, 60, "Direction: ", RGB565_BLUE);
+        if (static_cast<int>(direction) == 1)
+            display.DrawText(130, 60, "Forward", RGB565_BLUE);
+        else if (static_cast<int>(direction) == 0)
+            display.DrawText(130, 60, "Backward", RGB565_BLUE);
+        else
+            display.DrawText(130, 60, "ERROR", RGB565_BLUE);
+
+        // snprintf causes hard fault
+        // maybe different screens
 
         osDelay(500);
     }
