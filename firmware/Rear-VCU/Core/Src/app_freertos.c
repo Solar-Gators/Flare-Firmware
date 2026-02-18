@@ -168,11 +168,7 @@ void startRegenThrottleTask(void *argument)
 void startOutputsTask(void *argument)
 {
   /* USER CODE BEGIN outputsTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    startOutputsTask_user(argument);
   /* USER CODE END outputsTask */
 }
 

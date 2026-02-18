@@ -98,6 +98,7 @@ void button6PressedCallback()
 // horn, should just poll for this one, not a toggle ideally
 void button7PressedCallback()
 {
+    /*
     // don't toggle this light this light is messing with other stuff i think its hardware issues
     if (buttons[6].GetToggleState())
     {
@@ -107,6 +108,7 @@ void button7PressedCallback()
     {
         HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_RESET);
     }
+    */
 }
 
 // cc-
