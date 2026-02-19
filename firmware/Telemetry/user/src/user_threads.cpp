@@ -56,11 +56,12 @@ void startHeartbeatTask_user(void* argument)
             case flare_can::TurnSignals::RIGHT:
                 HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
                 break;
-            case flare_can::TurnSignals::
-                HAZARDS:  // works becuase we turn lights off when state changes
+            case flare_can::TurnSignals::HAZARDS:
                 HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
                 HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
                 // TODO: toggle middle one here when we get it
+                break;
+            case flare_can::TurnSignals::OFF:
                 break;
             default:
                 Error_Handler();
