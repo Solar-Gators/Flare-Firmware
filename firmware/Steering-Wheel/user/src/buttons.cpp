@@ -149,6 +149,7 @@ void initButtons()
     buttons[5].RegisterNormalPressCallback(&button6PressedCallback);
     buttons[6].RegisterNormalPressCallback(&button7PressedCallback);
     buttons[7].RegisterNormalPressCallback(&button8PressedCallback);
+    sg::Button::InitButtons();
 }
 
 void recalculateTurnSignals()

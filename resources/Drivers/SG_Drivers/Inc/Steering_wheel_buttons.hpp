@@ -20,6 +20,8 @@ class Button
            GPIO_PinState default_state = GPIO_PIN_SET,
            bool initial_toggle_state = false);
 
+    static void InitButtons();
+
     void RegisterNormalPressCallback(void (*callback)(void));
     void RegisterLongPressCallback(void (*callback)(void),
                                    uint32_t long_press_time_ms = 500,
@@ -41,7 +43,7 @@ class Button
     static inline Button* triggered_button_ = nullptr;
 
     // Button trigger semaphore
-    static inline osSemaphoreId_t button_semaphore_id_ = osSemaphoreNew(1, 0, NULL);
+    static inline osSemaphoreId_t button_semaphore_id_ = nullptr;
 
     // Global button list (Fixed array instead of vector)
     static inline Button* button_list_[MAX_BUTTONS] = {nullptr};
@@ -63,8 +65,7 @@ class Button
     };
 
     // This static initialization spawns the thread automatically
-    static inline osThreadId_t handle_press_task_id_ =
-        osThreadNew(HandleEvent, NULL, &handle_press_task_attributes_);
+    static inline osThreadId_t handle_press_task_id_ = nullptr;
 
     void DisableInterrupt();
     void EnableInterrupt();

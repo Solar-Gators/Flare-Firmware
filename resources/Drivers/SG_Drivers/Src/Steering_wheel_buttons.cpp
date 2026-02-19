@@ -31,6 +31,17 @@ Button::Button(GPIO_TypeDef* port,
 
     EnableInterrupt();
 }
+void Button::InitButtons()
+{
+    if (button_semaphore_id_ == nullptr)
+    {
+        button_semaphore_id_ = osSemaphoreNew(1, 0, NULL);
+    }
+    if (handle_press_task_id_ == nullptr)
+    {
+        handle_press_task_id_ = osThreadNew(HandleEvent, NULL, &handle_press_task_attributes_);
+    }
+}
 
 void Button::RegisterNormalPressCallback(void (*callback)(void))
 {
