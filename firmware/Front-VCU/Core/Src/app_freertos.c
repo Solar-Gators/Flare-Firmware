@@ -44,11 +44,18 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
+/* Definitions for Heartbeat */
+osThreadId_t HeartbeatHandle;
+const osThreadAttr_t Heartbeat_attributes = {
+  .name = "Heartbeat",
   .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
+/* Definitions for ThrottleRead */
+osThreadId_t ThrottleReadHandle;
+const osThreadAttr_t ThrottleRead_attributes = {
+  .name = "ThrottleRead",
+  .priority = (osPriority_t) osPriorityAboveNormal,
   .stack_size = 128 * 4
 };
 
@@ -82,8 +89,11 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of Heartbeat */
+  HeartbeatHandle = osThreadNew(StartHeartbeat, NULL, &Heartbeat_attributes);
+
+  /* creation of ThrottleRead */
+  ThrottleReadHandle = osThreadNew(StartThrottleRead, NULL, &ThrottleRead_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -94,19 +104,34 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_StartHeartbeat */
 /**
-* @brief Function implementing the defaultTask thread.
+* @brief Function implementing the Heartbeat thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_StartHeartbeat */
+void StartHeartbeat(void *argument)
 {
-  /* USER CODE BEGIN defaultTask */
+  /* USER CODE BEGIN Heartbeat */
   /* Infinite loop */
-  StartDefaultTask_user(argument);
-  /* USER CODE END defaultTask */
+  StartHeartbeat_user(argument);
+  /* USER CODE END Heartbeat */
+}
+
+/* USER CODE BEGIN Header_StartThrottleRead */
+/**
+* @brief Function implementing the ThrottleRead thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartThrottleRead */
+void StartThrottleRead(void *argument)
+{
+  /* USER CODE BEGIN ThrottleRead */
+  /* Infinite loop */
+  StartThrottleRead_user(argument);
+  /* USER CODE END ThrottleRead */
 }
 
 /* Private application code --------------------------------------------------*/
