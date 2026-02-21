@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 # Edit your MCU information up to the next border
 get_filename_component(SOURCE_DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${SOURCE_DIR_NAME})
+set(BOARD_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/")  # Where we want the artifacts to go:
 set(USER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/user)
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../resources)
 
@@ -34,13 +35,13 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
     ${RESOURCES_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
     ${RESOURCES_DIR}/Drivers/CMSIS/Include
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/include
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${USER_DIR}/inc
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Include)
+    ${USER_DIR}/inc)
 
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
@@ -53,14 +54,19 @@ file(GLOB STM32CUBEMX_SOURCES
     ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
-    ${USER_DIR}/src/*.c
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.cpp)
+    ${USER_DIR}/src/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
     ${STM32CUBEMX_SOURCES} 
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
+
+set_target_properties(${EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+        ARCHIVE_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+        LIBRARY_OUTPUT_DIRECTORY  "${BOARD_BUILD_DIR}"
+)
 
 # Strict warnings only for user sources
 set_source_files_properties(${PROJECT_SOURCES} PROPERTIES
@@ -118,3 +124,14 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     ${EXECUTABLE}.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
     ${EXECUTABLE}.bin)
+
+# Size is fine, it uses $<TARGET_FILE> which already points to BOARD_BUILD_DIR
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+        COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
+)
+
+# Explicitly put hex/bin next to the ELF
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${EXECUTABLE}> ${BOARD_BUILD_DIR}/${EXECUTABLE}.hex
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${BOARD_BUILD_DIR}/${EXECUTABLE}.bin
+)

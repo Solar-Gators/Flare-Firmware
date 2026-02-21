@@ -52,8 +52,12 @@ void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
 void DebugMon_Handler(void);
+<<<<<<< HEAD
 void GPDMA1_Channel0_IRQHandler(void);
 void ADC1_IRQHandler(void);
+=======
+void TIM1_UP_IRQHandler(void);
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

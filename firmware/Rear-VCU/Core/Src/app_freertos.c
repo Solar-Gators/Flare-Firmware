@@ -26,6 +26,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -44,12 +45,41 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
+/* Definitions for hearbeatTask */
+osThreadId_t hearbeatTaskHandle;
+uint32_t heartbeatTaskBuffer[ 64 ];
+osStaticThreadDef_t heartbeatTaskCB;
+const osThreadAttr_t hearbeatTask_attributes = {
+  .name = "hearbeatTask",
+  .stack_mem = &heartbeatTaskBuffer[0],
+  .stack_size = sizeof(heartbeatTaskBuffer),
+  .cb_mem = &heartbeatTaskCB,
+  .cb_size = sizeof(heartbeatTaskCB),
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+};
+/* Definitions for regenThrottleTask */
+osThreadId_t regenThrottleTaskHandle;
+uint32_t regenThrottleTaskBuffer[ 128 ];
+osStaticThreadDef_t regenThrottleTaskCB;
+const osThreadAttr_t regenThrottleTask_attributes = {
+  .name = "regenThrottleTask",
+  .stack_mem = &regenThrottleTaskBuffer[0],
+  .stack_size = sizeof(regenThrottleTaskBuffer),
+  .cb_mem = &regenThrottleTaskCB,
+  .cb_size = sizeof(regenThrottleTaskCB),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for outputsTask */
+osThreadId_t outputsTaskHandle;
+uint32_t outputsTaskBuffer[ 128 ];
+osStaticThreadDef_t outputsTaskCB;
+const osThreadAttr_t outputsTask_attributes = {
+  .name = "outputsTask",
+  .stack_mem = &outputsTaskBuffer[0],
+  .stack_size = sizeof(outputsTaskBuffer),
+  .cb_mem = &outputsTaskCB,
+  .cb_size = sizeof(outputsTaskCB),
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,8 +112,14 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of hearbeatTask */
+  hearbeatTaskHandle = osThreadNew(startHeartbeatTask, NULL, &hearbeatTask_attributes);
+
+  /* creation of regenThrottleTask */
+  regenThrottleTaskHandle = osThreadNew(startRegenThrottleTask, NULL, &regenThrottleTask_attributes);
+
+  /* creation of outputsTask */
+  outputsTaskHandle = osThreadNew(startOutputsTask, NULL, &outputsTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -94,19 +130,50 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_startHeartbeatTask */
 /**
-* @brief Function implementing the defaultTask thread.
+* @brief Function implementing the hearbeatTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_startHeartbeatTask */
+void startHeartbeatTask(void *argument)
 {
-  /* USER CODE BEGIN defaultTask */
+  /* USER CODE BEGIN hearbeatTask */
+    startHeartbeatTask_user(argument);
+  /* USER CODE END hearbeatTask */
+}
+
+/* USER CODE BEGIN Header_startRegenThrottleTask */
+/**
+* @brief Function implementing the regenThrottleTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_startRegenThrottleTask */
+void startRegenThrottleTask(void *argument)
+{
+  /* USER CODE BEGIN regenThrottleTask */
+    startRegenThrottleTask_user(argument);
+  /* USER CODE END regenThrottleTask */
+}
+
+/* USER CODE BEGIN Header_startOutputsTask */
+/**
+* @brief Function implementing the outputsTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_startOutputsTask */
+void startOutputsTask(void *argument)
+{
+  /* USER CODE BEGIN outputsTask */
   /* Infinite loop */
-  StartDefaultTask_user(argument);
-  /* USER CODE END defaultTask */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END outputsTask */
 }
 
 /* Private application code --------------------------------------------------*/

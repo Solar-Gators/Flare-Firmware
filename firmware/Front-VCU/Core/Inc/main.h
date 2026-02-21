@@ -57,10 +57,25 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+<<<<<<< HEAD
 #define OK_LED_Pin GPIO_PIN_0
 #define OK_LED_GPIO_Port GPIOA
 #define Throttle_Pin GPIO_PIN_6
 #define Throttle_GPIO_Port GPIOA
+=======
+#define EEPROM_WRITE_CTRL_Pin GPIO_PIN_3
+#define EEPROM_WRITE_CTRL_GPIO_Port GPIOC
+#define OK_LED_Pin GPIO_PIN_0
+#define OK_LED_GPIO_Port GPIOA
+#define ERROR_LED_Pin GPIO_PIN_1
+#define ERROR_LED_GPIO_Port GPIOA
+#define STROBE_Pin GPIO_PIN_2
+#define STROBE_GPIO_Port GPIOA
+#define THROTTLE_Pin GPIO_PIN_6
+#define THROTTLE_GPIO_Port GPIOA
+#define BRAKE_Pin GPIO_PIN_7
+#define BRAKE_GPIO_Port GPIOA
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 
 /* USER CODE BEGIN Private defines */
 

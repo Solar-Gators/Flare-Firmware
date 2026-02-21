@@ -20,8 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32u5xx_it.h"
-#include "FreeRTOS.h"
-#include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -57,10 +55,15 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+<<<<<<< HEAD
 extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc1;
+=======
+extern TIM_HandleTypeDef htim1;
+
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -164,6 +167,7 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /**
+<<<<<<< HEAD
   * @brief This function handles GPDMA1 Channel 0 global interrupt.
   */
 void GPDMA1_Channel0_IRQHandler(void)
@@ -189,6 +193,19 @@ void ADC1_IRQHandler(void)
   /* USER CODE BEGIN ADC1_IRQn 1 */
 
   /* USER CODE END ADC1_IRQn 1 */
+=======
+  * @brief This function handles TIM1 Update interrupt.
+  */
+void TIM1_UP_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_UP_IRQn 0 */
+
+  /* USER CODE END TIM1_UP_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim1);
+  /* USER CODE BEGIN TIM1_UP_IRQn 1 */
+
+  /* USER CODE END TIM1_UP_IRQn 1 */
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 }
 
 /* USER CODE BEGIN 1 */

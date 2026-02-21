@@ -42,9 +42,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+<<<<<<< HEAD
 DMA_NodeTypeDef Node_GPDMA1_Channel0;
 DMA_QListTypeDef List_GPDMA1_Channel0;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
+=======
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 
 FDCAN_HandleTypeDef hfdcan1;
 
@@ -63,6 +66,10 @@ static void MX_GPDMA1_Init(void);
 static void MX_ICACHE_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_FDCAN1_Init(void);
+<<<<<<< HEAD
+=======
+static void MX_ADC1_Init(void);
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 static void MX_I2C2_Init(void);
 static void MX_I2C4_Init(void);
 /* USER CODE BEGIN PFP */
@@ -126,6 +133,10 @@ int main(void)
   MX_ICACHE_Init();
   MX_ADC1_Init();
   MX_FDCAN1_Init();
+<<<<<<< HEAD
+=======
+  MX_ADC1_Init();
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   MX_I2C2_Init();
   MX_I2C4_Init();
   /* USER CODE BEGIN 2 */
@@ -222,8 +233,11 @@ static void MX_ADC1_Init(void)
 
   /* USER CODE END ADC1_Init 0 */
 
+<<<<<<< HEAD
   ADC_ChannelConfTypeDef sConfig = {0};
 
+=======
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
@@ -232,6 +246,7 @@ static void MX_ADC1_Init(void)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+<<<<<<< HEAD
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.GainCompensation = 0;
   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
@@ -242,16 +257,31 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+=======
+  hadc1.Init.Resolution = ADC_RESOLUTION_14B;
+  hadc1.Init.GainCompensation = 0;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc1.Init.LeftBitShift = ADC_LEFTBITSHIFT_NONE;
+<<<<<<< HEAD
   hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_ONESHOT;
+=======
+  hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   hadc1.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
   }
+<<<<<<< HEAD
 
   /** Configure Regular Channel
   */
@@ -337,6 +367,8 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+=======
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
@@ -387,6 +419,7 @@ static void MX_FDCAN1_Init(void)
 }
 
 /**
+<<<<<<< HEAD
   * @brief GPDMA1 Initialization Function
   * @param None
   * @retval None
@@ -415,6 +448,8 @@ static void MX_GPDMA1_Init(void)
 }
 
 /**
+=======
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   * @brief I2C2 Initialization Function
   * @param None
   * @retval None
@@ -551,18 +586,45 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+<<<<<<< HEAD
   HAL_GPIO_WritePin(GPIOA, OK_LED_Pin|GPIO_PIN_1|GPIO_PIN_2, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : OK_LED_Pin PA1 PA2 */
   GPIO_InitStruct.Pin = OK_LED_Pin|GPIO_PIN_1|GPIO_PIN_2;
+=======
+  HAL_GPIO_WritePin(EEPROM_WRITE_CTRL_GPIO_Port, EEPROM_WRITE_CTRL_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, OK_LED_Pin|ERROR_LED_Pin|STROBE_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : EEPROM_WRITE_CTRL_Pin */
+  GPIO_InitStruct.Pin = EEPROM_WRITE_CTRL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(EEPROM_WRITE_CTRL_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : OK_LED_Pin ERROR_LED_Pin STROBE_Pin */
+  GPIO_InitStruct.Pin = OK_LED_Pin|ERROR_LED_Pin|STROBE_Pin;
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+<<<<<<< HEAD
+=======
+
+  /*Configure GPIO pin : BRAKE_Pin */
+  GPIO_InitStruct.Pin = BRAKE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BRAKE_GPIO_Port, &GPIO_InitStruct);
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -572,6 +634,28 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1)
+  {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

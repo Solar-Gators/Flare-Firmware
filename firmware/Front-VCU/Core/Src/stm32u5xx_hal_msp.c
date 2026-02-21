@@ -93,7 +93,10 @@ void HAL_MspInit(void)
 void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+<<<<<<< HEAD
   DMA_NodeConfTypeDef NodeConfig;
+=======
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
   if(hadc->Instance==ADC1)
   {
@@ -116,6 +119,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**ADC1 GPIO Configuration
     PA6     ------> ADC1_IN11
+<<<<<<< HEAD
     PA7     ------> ADC1_IN12
     */
     GPIO_InitStruct.Pin = Throttle_Pin|GPIO_PIN_7;
@@ -182,6 +186,14 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     /* ADC1 interrupt Init */
     HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(ADC1_IRQn);
+=======
+    */
+    GPIO_InitStruct.Pin = THROTTLE_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(THROTTLE_GPIO_Port, &GPIO_InitStruct);
+
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
     /* USER CODE BEGIN ADC1_MspInit 1 */
 
     /* USER CODE END ADC1_MspInit 1 */
@@ -208,6 +220,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
     /**ADC1 GPIO Configuration
     PA6     ------> ADC1_IN11
+<<<<<<< HEAD
     PA7     ------> ADC1_IN12
     */
     HAL_GPIO_DeInit(GPIOA, Throttle_Pin|GPIO_PIN_7);
@@ -217,6 +230,11 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
     /* ADC1 interrupt DeInit */
     HAL_NVIC_DisableIRQ(ADC1_IRQn);
+=======
+    */
+    HAL_GPIO_DeInit(THROTTLE_GPIO_Port, THROTTLE_Pin);
+
+>>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
     /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
     /* USER CODE END ADC1_MspDeInit 1 */

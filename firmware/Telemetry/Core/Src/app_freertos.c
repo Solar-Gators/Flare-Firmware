@@ -51,6 +51,27 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
+/* Definitions for GPSReadBuffer */
+osThreadId_t GPSReadBufferHandle;
+const osThreadAttr_t GPSReadBuffer_attributes = {
+  .name = "GPSReadBuffer",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 512 * 4
+};
+/* Definitions for GPSParseNMEA */
+osThreadId_t GPSParseNMEAHandle;
+const osThreadAttr_t GPSParseNMEA_attributes = {
+  .name = "GPSParseNMEA",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 256 * 4
+};
+/* Definitions for TXRadio */
+osThreadId_t TXRadioHandle;
+const osThreadAttr_t TXRadio_attributes = {
+  .name = "TXRadio",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -85,6 +106,15 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
+  /* creation of GPSReadBuffer */
+  GPSReadBufferHandle = osThreadNew(StartGPSReadBuffer, NULL, &GPSReadBuffer_attributes);
+
+  /* creation of GPSParseNMEA */
+  GPSParseNMEAHandle = osThreadNew(StartGPSParseNMEA, NULL, &GPSParseNMEA_attributes);
+
+  /* creation of TXRadio */
+  TXRadioHandle = osThreadNew(StartTXRadio, NULL, &TXRadio_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -104,9 +134,50 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-  /* Infinite loop */
-  StartDefaultTask_user(argument);
+  startDefaultTask_user(argument);
   /* USER CODE END defaultTask */
+}
+
+/* USER CODE BEGIN Header_StartGPSReadBuffer */
+/**
+* @brief Function implementing the GPSReadBuffer thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartGPSReadBuffer */
+void StartGPSReadBuffer(void *argument)
+{
+  /* USER CODE BEGIN GPSReadBuffer */
+    startGPSReadBuffer_user(argument);
+  /* USER CODE END GPSReadBuffer */
+}
+
+/* USER CODE BEGIN Header_StartGPSParseNMEA */
+/**
+* @brief Function implementing the GPSParseNMEA thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartGPSParseNMEA */
+void StartGPSParseNMEA(void *argument)
+{
+  /* USER CODE BEGIN GPSParseNMEA */
+    startGPSParseNMEA_user(argument);
+  /* USER CODE END GPSParseNMEA */
+}
+
+/* USER CODE BEGIN Header_StartTXRadio */
+/**
+* @brief Function implementing the TXRadio thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTXRadio */
+void StartTXRadio(void *argument)
+{
+  /* USER CODE BEGIN TXRadio */
+    startTXRadio_user(argument);
+  /* USER CODE END TXRadio */
 }
 
 /* Private application code --------------------------------------------------*/

@@ -6,7 +6,12 @@ extern "C"
 {
 #endif
 
-    void StartDefaultTask_user(void *argument);
+    void init_user();
+
+    void startDefaultTask_user(void* argument);
+    void startGPSReadBuffer_user(void* argument);
+    void startGPSParseNMEA_user(void* argument);
+    void startTXRadio_user(void* argument);
 
 #ifdef __cplusplus
 }

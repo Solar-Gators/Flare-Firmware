@@ -20,8 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32u5xx_it.h"
-#include "FreeRTOS.h"
-#include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -57,6 +55,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern FDCAN_HandleTypeDef hfdcan1;
+extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
 
@@ -159,6 +159,146 @@ void DebugMon_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32u5xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles EXTI Line0 interrupt.
+  */
+void EXTI0_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI0_IRQn 0 */
+
+  /* USER CODE END EXTI0_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON1_Pin);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
+
+  /* USER CODE END EXTI0_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line2 interrupt.
+  */
+void EXTI2_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI2_IRQn 0 */
+
+  /* USER CODE END EXTI2_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON2_Pin);
+  /* USER CODE BEGIN EXTI2_IRQn 1 */
+
+  /* USER CODE END EXTI2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line4 interrupt.
+  */
+void EXTI4_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI4_IRQn 0 */
+
+  /* USER CODE END EXTI4_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON4_Pin);
+  /* USER CODE BEGIN EXTI4_IRQn 1 */
+
+  /* USER CODE END EXTI4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line6 interrupt.
+  */
+void EXTI6_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI6_IRQn 0 */
+
+  /* USER CODE END EXTI6_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON3_Pin);
+  /* USER CODE BEGIN EXTI6_IRQn 1 */
+
+  /* USER CODE END EXTI6_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line8 interrupt.
+  */
+void EXTI8_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI8_IRQn 0 */
+
+  /* USER CODE END EXTI8_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON5_Pin);
+  /* USER CODE BEGIN EXTI8_IRQn 1 */
+
+  /* USER CODE END EXTI8_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line10 interrupt.
+  */
+void EXTI10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI10_IRQn 0 */
+
+  /* USER CODE END EXTI10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON6_Pin);
+  /* USER CODE BEGIN EXTI10_IRQn 1 */
+
+  /* USER CODE END EXTI10_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line13 interrupt.
+  */
+void EXTI13_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI13_IRQn 0 */
+
+  /* USER CODE END EXTI13_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON7_Pin);
+  /* USER CODE BEGIN EXTI13_IRQn 1 */
+
+  /* USER CODE END EXTI13_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI Line15 interrupt.
+  */
+void EXTI15_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_IRQn 0 */
+
+  /* USER CODE END EXTI15_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(BUTTON8_Pin);
+  /* USER CODE BEGIN EXTI15_IRQn 1 */
+
+  /* USER CODE END EXTI15_IRQn 1 */
+}
+
+/**
+  * @brief This function handles FDCAN1 interrupt 0.
+  */
+void FDCAN1_IT0_IRQHandler(void)
+{
+  /* USER CODE BEGIN FDCAN1_IT0_IRQn 0 */
+
+  /* USER CODE END FDCAN1_IT0_IRQn 0 */
+  HAL_FDCAN_IRQHandler(&hfdcan1);
+  /* USER CODE BEGIN FDCAN1_IT0_IRQn 1 */
+
+  /* USER CODE END FDCAN1_IT0_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt.
+  */
+void TIM6_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_IRQn 0 */
+
+  /* USER CODE END TIM6_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_IRQn 1 */
+
+  /* USER CODE END TIM6_IRQn 1 */
+}
 
 /* USER CODE BEGIN 1 */
 

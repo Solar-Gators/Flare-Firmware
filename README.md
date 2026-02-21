@@ -1,19 +1,40 @@
-TODO: add clang tidy
-TODO: put videos that explain workflow, as well as creating project in cubemx and also porting them to cubeide
-TODO: note somewhere that middlewares_v2 is middlewares when doing xcube-freertos
+TODO: put videos that explain workflow
 TODO: note about needing to do make clean after messing with ioc
-TODO: add a way for the copiolet review to only review the code that is ours instead of leaving a bunch of comments about the generated code and such that isn't ours
 
 # Solar Gators Flare Firmware
 
-- **CMake** + **Ninja** build system
-- Shared **resources** (HAL, CMSIS, FreeRTOS, toolchains, Drivers)
-- **pre-commit** hook enforcing **clang-format**
-- **Unified** intellisense for all firmware subfolders using root cmakelists.txt
+- Below are some setup options, the CLion one is preferred, and you are able to set this up in any way you want the only absolute requirements are arm-none-eabi-gcc, cmake+ninja, and jlink to flash.
 
 ---
 
-## 🚀 Quick Start (Windows) (Can be done on linux type OS too using whatever package manager you have and regular terminal)
+## 🧩 CLion Setup (SUPER SIMPLE) (You can install arm-none-eabi with a package manager as well)
+
+You can also build and debug projects directly in **JetBrains CLion** using the official **ARM GNU Toolchain** from Arm Developer.
+
+1. **Install CLion and ARM GNU Toolchain**
+- **Download CLion**:  
+  [https://www.jetbrains.com/clion/](https://www.jetbrains.com/clion/)
+- **Download ARM GNU Toolchain (non-EABI)**:  
+  [https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+- During installing, a popup will ask to add to PATH, make sure to check that box.
+- If it doesn't you'll need to add it to your system/user path manually.
+
+2. **Open the Project in CLion**
+- Launch CLion and open the **Flare-Firmware** repository root.
+- Go to **File → Settings → Build, Execution, Deployment → CMake** (This will also appear as a popup the first time you open the project.
+- SPECIFICALLY ENABLE the existing **debug - debug** and **release - release** build presets that are already configured in the repository. The ones labeled just debug and release will not work.
+- At this point you should be able to build any project by selecting one in the top righish of your screen and pressing the hammer icon.
+
+3. **Flashing and Debugging in CLion**
+- Download JLink for your device: https://www.segger.com/downloads/jlink/. Either add to path
+- Make sure the tools get added to the path and you are able to type JLinkExe in the terminal and something happens.
+- Follow only the first few instructions from here to make a debug server in CLion: https://www.jetbrains.com/help/clion/debug-servers.html#configure-debug-servers
+- Once you make the SEGGAR J-Link Debug Server make sure you put device as STM32U575RG, transport interface as swd, and upload at something like 4000. (If you added to path in first step it should have found executable for you, if not manually find it to the j link tools you installed maybe a bin folder or something) 
+- You can now use the run and debug buttons on a particular project
+
+Once configured, you can select any project inside the `firmware/` subfolders as the active CMake target and build it using the top-right build dropdown in CLion.
+
+## 🚀 Way more difficult vscode setup example. (Windows) (Can be done on linux type OS too using whatever package manager you have and regular terminal)
 
 1. **Install MSYS2**  
    Download: https://www.msys2.org/  
@@ -88,11 +109,14 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
     - Create a Debug Configuration by clicking drop down next to debug button of type STM32 C/C++ Application (Set the ELF path to build/YourProject.elf).
     - You can select the correct one when going to run by adding them to favorites and selecting them with the drop down.
     - Flash and start a debug or flash session.
+    - SOMETHING TO NOTE is that its totally possible to flash and debug inside of clion, we just need to figure out how to do so.
 
 10. **SSH key or github desktop**
     - You will likely need to create an ssh key with github or use github desktop in order to push code to this repo
     - Follow the linux instructions here if doing it inside MSYS2 MINGW64 terminal, or windows if doing it outside: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux
 ## Other Notes
+
+- **The entire build system and intellisense+free clang tidy works really well in CLion, which is now free!**
 
 - **For working Intellisense in Vscode**
     Use C/C++ extension for intellisense with CMake Tools as its source.
@@ -106,11 +130,6 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
     make clean           # Remove build
     make BUILD_TYPE=Release   # Build release
     ```
----
-
-- **After modifying ioc file**
-    You may need to do `make clean` in the terminal before rebuilding.
-
 ---
 
 - **Clang-Format**:  
@@ -133,7 +152,7 @@ TODO: add a way for the copiolet review to only review the code that is ours ins
 
 ---
 
-### Individual Project Structure (a project inside of the firmware folder)
+### Individual Project Structure
 ```sh
 project-folder/
 ├── build/             # Output folder for build artifacts (e.g., .elf, .hex, .bin files). Does not get pushed to repo
@@ -150,22 +169,7 @@ project-folder/
 ### 🧠 VS Code + IntelliSense:
 - Open root of repo or open specific subproject
 - Point vscode/cmaketools extension to cmakelists.txt in root of whatever you opened
-
----
-
-### Creating a New Project Steps:
-- Open CubeMX, and configure your MCU/board/peripherals as usual.
-- Project Manager (before code generation)
-- Project Location: set to your repo’s firmware/ folder.
-- Toolchain/IDE: select Makefile (We’ll use our own build system; this prevents IDE-specific files.)
-- Toolchain Folder Location: add another /CubeMX to the path that is in the box already (This makes CubeMX put startup files/linker script and toolchain bits under firmware/<Project>/CubeMX/.) 
-- Generate code
-- CubeMX creates Core/, drivers, and the CubeMX/ subfolder inside firmware/<YourProject>/.
-- Copy your template Makefile and CMakeLists.txt from another project (use CAN-DevBoard project) into firmware/<YourProject>/.
-- Edit the top portion of the CMakeLists.txt with information specific to your project's mcu.
-- You should now be able to type `make` in the terminal to build the project.
-- You can also add a user/ folder with inc/ and src/ inside of it, to separate our code from the generated code in Core/
-
+- 
 ---
 
 ## 🖥️ Recommended VS Code Settings
