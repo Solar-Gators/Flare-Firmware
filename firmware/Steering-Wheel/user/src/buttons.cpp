@@ -28,11 +28,11 @@ void button1PressedCallback()
 {
     if (buttons[0].GetToggleState())
     {
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_SET);
     }
     else
     {
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
     }
     recalculateTurnSignals();
 }
@@ -98,8 +98,8 @@ void button6PressedCallback()
 // horn, should just poll for this one, not a toggle ideally
 void button7PressedCallback()
 {
-    // don't toggle this light this light is messing with other stuff i think its hardware issues
     /*
+    // don't toggle this light this light is messing with other stuff i think its hardware issues
     if (buttons[6].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_SET);
@@ -149,6 +149,7 @@ void initButtons()
     buttons[5].RegisterNormalPressCallback(&button6PressedCallback);
     buttons[6].RegisterNormalPressCallback(&button7PressedCallback);
     buttons[7].RegisterNormalPressCallback(&button8PressedCallback);
+    sg::Button::InitButtons();
 }
 
 void recalculateTurnSignals()

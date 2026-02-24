@@ -44,7 +44,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${USER_DIR}/inc
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Include
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Inc
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/*.tpp)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/flare)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
@@ -56,7 +56,8 @@ file(GLOB STM32CUBEMX_SOURCES
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
     ${USER_DIR}/src/*.c
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}

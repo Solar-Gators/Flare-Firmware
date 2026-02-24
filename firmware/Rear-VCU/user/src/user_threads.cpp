@@ -101,6 +101,8 @@ void init_user()
                                         sg::CANFrameLen::BYTES_8,
                                         0,
                                         {}};
+    rearvcu_statuses_frame.data[0] =
+        1;  // mc enable should always be enabled if this board is alive, written to at startup
 
     flare_can::ArrayContactors array_contactors = flare_can::ArrayContactors::BOTH_OPEN;
     uint32_t precharge_closed_timestamp = 0;
@@ -149,14 +151,12 @@ void init_user()
         }
 
         // setup and send diagnostic can message
-        rearvcu_statuses_frame.data[0] =
-            1;  // mc enable should always be enabled if this board is alive, written to at startup
         rearvcu_statuses_frame.data[1] = static_cast<uint8_t>(direction_requested);
         rearvcu_statuses_frame.data[2] = static_cast<uint8_t>(mc_power_mode_requested);
         rearvcu_statuses_frame.data[3] = static_cast<uint8_t>(array_contactors);
         rearvcu_statuses_frame.data[4] = rearvcu::state.car_speed.load();
         rearvcu::can_device.send(rearvcu_statuses_frame);
 
-        osDelay(200);
+        osDelay(50);
     }
 }

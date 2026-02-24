@@ -8,10 +8,11 @@ extern "C"
 
     void init_user();
 
-    void startDefaultTask_user(void* argument);
-    void startGPSReadBuffer_user(void* argument);
-    void startGPSParseNMEA_user(void* argument);
-    void startTXRadio_user(void* argument);
+    [[noreturn]] void startHeartbeatTask_user(void* argument);
+    [[noreturn]] void startGPSReadBufferTask_user(void* argument);
+    [[noreturn]] void startGPSParseNMEATask_user(void* argument);
+    [[noreturn]] void startTXRadioTask_user(void* argument);
+    [[noreturn]] void startKillSwitchTask_user(void* argument);
 
 #ifdef __cplusplus
 }

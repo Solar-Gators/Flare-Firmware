@@ -23,7 +23,8 @@ struct SteeringState
 
     // recieving
     std::atomic<uint8_t> car_speed{};
-    std::atomic<flare_can::ArrayContactors> array_contactors_status{};
+    std::atomic<flare_can::ArrayContactors> actual_array_contactors_status{};
+    std::atomic<flare_can::Direction> actual_direction{};
     std::atomic<uint16_t> supp_batt_voltage_mv{};
     std::atomic<uint16_t> main_batt_voltage_cv{};  // V * 100
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
