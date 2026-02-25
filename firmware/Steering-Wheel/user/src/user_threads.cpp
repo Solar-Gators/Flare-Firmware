@@ -62,15 +62,13 @@ void startScreenTask_user(void* argument)
         // TODO: create indicators for the right buttons to turn on as the lights on the actual buttons arent working
         // TODO: important info: cruise control, regenerative breaking, car speed, array connectors, sup batt voltage
 
-        // 1. speed draw (bounding box 75,20)
+        // speed draw (bounding box 75,20)
         uint8_t speed = steering::state.car_speed.load(std::memory_order_relaxed);
         snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(speed));
-
-        // erase old val area
         display.FillRect(75, 20, 60, 16, RGB565_ORANGE);
         display.DrawText(75, 20, text_buffer.data(), RGB565_BLUE);
 
-        // 2. supp batt v draw (bounding box 130,60)
+        // supp batt v draw (bounding box 130,60)
         uint16_t sup_batt_mv = steering::state.supp_batt_voltage_mv.load(std::memory_order_relaxed);
         uint32_t whole = sup_batt_mv / 1000;
         uint32_t frac = (sup_batt_mv % 1000);
@@ -117,6 +115,27 @@ void startScreenTask_user(void* argument)
         display.FillRect(145, 100, 60, 16, RGB565_ORANGE);
         display.DrawText(145, 100, text_buffer.data(), RGB565_BLUE);
 
+        // kill status draw
+        if (steering::state.killed_status.load() == flare_can::CarKilledStatus::DEAD)
+        {
+            display.DrawText(240, 210, "KILLED", RGB565_RED);
+        }
+        else
+        {
+            display.FillRect(240, 210, 75, 16, RGB565_ORANGE);
+        }
+
+        // horn draw
+        bool horn_active = steering::state.horn_requested_on.load(std::memory_order_relaxed);
+        if (horn_active)
+        {
+            display.DrawText(280, 20, "H", RGB565_BLUE);
+        }
+        else
+        {
+            display.FillRect(280, 20, 20, 20, RGB565_ORANGE);
+        }
+
         osDelay(500);
     }
 }
@@ -138,15 +157,15 @@ void startPollButtons_user(void* argument)
 
     for (;;)
     {
-        // -- turn signal blinking logic
+        // -- TURN SINGAL BLINKING LOGIC --
         blinker_ticks++;
-        if(blinker_ticks >= 25)
+        if(blinker_ticks >= 25) // roughly every 500ms
         {
             blinker_on = !blinker_on;
             blinker_ticks = 0;
         }
 
-        // -- turn signal blinking LED control
+        // turn signal blinking LED control
         auto current_signal = steering::state.turn_signals_requested.load();
 
         bool left_active = (current_signal == flare_can::TurnSignals::LEFT ||
@@ -161,7 +180,12 @@ void startPollButtons_user(void* argument)
         HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,
             (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-        // -- update the can bus
+        // -- HORN POLLING LOGIC --
+        // this assumes horn is an active low pin
+        bool horn_pressed = (HAL_GPIO_ReadPin(BUTTON7_GPIO_Port, BUTTON7_Pin) == GPIO_PIN_RESET);
+        steering::state.horn_requested_on.store(horn_pressed);
+
+        // -- UPDATE CAN BUS --
         // turn signals
         steering_requests_frame.data[0] =
             static_cast<uint8_t>(steering::state.turn_signals_requested.load());
@@ -176,7 +200,7 @@ void startPollButtons_user(void* argument)
 
         // horn
         steering_requests_frame.data[3] =
-            static_cast<uint8_t>(!HAL_GPIO_ReadPin(HORN_PORT, HORN_PIN));
+            static_cast<uint8_t>(horn_pressed);
 
         // headlights
         steering_requests_frame.data[4] =
