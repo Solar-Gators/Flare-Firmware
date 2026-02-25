@@ -48,27 +48,86 @@ void startScreenTask_user(void* argument)
 
     // one time static draw
     // clears the entire screen once
-    display.ClearScreen(RGB565_ORANGE);
+    display.ClearScreen(RGB565_BLACK);
+    display.FillRect(0, 0, 320, 110, RGB565_BLUE);
 
     // draw all static labels once
-    display.DrawText(5, 20, "Speed: ", RGB565_BLUE);
-    display.DrawText(5, 40, "Sup volt: ", RGB565_BLUE);
-    display.DrawText(5, 60, "Direction: ", RGB565_BLUE);
-    display.DrawText(5, 80, "Main volt: ", RGB565_BLUE);
-    display.DrawText(5, 100, "High temp: ", RGB565_BLUE);
+    display.SetTextSize(2);
+    display.DrawText(136, 100, "MPH", RGB565_GRAY);
+    display.DrawText(50, 80, "CC", RGB565_GRAY);
+    display.DrawText(10, 80, "RB", RGB565_GRAY);
+
+    display.DrawText(5, 130, "MAIN V:", RGB565_BLUE);
+    display.DrawText(5, 155, "SUPP V:", RGB565_BLUE);
+    display.DrawText(5, 180, "H TEMP:", RGB565_BLUE);
+    display.DrawText(5, 205, "ARR CN:", RGB565_BLUE);
+
+    display.SetTextSize(4);
+    display.DrawText(20, 40, "R N F", RGB565_BLACK);
+    display.DrawText(20, 80, "EC PW", RGB565_BLACK);
 
     for (;;)
     {
-        // TODO: create indicators for the right buttons to turn on as the lights on the actual buttons arent working
-        // TODO: important info: cruise control, regenerative breaking, car speed, array connectors, sup batt voltage
+        // TODO: consolidate into functions, check justin's refactoring
 
-        // speed draw (bounding box 75,20)
+        // --- TOP SECTION ---
+
+        // direction highlight (R N F)
+        display.SetTextSize(4);
+        display.DrawText(20, 40, "R N F", RGB565_BLACK);
+
+        auto current_dir = steering::state.actual_direction.load(std::memory_order_relaxed);
+        if (current_dir == flare_can::Direction::REVERSE)
+        {
+            display.DrawText(20, 40, "R", RGB565_ORANGE);
+        }
+        else if (current_dir == flare_can::Direction::FORWARD)
+        {
+            display.DrawText(92, 40, "F", RGB565_ORANGE);
+        }
+        else
+        {
+            display.DrawText(56, 40, "N", RGB565_ORANGE);
+        }
+
+        // power mode highlight
+        display.DrawText(20, 80, "EC PW", RGB565_BLACK);
+
+        auto pwr_mode = steering::state.mc_power_mode_requested.load(std::memory_order_relaxed);
+        if (pwr_mode == flare_can::MCPowerMode::ECO)
+        {
+            display.DrawText(20, 80, "EC", RGB565_ORANGE);
+        }
+        else
+        {
+            display.DrawText(92, 80, "PW", RGB565_ORANGE);
+        }
+
+
+        // speed draw
         uint8_t speed = steering::state.car_speed.load(std::memory_order_relaxed);
         snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(speed));
-        display.FillRect(75, 20, 60, 16, RGB565_ORANGE);
-        display.DrawText(75, 20, text_buffer.data(), RGB565_BLUE);
+        display.SetTextSize(8);
+        display.FillRect(136, 20, 100, 64, RGB565_BLUE);
+        display.DrawText(136, 20, text_buffer.data(), RGB565_WHITE);
 
-        // supp batt v draw (bounding box 130,60)
+        // cruise draw
+        uint8_t cc_val = steering::state.cc_mph_requested.load(std::memory_order_relaxed);
+        snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(cc_val));
+        display.SetTextSize(4);
+        display.FillRect(50, 40, 60, 32, RGB565_BLUE);
+        display.DrawText(50, 40, text_buffer.data(), RGB565_WHITE);
+
+        // regen percent draw
+        uint8_t regen = steering::state.regen_requested.load(std::memory_order_relaxed);
+        snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>((regen*100)/255));
+        display.FillRect(10, 40, 60, 32, RGB565_BLUE);
+        display.DrawText(10, 40, text_buffer.data(), RGB565_WHITE);
+
+        // --- BOTTOM LEFT (BATT) SECTION ---
+        display.SetTextSize(2);
+
+        // supp batt v draw
         uint16_t sup_batt_mv = steering::state.supp_batt_voltage_mv.load(std::memory_order_relaxed);
         uint32_t whole = sup_batt_mv / 1000;
         uint32_t frac = (sup_batt_mv % 1000);
@@ -77,21 +136,10 @@ void startScreenTask_user(void* argument)
                  "%lu.%02lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.FillRect(115, 40, 80, 16, RGB565_ORANGE);
-        display.DrawText(115, 40, text_buffer.data(), RGB565_BLUE);
+        display.FillRect(110, 155, 80, 16, RGB565_BLACK);
+        display.DrawText(110, 155, text_buffer.data(), RGB565_BLUE);
 
-        // direction draw (bounding box 130,60)
-        flare_can::Direction direction =
-            steering::state.actual_direction.load(std::memory_order_relaxed);
-        display.FillRect(130, 60, 110, 16, RGB565_ORANGE);
-        if (static_cast<int>(direction) == 1)
-            display.DrawText(130, 60, "Forward", RGB565_BLUE);
-        else if (static_cast<int>(direction) == 0)
-            display.DrawText(130, 60, "Backward", RGB565_BLUE);
-        else
-            display.DrawText(130, 60, "ERROR", RGB565_BLUE);
-
-        // main batt v draw (bounding box 130,80)
+        // main batt v draw
         uint32_t cv = steering::state.main_batt_voltage_cv.load(std::memory_order_relaxed);
         whole = cv / 100;
         frac = (cv % 100);
@@ -100,10 +148,10 @@ void startScreenTask_user(void* argument)
                  "%lu.%02lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.FillRect(130, 80, 80, 16, RGB565_ORANGE);
-        display.DrawText(130, 80, text_buffer.data(), RGB565_BLUE);
+        display.FillRect(110, 130, 80, 16, RGB565_ORANGE);
+        display.DrawText(110, 130, text_buffer.data(), RGB565_BLUE);
 
-        // main batt high temp draw (bounding box 145,100)
+        // main batt high temp draw
         uint32_t dc = steering::state.high_temp_dc.load(std::memory_order_relaxed);
         whole = dc / 10;
         frac = (dc % 10);
@@ -112,28 +160,57 @@ void startScreenTask_user(void* argument)
                  "%lu.%lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.FillRect(145, 100, 60, 16, RGB565_ORANGE);
-        display.DrawText(145, 100, text_buffer.data(), RGB565_BLUE);
+        display.FillRect(110, 180, 60, 16, RGB565_BLACK);
+        display.DrawText(110, 180, text_buffer.data(), RGB565_BLUE);
+
+        // array contactors draw
+        auto arr_status = steering::state.actual_array_contactors_status.load();
+        display.FillRect(110, 205, 100, 16, RGB565_BLACK);
+        if (arr_status == flare_can::ArrayContactors::BOTH_OPEN)
+        {
+            display.DrawText(110, 205, "OPEN", RGB565_BLUE);
+        }
+        else if (arr_status == flare_can::ArrayContactors::MAIN_CLOSED)
+        {
+            display.DrawText(110, 205, "MN C", RGB565_BLUE);
+        }
+        else if (arr_status == flare_can::ArrayContactors::PRECHARGE_CLOSED)
+        {
+            display.DrawText(110, 205, "PC C", RGB565_BLUE);
+        }
+
+        // -- BOTTOM RIGHT (STATUS) SECTION --
 
         // kill status draw
         if (steering::state.killed_status.load() == flare_can::CarKilledStatus::DEAD)
         {
-            display.DrawText(240, 210, "KILLED", RGB565_RED);
+            display.DrawText(240, 205, "KILLED", RGB565_RED);
         }
         else
         {
-            display.FillRect(240, 210, 75, 16, RGB565_ORANGE);
+            display.FillRect(240, 205, 75, 16, RGB565_BLACK);
         }
 
         // horn draw
         bool horn_active = steering::state.horn_requested_on.load(std::memory_order_relaxed);
         if (horn_active)
         {
-            display.DrawText(280, 20, "H", RGB565_BLUE);
+            display.DrawText(240, 130, "HORN", RGB565_BLUE);
         }
         else
         {
-            display.FillRect(280, 20, 20, 20, RGB565_ORANGE);
+            display.FillRect(240, 130, 60, 16, RGB565_BLACK);
+        }
+
+        // headlights draw
+        bool headlights_active = steering::state.headlights_requested_on.load(std::memory_order_relaxed);
+        if (headlights_active)
+        {
+            display.DrawText(180, 155, "HEADLIGHTS", RGB565_BLUE);
+        }
+        else
+        {
+            display.FillRect(180, 155, 120, 16, RGB565_BLACK);
         }
 
         osDelay(500);
