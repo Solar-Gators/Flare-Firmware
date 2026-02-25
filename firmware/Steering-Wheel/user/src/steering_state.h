@@ -1,10 +1,12 @@
-#pragma once
+//
+// Created by justin on 2/24/26.
+//
 
-#include <cstdint>
+#ifndef FLAREFIRMWARE_STEERING_INTERNAL_H
+#define FLAREFIRMWARE_STEERING_INTERNAL_H
 
+#include "CanDriver.hpp"
 #include "can_protocol.h"
-
-#include <atomic>
 
 namespace steering
 {
@@ -30,6 +32,10 @@ struct SteeringState
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
 };
 
-inline SteeringState state;
+static inline SteeringState state;
+
+void initScreen();
 
 }  // namespace steering
+
+#endif  //FLAREFIRMWARE_STEERING_INTERNAL_H
