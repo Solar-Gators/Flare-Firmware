@@ -1,0 +1,8 @@
+//
+// Created by justin on 2/25/26.
+//
+
+#ifndef FLAREFIRMWARE_TELEMETRY_H
+#define FLAREFIRMWARE_TELEMETRY_H
+
+#endif  //FLAREFIRMWARE_TELEMETRY_H
