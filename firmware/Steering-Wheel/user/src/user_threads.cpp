@@ -151,15 +151,19 @@ void startPollButtons_user(void* argument)
 
     steering::initButtons();
 
-    // -- turn signal blinking variables
-    int blinker_ticks = 0;
+    // turn signal blinking variables
+    int blinker_ticks = 0; // also used for killed blinking
     bool blinker_on = false;
 
     for (;;)
     {
         // -- TURN SINGAL BLINKING LOGIC --
-        blinker_ticks++;
-        if(blinker_ticks >= 25) // roughly every 500ms
+        // determine blink speed bc ticks shared with car killed status
+        bool killed = (steering::state.killed_status.load() == flare_can::CarKilledStatus::DEAD);
+        int target_ticks = killed ? 10 : 25;
+
+        blinker_ticks++; // shared with car killed
+        if(blinker_ticks >= target_ticks) // roughly every 500ms
         {
             blinker_on = !blinker_on;
             blinker_ticks = 0;
@@ -179,6 +183,17 @@ void startPollButtons_user(void* argument)
 
         HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,
             (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+        // -- KILLED BLINKING LOGIC --
+        if (killed)
+        {
+            auto pin_state = blinker_on ? GPIO_PIN_SET : GPIO_PIN_RESET;
+
+            HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, pin_state);
+            HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, pin_state);
+            HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, pin_state);
+            HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, pin_state);
+        }
 
         // -- HORN POLLING LOGIC --
         // this assumes horn is an active low pin
