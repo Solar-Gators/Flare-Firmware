@@ -160,7 +160,7 @@ void startPollButtons_user(void* argument)
         // -- TURN SINGAL BLINKING LOGIC --
         // determine blink speed bc ticks shared with car killed status
         bool killed = (steering::state.killed_status.load() == flare_can::CarKilledStatus::DEAD);
-        int target_ticks = killed ? 10 : 25;
+        int target_ticks = killed ? 10 : 25; // faster blinking when car killed blinking
 
         blinker_ticks++; // shared with car killed
         if(blinker_ticks >= target_ticks) // roughly every 500ms
@@ -187,6 +187,7 @@ void startPollButtons_user(void* argument)
         // -- KILLED BLINKING LOGIC --
         if (killed)
         {
+            // TODO: make killed car activate hazards?
             auto pin_state = blinker_on ? GPIO_PIN_SET : GPIO_PIN_RESET;
 
             HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, pin_state);
@@ -196,7 +197,6 @@ void startPollButtons_user(void* argument)
         }
 
         // -- HORN POLLING LOGIC --
-        // this assumes horn is an active low pin
         bool horn_pressed = (HAL_GPIO_ReadPin(BUTTON7_GPIO_Port, BUTTON7_Pin) == GPIO_PIN_RESET);
         steering::state.horn_requested_on.store(horn_pressed);
 
