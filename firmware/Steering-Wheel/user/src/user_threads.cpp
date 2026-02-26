@@ -49,7 +49,7 @@ void startScreenTask_user(void* argument)
     // one time static draw
     // clears the entire screen once
     display.ClearScreen(RGB565_BLACK);
-    display.FillRect(0, 0, 320, 110, RGB565_BLUE);
+    display.FillRect(0, 0, 320, 110, RGB565_BLUE); // top header
 
     // draw all static labels once
     display.SetTextSize(2);
@@ -106,7 +106,17 @@ void startScreenTask_user(void* argument)
 
         // speed draw
         uint8_t speed = steering::state.car_speed.load(std::memory_order_relaxed);
-        snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(speed));
+        // add leading 0 if single digit
+        bool speed_sd = false;
+        if (speed < 10) speed_sd = true;
+        if (speed_sd)
+        {
+            snprintf(text_buffer.data(), sizeof(text_buffer), "0%lu", static_cast<unsigned long>(speed));
+        }
+        else
+        {
+            snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(speed));
+        }
         display.SetTextSize(8);
         display.FillRect(136, 20, 100, 64, RGB565_BLUE);
         display.DrawText(136, 20, text_buffer.data(), RGB565_WHITE);
