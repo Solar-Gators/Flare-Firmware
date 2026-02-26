@@ -48,23 +48,26 @@ void startScreenTask_user(void* argument)
 
     // one time static draw
     // clears the entire screen once
-    display.ClearScreen(RGB565_BLACK);
-    display.FillRect(0, 0, 320, 110, RGB565_BLUE); // top header
+    display.ClearScreen(RGB565_BLUE);
 
     // draw all static labels once
     display.SetTextSize(2);
-    display.DrawText(136, 100, "MPH", RGB565_GRAY);
-    display.DrawText(50, 80, "CC", RGB565_GRAY);
-    display.DrawText(10, 80, "RB", RGB565_GRAY);
+    display.DrawText(140, 90, "MPH", RGB565_GRAY);
+    display.DrawText(210, 90, "CC", RGB565_GRAY);
+    display.DrawText(260, 90, "RB", RGB565_GRAY);
 
-    display.DrawText(5, 130, "MAIN V:", RGB565_BLUE);
-    display.DrawText(5, 155, "SUPP V:", RGB565_BLUE);
-    display.DrawText(5, 180, "H TEMP:", RGB565_BLUE);
-    display.DrawText(5, 205, "ARR CN:", RGB565_BLUE);
+    display.DrawText(5, 130, "MAIN V:", RGB565_BLACK);
+    display.DrawText(5, 155, "SUPP V:", RGB565_BLACK);
+    display.DrawText(5, 180, "H TEMP:", RGB565_BLACK);
+    display.DrawText(5, 205, "ARR CN:", RGB565_BLACK);
 
-    display.SetTextSize(4);
-    display.DrawText(20, 40, "R N F", RGB565_BLACK);
-    display.DrawText(20, 80, "EC PW", RGB565_BLACK);
+    display.SetTextSize(3);
+    display.DrawText(10, 40, "R N F", RGB565_BLACK);
+    display.DrawText(10, 70, "EC PW", RGB565_BLACK);
+
+    // speed demo variables
+    // uint8_t demo_speed = 0;
+    // bool demo_up = true;
 
     for (;;)
     {
@@ -73,66 +76,75 @@ void startScreenTask_user(void* argument)
         // --- TOP SECTION ---
 
         // direction highlight (R N F)
-        display.SetTextSize(4);
-        display.DrawText(20, 40, "R N F", RGB565_BLACK);
+        display.SetTextSize(3);
+        display.DrawText(10, 40, "R N F", RGB565_BLACK);
 
-        auto current_dir = steering::state.actual_direction.load(std::memory_order_relaxed);
+        auto current_dir = steering::state.direction_requested.load(std::memory_order_relaxed);
         if (current_dir == flare_can::Direction::REVERSE)
         {
-            display.DrawText(20, 40, "R", RGB565_ORANGE);
+            display.DrawText(10, 40, "R", RGB565_ORANGE);
         }
         else if (current_dir == flare_can::Direction::FORWARD)
         {
-            display.DrawText(92, 40, "F", RGB565_ORANGE);
+            display.DrawText(82, 40, "F", RGB565_ORANGE);
         }
         else
         {
-            display.DrawText(56, 40, "N", RGB565_ORANGE);
+            display.DrawText(46, 40, "N", RGB565_ORANGE);
         }
 
         // power mode highlight
-        display.DrawText(20, 80, "EC PW", RGB565_BLACK);
+        display.DrawText(10, 70, "EC PW", RGB565_BLACK);
 
         auto pwr_mode = steering::state.mc_power_mode_requested.load(std::memory_order_relaxed);
         if (pwr_mode == flare_can::MCPowerMode::ECO)
         {
-            display.DrawText(20, 80, "EC", RGB565_ORANGE);
+            display.DrawText(10, 70, "EC", RGB565_ORANGE);
         }
         else
         {
-            display.DrawText(92, 80, "PW", RGB565_ORANGE);
+            display.DrawText(64, 70, "PW", RGB565_ORANGE);
         }
-
 
         // speed draw
+        // sample code to have the speed cycle through values for appearance
+        // if (demo_up)
+        // {
+        //     demo_speed++;
+        //     if (demo_speed >= 70) demo_up = false;
+        // } else
+        // {
+        //     demo_speed--;
+        //     if (demo_speed == 0) demo_up = true;
+        // }
+        // uint8_t speed = demo_speed;
         uint8_t speed = steering::state.car_speed.load(std::memory_order_relaxed);
-        // add leading 0 if single digit
-        bool speed_sd = false;
-        if (speed < 10) speed_sd = true;
-        if (speed_sd)
+
+        if (speed > 150) // >150 means can/sensor error
         {
-            snprintf(text_buffer.data(), sizeof(text_buffer), "0%lu", static_cast<unsigned long>(speed));
+            snprintf(text_buffer.data(), sizeof(text_buffer), "ER");
         }
         else
         {
-            snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(speed));
+            snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(speed));
+            // add leading 0 with %02
         }
-        display.SetTextSize(8);
-        display.FillRect(136, 20, 100, 64, RGB565_BLUE);
-        display.DrawText(136, 20, text_buffer.data(), RGB565_WHITE);
+        display.SetTextSize(5);
+        display.FillRect(130, 45, 100, 40, RGB565_BLUE);
+        display.DrawText(130, 50, text_buffer.data(), RGB565_WHITE);
 
         // cruise draw
         uint8_t cc_val = steering::state.cc_mph_requested.load(std::memory_order_relaxed);
-        snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>(cc_val));
-        display.SetTextSize(4);
-        display.FillRect(50, 40, 60, 32, RGB565_BLUE);
-        display.DrawText(50, 40, text_buffer.data(), RGB565_WHITE);
+        snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(cc_val));
+        display.SetTextSize(3);
+        display.FillRect(210, 60, 30, 16, RGB565_BLUE);
+        display.DrawText(210, 60, text_buffer.data(), RGB565_WHITE);
 
         // regen percent draw
         uint8_t regen = steering::state.regen_requested.load(std::memory_order_relaxed);
-        snprintf(text_buffer.data(), sizeof(text_buffer), "%lu", static_cast<unsigned long>((regen*100)/255));
-        display.FillRect(10, 40, 60, 32, RGB565_BLUE);
-        display.DrawText(10, 40, text_buffer.data(), RGB565_WHITE);
+        snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>((regen*100)/255));
+        display.FillRect(260, 60, 30, 16, RGB565_BLUE);
+        display.DrawText(260, 60, text_buffer.data(), RGB565_WHITE);
 
         // --- BOTTOM LEFT (BATT) SECTION ---
         display.SetTextSize(2);
@@ -146,8 +158,8 @@ void startScreenTask_user(void* argument)
                  "%lu.%02lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.FillRect(110, 155, 80, 16, RGB565_BLACK);
-        display.DrawText(110, 155, text_buffer.data(), RGB565_BLUE);
+        display.FillRect(110, 155, 80, 16, RGB565_BLUE);
+        display.DrawText(110, 155, text_buffer.data(), RGB565_BLACK);
 
         // main batt v draw
         uint32_t cv = steering::state.main_batt_voltage_cv.load(std::memory_order_relaxed);
@@ -158,8 +170,8 @@ void startScreenTask_user(void* argument)
                  "%lu.%02lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.FillRect(110, 130, 80, 16, RGB565_ORANGE);
-        display.DrawText(110, 130, text_buffer.data(), RGB565_BLUE);
+        display.FillRect(110, 130, 80, 16, RGB565_BLUE);
+        display.DrawText(110, 130, text_buffer.data(), RGB565_BLACK);
 
         // main batt high temp draw
         uint32_t dc = steering::state.high_temp_dc.load(std::memory_order_relaxed);
@@ -170,24 +182,14 @@ void startScreenTask_user(void* argument)
                  "%lu.%lu",
                  static_cast<unsigned long>(whole),
                  static_cast<unsigned long>(frac));
-        display.FillRect(110, 180, 60, 16, RGB565_BLACK);
-        display.DrawText(110, 180, text_buffer.data(), RGB565_BLUE);
+        display.FillRect(110, 180, 60, 16, RGB565_BLUE);
+        display.DrawText(110, 180, text_buffer.data(), RGB565_BLACK);
 
         // array contactors draw
-        auto arr_status = steering::state.actual_array_contactors_status.load();
-        display.FillRect(110, 205, 100, 16, RGB565_BLACK);
-        if (arr_status == flare_can::ArrayContactors::BOTH_OPEN)
-        {
-            display.DrawText(110, 205, "OPEN", RGB565_BLUE);
-        }
-        else if (arr_status == flare_can::ArrayContactors::MAIN_CLOSED)
-        {
-            display.DrawText(110, 205, "MN C", RGB565_BLUE);
-        }
-        else if (arr_status == flare_can::ArrayContactors::PRECHARGE_CLOSED)
-        {
-            display.DrawText(110, 205, "PC C", RGB565_BLUE);
-        }
+        auto arr_closed = steering::state.array_contactors_requested_closed.load();
+        display.FillRect(110, 205, 100, 16, RGB565_BLUE);
+        display.DrawText(110, 205, arr_closed ? "CLSD" : "OPEN", RGB565_BLACK);
+
 
         // -- BOTTOM RIGHT (STATUS) SECTION --
 
@@ -198,29 +200,29 @@ void startScreenTask_user(void* argument)
         }
         else
         {
-            display.FillRect(240, 205, 75, 16, RGB565_BLACK);
+            display.FillRect(240, 205, 75, 16, RGB565_BLUE);
         }
 
         // horn draw
         bool horn_active = steering::state.horn_requested_on.load(std::memory_order_relaxed);
         if (horn_active)
         {
-            display.DrawText(240, 130, "HORN", RGB565_BLUE);
+            display.DrawText(252, 130, "HORN", RGB565_BLACK);
         }
         else
         {
-            display.FillRect(240, 130, 60, 16, RGB565_BLACK);
+            display.FillRect(252, 130, 48, 16, RGB565_BLUE);
         }
 
         // headlights draw
         bool headlights_active = steering::state.headlights_requested_on.load(std::memory_order_relaxed);
         if (headlights_active)
         {
-            display.DrawText(180, 155, "HEADLIGHTS", RGB565_BLUE);
+            display.DrawText(228, 155, "HDLGTS", RGB565_BLACK);
         }
         else
         {
-            display.FillRect(180, 155, 120, 16, RGB565_BLACK);
+            display.FillRect(228, 155, 72, 16, RGB565_BLUE);
         }
 
         osDelay(500);
@@ -247,7 +249,7 @@ void startPollButtons_user(void* argument)
         // -- TURN SINGAL BLINKING LOGIC --
         // determine blink speed bc ticks shared with car killed status
         bool killed = (steering::state.killed_status.load() == flare_can::CarKilledStatus::DEAD);
-        int target_ticks = killed ? 10 : 25; // faster blinking when car killed blinking
+        int target_ticks = killed ? 10 : 20; // faster blinking when car killed blinking
 
         blinker_ticks++; // shared with car killed
         if(blinker_ticks >= target_ticks) // roughly every 500ms
