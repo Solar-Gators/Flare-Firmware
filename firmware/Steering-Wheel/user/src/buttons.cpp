@@ -26,26 +26,24 @@ static std::array<sg::Button, 8> buttons = {{
 // left turn
 void button1PressedCallback()
 {
-    if (buttons[0].GetToggleState())
+    // LED blinking implemented in user_threads.cpp
+    // if hazards on and one pressed -> deactivate both
+    if (steering::state.turn_signals_requested.load() == flare_can::TurnSignals::HAZARDS)
     {
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
+        buttons[0].SetToggleState(false);
+        buttons[4].SetToggleState(false);
     }
     recalculateTurnSignals();
 }
 // right turn
 void button5PressedCallback()
 {
-    if (buttons[4].GetToggleState())
+    // LED blinking implemented in user_threads.cpp
+    // if hazards on and one pressed -> deactivate both
+    if (steering::state.turn_signals_requested.load() == flare_can::TurnSignals::HAZARDS)
     {
-        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_RESET);
+        buttons[0].SetToggleState(false);
+        buttons[4].SetToggleState(false);
     }
     recalculateTurnSignals();
 }
@@ -98,17 +96,9 @@ void button6PressedCallback()
 // horn, should just poll for this one, not a toggle ideally
 void button7PressedCallback()
 {
-    /*
-    // don't toggle this light this light is messing with other stuff i think its hardware issues
-    if (buttons[6].GetToggleState())
-    {
-        HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_RESET);
-    }
-    */
+    // poll logic in user_threads
+    // don't toggle this light, this light is messing with other stuff i think its hardware issues
+    // update: still messing with b8, keep this light off
 }
 
 // cc-

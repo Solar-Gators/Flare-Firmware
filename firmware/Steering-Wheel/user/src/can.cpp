@@ -27,6 +27,9 @@ void initCan()
         0x041, sg::CANFrameIDType::STANDARD, &bmsBatteryVoltageMessageCallback, nullptr));
     ASSERT_TRUE(can_device.addCallbackId(
         0x042, sg::CANFrameIDType::STANDARD, &bmsBatteryTempMessageCallback, nullptr));
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x010, sg::CANFrameIDType::STANDARD, &telemKillStatusMessageCallback, nullptr));
+
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 
@@ -64,6 +67,13 @@ HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* c
     uint16_t highest_temp_cell_dc = static_cast<uint16_t>(msg.data[0] << 8) | (msg.data[1]);
     steering::state.high_temp_dc.store(highest_temp_cell_dc, std::memory_order_relaxed);
 
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef telemKillStatusMessageCallback(const sg::CANFrame& msg, void* ctx)
+{
+    auto status = static_cast<flare_can::CarKilledStatus>(msg.data[0]);
+    steering::state.killed_status.store(status, std::memory_order_relaxed);
     return HAL_OK;
 }
 
