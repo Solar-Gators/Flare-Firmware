@@ -42,6 +42,7 @@ void startScreenTask_user(void* argument)
         //     if (demo_speed == 0) demo_up = true;
         // }
         // uint8_t speed = demo_speed;
+        steering::processScreen();
         osDelay(500);
     }
 }
@@ -58,6 +59,7 @@ void startPollButtons_user(void* argument)
     {
         steering::sendRequestsMessage();
         steering::processHornButton();
+        steering::processTurnSignals();
         osDelay(30);
 
         /*

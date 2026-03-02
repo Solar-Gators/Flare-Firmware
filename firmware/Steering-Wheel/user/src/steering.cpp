@@ -164,4 +164,9 @@ void processHornButton()
     state.horn_requested_on.store(horn_pressed);
 }
 
+void processTurnSignals()
+{
+
+}
+
 }  // namespace steering
