@@ -64,8 +64,10 @@ void drawLabels()
 
 void drawSpeed(uint8_t mph)
 {
+    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
+                                    RGB565_ORANGE : RGB565_WHITE;
     display.SetTextSize(5);
-    if (mph > 99)  // >150 means can/sensor error
+    if (mph > 99)  // >99 means can/sensor error
     {
         snprintf(text_buffer.data(), text_buffer.size(), "ER");
     }
@@ -74,7 +76,7 @@ void drawSpeed(uint8_t mph)
         snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(mph));
     }
     display.FillRect(130, 45, 100, 40, RGB565_BLUE);
-    display.DrawText(130, 50, text_buffer.data(), RGB565_WHITE);
+    display.DrawText(130, 50, text_buffer.data(), text_color);
 }
 
 void drawSuppBatt(uint16_t millivolts)
@@ -173,6 +175,10 @@ void drawPowerMode(flare_can::MCPowerMode mode)
 void drawCC(uint8_t mph)
 {
     display.SetTextSize(3);
+
+    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
+                                    RGB565_ORANGE : RGB565_WHITE;
+
     if (mph > 99)
     {
         snprintf(text_buffer.data(), text_buffer.size(), "ER");
@@ -182,7 +188,7 @@ void drawCC(uint8_t mph)
         snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(mph));
     }
     display.FillRect(210, 60, 30, 16, RGB565_BLUE);
-    display.DrawText(210, 60, text_buffer.data(), RGB565_WHITE);
+    display.DrawText(210, 60, text_buffer.data(), text_color);
 }
 
 void drawKillStatus(flare_can::CarKilledStatus killed)

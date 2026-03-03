@@ -10,6 +10,7 @@ HAL_StatusTypeDef init();
 void sendRequestsMessage();
 void processScreen();
 void processHornButton();
-void processTurnSignals();
+void processTurnAndKill();
+void processCC();
 
 }  // namespace steering

@@ -48,18 +48,23 @@ void button5PressedCallback()
     recalculateTurnSignals();
 }
 
-// headlights
+// power/eco
 void button2PressedCallback()
 {
     if (buttons[1].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_SET);
-        steering::state.headlights_requested_on.store(true);
+        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::POWER);
+
+        // steering::state.headlights_requested_on.store(true);
+        // Headlights no longer have button
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_RESET);
-        steering::state.headlights_requested_on.store(false);
+        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
+
+        // steering::state.headlights_requested_on.store(false);
     }
 }
 
@@ -104,28 +109,36 @@ void button7PressedCallback()
 // cc-
 void button4PressedCallback()
 {
-    if (buttons[3].GetToggleState())
+    // check if both buttons pressed
+    if (buttons[7].ReadPin() == GPIO_PIN_RESET)
     {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
+        // toggle the state
+        bool current_state = steering::state.is_cc_on.load();
+        steering::state.is_cc_on.store(!current_state);
     }
-    else
+
+    // decrement
+    if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val > 1)
     {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
+        steering::state.cc_mph_requested.store(current_val-1);
     }
 }
 
 // cc+
 void button8PressedCallback()
 {
-    if (buttons[7].GetToggleState())
+    // check if both buttons pressed
+    if (buttons[3].ReadPin() == GPIO_PIN_RESET)
     {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::POWER);
+        // toggle the state
+        bool current_state = steering::state.is_cc_on.load();
+        steering::state.is_cc_on.store(!current_state);
     }
-    else
+
+    // increment
+    if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val < 99)
     {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
-        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
+        steering::state.cc_mph_requested.store(current_val+1);
     }
 }
 

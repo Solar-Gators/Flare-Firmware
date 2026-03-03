@@ -6,7 +6,7 @@
 
 // button layout
 // 1(lt)      5(rt) (both for hazards)
-// 2(headlights/pwr,eco)    6(fwrd/rev)
+// 2(pwr,eco)    6(fwrd/rev) // prev. 2 was headlights
 // 3(array)   7(horn)
 // 4(cc down/disable)     8(cc inc/enable)
 
