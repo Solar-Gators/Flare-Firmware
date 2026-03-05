@@ -5,6 +5,7 @@
 
 #include "can.h"
 #include "main.h"
+#include "rfd900x.h"
 #include "telemetry.h"
 
 void init_user()
@@ -48,10 +49,40 @@ void startGPSParseNMEATask_user(void* argument)
     }
 }
 
+extern UART_HandleTypeDef huart2;
 void startTXRadioTask_user(void* argument)
 {
+    rfd900SetUartHandle(&huart2);
+
+    rfd900EnterLocalATCommandMode();
+    uint8_t resp[256];
+    uint16_t len;
+    rfd900Read(resp, sizeof(resp), &len, 500);
+
+    if (rfd900GetLocalFirmwareData(0) == HAL_OK)
+    {
+        if (rfd900Read(resp, sizeof(resp), &len, 500) == HAL_OK)
+        {
+            volatile int x = 4;
+            //printf("Received (%d bytes): %s\r\n", len, resp);
+        }
+        else
+        {
+            volatile int x = 4;
+            //printf("No response\r\n");
+        }
+    }
+
+    volatile HAL_StatusTypeDef check = rfd900EnterLocalATCommandMode();
+    volatile HAL_StatusTypeDef status = rfd900RebootLocalRadio();  //WORKS
+    status = rfd900GetLocalRegisterValue(10);                      //WORKS
+    volatile HAL_StatusTypeDef t = rfd900ExitLocalATCommandMode();
+    status = rfd900ResetLocalParameters();
+
     for (;;)
     {
+        uint8_t str[] = "Hello!";
+        volatile HAL_StatusTypeDef new_try = rfd900SendData(str, sizeof(str));
         osDelay(1000);
     }
 }

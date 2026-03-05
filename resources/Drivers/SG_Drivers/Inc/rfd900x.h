@@ -27,21 +27,34 @@ RTS/CTS flow control OFF
 
 */
 
-// important init
-void rfd900SetUartHandle(UART_HandleTypeDef* user_uart);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-//General Functions
-HAL_StatusTypeDef rfd900EnterLocalATCommandMode();
-HAL_StatusTypeDef rfd900ExitLocalATCommandMode();
-HAL_StatusTypeDef rfd900SendData(uint8_t* databuffer, uint16_t sizeData);
-HAL_StatusTypeDef rfd900SetRegister(uint8_t reg_num, uint16_t reg_val);
-HAL_StatusTypeDef rfd900SaveLocalRegisterValues();
-HAL_StatusTypeDef rfd900ResetBootMode();
+    // important init
+    void rfd900SetUartHandle(UART_HandleTypeDef* user_uart);
+    HAL_StatusTypeDef rfd900Read(uint8_t* buf,
+                                 uint16_t maxLen,
+                                 uint16_t* outLen,
+                                 uint32_t timeout_ms);
 
-//Configuration Functions
-HAL_StatusTypeDef rfd900DefaultConfig();
-HAL_StatusTypeDef rfd900ResetLocalParameters();
-HAL_StatusTypeDef rfd900RebootLocalRadio();
-HAL_StatusTypeDef rfd900GetLocalFirmwareData(uint8_t ATI_val);
-HAL_StatusTypeDef rfd900SetLocalParameter(uint8_t reg_num, uint16_t reg_val);
-HAL_StatusTypeDef rfd900GetLocalRegisterValue(uint8_t reg_num);
+    //General Functions
+    HAL_StatusTypeDef rfd900EnterLocalATCommandMode();
+    HAL_StatusTypeDef rfd900ExitLocalATCommandMode();
+    HAL_StatusTypeDef rfd900SendData(uint8_t* databuffer, uint16_t sizeData);
+    HAL_StatusTypeDef rfd900SetRegister(uint8_t reg_num, uint16_t reg_val);
+    HAL_StatusTypeDef rfd900SaveLocalRegisterValues();
+    HAL_StatusTypeDef rfd900ResetBootMode();
+
+    //Configuration Functions
+    HAL_StatusTypeDef rfd900DefaultConfig();
+    HAL_StatusTypeDef rfd900ResetLocalParameters();
+    HAL_StatusTypeDef rfd900RebootLocalRadio();
+    HAL_StatusTypeDef rfd900GetLocalFirmwareData(uint8_t ATI_val);
+    HAL_StatusTypeDef rfd900SetLocalParameter(uint8_t reg_num, uint16_t reg_val);
+    HAL_StatusTypeDef rfd900GetLocalRegisterValue(uint8_t reg_num);
+
+#ifdef __cplusplus
+}
+#endif
