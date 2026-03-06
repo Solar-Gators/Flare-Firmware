@@ -73,7 +73,7 @@ void sendRequestsMessage()
         static_cast<uint8_t>(state.mc_power_mode_requested.load(std::memory_order_relaxed));
 
     // cc mph
-    steering_requests_frame.data[7] = 0;
+    steering_requests_frame.data[7] = state.cc_mph_requested.load(std::memory_order_relaxed);;
 
     can_device.send(steering_requests_frame);
 }
@@ -183,23 +183,18 @@ void processHornButton()
 // Process the Turn Signals and the Kill Status for blinking the top LEDs
 void processTurnAndKill()
 {
-    static uint32_t last_toggle_tick = 0;
+    static uint32_t blinker_ticks = 0;
     static bool blinker_on = false;
 
-    uint32_t current_tick = osKernelGetTickCount();
     bool killed = (state.killed_status.load() == flare_can::CarKilledStatus::DEAD);
-    uint32_t interval = killed ? 200 : 500;
+    uint32_t target_ticks = killed ? 10 : 20;
 
-    if (current_tick-last_toggle_tick >= interval)
+    blinker_ticks++;
+
+    if (blinker_ticks >= target_ticks)
     {
         blinker_on = !blinker_on;
-        last_toggle_tick = current_tick;
-    }
-
-    // set to hazard if killed
-    if (killed)
-    {
-        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
+        blinker_ticks = 0;
     }
 
     // led control
@@ -211,41 +206,40 @@ void processTurnAndKill()
                         current_signal == flare_can::TurnSignals::HAZARDS);
 
     // update the relative LEDs
-    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port,
-                        BUTTON1_LED_Pin,
+    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin,
                         (left_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port,
-                        BUTTON5_LED_Pin,
+    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,
                         (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+    // set to hazard if killed
+    if (killed)
+    {
+        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
+    }
 
     // -- KILLED BLINKING LOGIC --
     if (killed)
     {
-        auto pin_state = blinker_on ? GPIO_PIN_SET : GPIO_PIN_RESET;
+        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
+        GPIO_PinState pin_state = blinker_on ? GPIO_PIN_SET : GPIO_PIN_RESET;
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, pin_state);
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, pin_state);
     }
+
 }
 
 void processCC()
 {
     bool active = state.is_cc_on.load();
-    uint8_t current_val = state.cc_mph_requested.load();
 
-    // led control
-    if (active)
-    {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-    } else
-    {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
-    }
+    HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin,
+                        active ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin,
+                        active ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
     // logic here for turning off CC
-    // TODO: turn of CC if brake pressed
+    // TODO: turn off CC if brake pressed
     // TODO: turn off CC if car is KILLED
 }
 

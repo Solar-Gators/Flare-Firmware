@@ -52,10 +52,10 @@ void drawLabels()
     display.DrawText(140, 90, "MPH", RGB565_GRAY);
     display.DrawText(210, 90, "CC", RGB565_GRAY);
     display.DrawText(260, 90, "RB", RGB565_GRAY);
-    display.DrawText(5, 130, "MAIN V:", RGB565_BLACK);
-    display.DrawText(5, 155, "SUPP V:", RGB565_BLACK);
-    display.DrawText(5, 180, "H TEMP:", RGB565_BLACK);
-    display.DrawText(5, 205, "ARR CN:", RGB565_BLACK);
+    display.DrawText(5, 130, "MAIN V:", RGB565_WHITE);
+    display.DrawText(5, 155, "SUPP V:", RGB565_WHITE);
+    display.DrawText(5, 180, "H TEMP:", RGB565_WHITE);
+    display.DrawText(5, 205, "ARR CN:", RGB565_WHITE);
 
     display.SetTextSize(3);
     display.DrawText(10, 40, "R N F", RGB565_BLACK);
@@ -176,6 +176,7 @@ void drawCC(uint8_t mph)
 {
     display.SetTextSize(3);
 
+    // orange text for cc on, white for off
     auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
                                     RGB565_ORANGE : RGB565_WHITE;
 
@@ -187,7 +188,7 @@ void drawCC(uint8_t mph)
     {
         snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(mph));
     }
-    display.FillRect(210, 60, 30, 16, RGB565_BLUE);
+    display.FillRect(210, 60, 45, 30, RGB565_BLUE);
     display.DrawText(210, 60, text_buffer.data(), text_color);
 }
 
@@ -202,6 +203,7 @@ void drawKillStatus(flare_can::CarKilledStatus killed)
     }
 }
 
+// TODO: might not need this function anymore
 void drawHeadlightsStatus(bool on)
 {
     // headlights draw

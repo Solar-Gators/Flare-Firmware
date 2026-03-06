@@ -5,6 +5,7 @@
 
 #include "CanDriver.hpp"
 #include "ILI9341.hpp"
+#include "Steering_wheel_buttons.hpp"
 #include "main.h"
 #include "steering.h"
 
