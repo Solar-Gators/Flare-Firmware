@@ -19,6 +19,7 @@ void canInit()
         can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
     ASSERT_TRUE(
         can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
+
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 

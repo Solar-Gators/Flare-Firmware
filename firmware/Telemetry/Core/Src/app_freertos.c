@@ -105,6 +105,11 @@ const osThreadAttr_t KillSwitchTask_attributes = {
   .cb_size = sizeof(KillSwitchTaskCB),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
+/* Definitions for CANFramesTX */
+osMessageQueueId_t CANFramesTXHandle;
+const osMessageQueueAttr_t CANFramesTX_attributes = {
+  .name = "CANFramesTX"
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -132,6 +137,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
+  /* creation of CANFramesTX */
+  CANFramesTXHandle = osMessageQueueNew (16, sizeof(uint16_t), &CANFramesTX_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */

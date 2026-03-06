@@ -79,10 +79,40 @@ void startTXRadioTask_user(void* argument)
     volatile HAL_StatusTypeDef t = rfd900ExitLocalATCommandMode();
     status = rfd900ResetLocalParameters();
 
-    for (;;)
+    //frame.id_type = sg::CANFrameIDType::STANDARD;
+    //frame.len = sg::CANFrameLen::BYTES_8;
+    //frame.rtr_mode = sg::CANFrameRTRMode::DATA;
+    //frame.timestamp = 10482;
+    //frame.can_id = 0x20;
+
+    uint8_t data[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+
+    while (1)
     {
-        uint8_t str[] = "Hello!";
-        volatile HAL_StatusTypeDef new_try = rfd900SendData(str, sizeof(str));
+        uint8_t frame_packet[30];
+
+        frame_packet[0] = 0x02;  // START
+        frame_packet[1] = 0x08;
+        frame_packet[2] = 0x00;
+
+        uint8_t pos = 3;
+
+        for (uint8_t i = 0; i < 8; i++)
+        {
+            uint8_t byte = data[i];
+
+            if (byte == 0x02 || byte == 0x03 || byte == 0x1B)
+            {
+                frame_packet[pos++] = 0x1B;  // escape
+            }
+
+            frame_packet[pos++] = byte;
+        }
+
+        frame_packet[pos++] = 0x03;  // END
+
+        volatile HAL_StatusTypeDef status = rfd900SendData(frame_packet, pos);
+
         osDelay(1000);
     }
 }
