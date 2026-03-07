@@ -22,6 +22,7 @@ constexpr sg::CANFrame mitsuba_frame0_request = {
 HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx);
+HAL_StatusTypeDef testCallback(const sg::CANFrame& msg, void* ctx);
 
 void can_init();
 

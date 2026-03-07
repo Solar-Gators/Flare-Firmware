@@ -79,6 +79,12 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
+HAL_StatusTypeDef testCallback(const sg::CANFrame& msg, void* ctx)
+{
+    volatile uint8_t var = 10;
+    return HAL_OK;
+}
+
 void can_init()
 {
     // throttle
@@ -92,6 +98,9 @@ void can_init()
     // mitsuba frame 0 comes from mc
     ASSERT_TRUE(can_device.addCallbackId(
         0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
+
+    ASSERT_TRUE(
+        can_device.addCallbackId(0x40, sg::CANFrameIDType::STANDARD, &testCallback, nullptr));
 
     // start
     ASSERT_HAL_OK(can_device.startCANDevice());

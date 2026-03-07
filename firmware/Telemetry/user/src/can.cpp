@@ -20,6 +20,10 @@ void canInit()
     ASSERT_TRUE(
         can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
 
+    // MPPT0
+    ASSERT_TRUE(
+        can_device.addCallbackId(0x600, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
+
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 
