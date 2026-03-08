@@ -44,6 +44,17 @@ void sendKillFrame()
     // send current kill switch message
     kill_frame.data[0] = static_cast<uint8_t>(killed_status.load(std::memory_order_relaxed));
     can_device.send(kill_frame);
+
+    // Temporary test of motor controller
+    sg::CANFrame mitsuba_request{0x08F89540,
+                                 sg::CANFrameIDType::EXTENDED,
+                                 sg::CANFrameRTRMode::REMOTE,
+                                 sg::CANFrameLen::BYTES_1,
+                                 0,
+                                 {}};
+    // send current kill switch message
+    mitsuba_request.data[0] = 0b00000111;
+    can_device.send(mitsuba_request);
 }
 
 void processLightsOutputs()

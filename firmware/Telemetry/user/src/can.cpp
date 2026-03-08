@@ -20,9 +20,12 @@ void canInit()
     ASSERT_TRUE(
         can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
 
-    // MPPT0
+    // MPPT 1
     ASSERT_TRUE(
-        can_device.addCallbackId(0x600, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
+        can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
+
+    ASSERT_TRUE(
+        can_device.addCallbackId(0x08950225, sg::CANFrameIDType::EXTENDED, &MPPT1_callback));
 
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
@@ -49,5 +52,11 @@ HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx)
     {
         killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
     }
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef MPPT1_callback(const sg::CANFrame& frame, void* ctx)
+{
+    volatile uint8_t var = 0;
     return HAL_OK;
 }
