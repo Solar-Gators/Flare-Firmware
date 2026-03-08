@@ -1,6 +1,7 @@
 #include "can.h"
 
 #include "CanDriver.hpp"
+#include "can_protocol.h"
 #include "main.h"
 #include "steering_state.h"
 
@@ -15,7 +16,7 @@
 namespace steering
 {
 
-void can_init()
+void initCan()
 {
     // recieve message from rear vcu
     ASSERT_TRUE(can_device.addCallbackId(

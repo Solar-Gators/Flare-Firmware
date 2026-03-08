@@ -8,7 +8,7 @@ namespace steering
 
 inline sg::CANDevice can_device(&hfdcan1);
 
-void can_init();
+void initCan();
 
 HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef rearVCUSuppBattMessageCallback(const sg::CANFrame& msg, void* ctx);

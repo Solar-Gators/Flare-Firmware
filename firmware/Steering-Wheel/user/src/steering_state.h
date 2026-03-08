@@ -1,10 +1,12 @@
-#pragma once
+//
+// Created by justin on 2/24/26.
+//
 
-#include <cstdint>
+#ifndef FLAREFIRMWARE_STEERING_INTERNAL_H
+#define FLAREFIRMWARE_STEERING_INTERNAL_H
 
+#include "CanDriver.hpp"
 #include "can_protocol.h"
-
-#include <atomic>
 
 namespace steering
 {
@@ -13,6 +15,7 @@ struct SteeringState
 {
     // sending
     std::atomic<uint8_t> regen_requested{};   // 0 - 255 as percent so 255 = 100% regen strength
+    std::atomic<bool> is_cc_on{false}; // determines if cc is active
     std::atomic<uint8_t> cc_mph_requested{};  // in mph
     std::atomic<bool> array_contactors_requested_closed{};
     std::atomic<bool> horn_requested_on{};
@@ -31,6 +34,10 @@ struct SteeringState
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
 };
 
-inline SteeringState state;
+static inline SteeringState state;
+
+void initScreen();
 
 }  // namespace steering
+
+#endif  //FLAREFIRMWARE_STEERING_INTERNAL_H

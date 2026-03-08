@@ -6,9 +6,9 @@
 
 // button layout
 // 1(lt)      5(rt) (both for hazards)
-// 2(headlights)    6(fwrd/rev)
+// 2(pwr,eco)    6(fwrd/rev) // prev. 2 was headlights
 // 3(array)   7(horn)
-// 4(MODE)     8(pwr/eco might change later to something like cc enable)
+// 4(cc down/disable)     8(cc inc/enable)
 
 // paddles do cc or regen strengths depending on mode maybe
 
