@@ -5,6 +5,21 @@
 #include "main.h"
 #include "rearvcu_state.h"
 
+// from old dashboard defines
+#define MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX 35  // 1rpm/lsb
+#define MITSUBA_RPM_VELOCITY_LEN 12
+
+#define MITSUBA_VOLTAGE_LSB_BIT_INDEX 0  // 0.5V/lsb
+#define MITSUBA_VOLTAGE_LEN 10
+
+#define MITSUBA_CURRENT_LSB_BIT_INDEX 10  // 1A/lsb
+#define MITSUBA_CURRENT_LEN 9
+
+#define MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX \
+    19  // 0 = plus current (discharge), 1 = minus current (charge)
+
+#define WHEEL_CIRCUMFERENCE_INCHES 69.12
+
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
         Error_Handler();
@@ -37,6 +52,33 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
+HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
+{
+    // need to get rpm here and calculate miles per hour
+    uint64_t full_data = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        full_data = (full_data << 8) | msg.data[7 - i];  // lsb first
+    }
+
+    uint16_t motor_rpm =
+        (full_data >> MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX) & ((1 << MITSUBA_RPM_VELOCITY_LEN) - 1);
+    /*
+    uint16_t motor_voltage = (full_data >> MITSUBA_VOLTAGE_LSB_BIT_INDEX) & ((1 << MITSUBA_VOLTAGE_LEN) - 1);
+    uint16_t motor_current = (full_data >> MITSUBA_CURRENT_LSB_BIT_INDEX) & ((1 << MITSUBA_CURRENT_LEN) - 1);
+    uint8_t motor_current_direction = (full_data >> MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX) & 0x01;
+    */
+
+    // convert to m/s from rpm TODO: verify this is correct in real life lol maybe with speed gun or something idk
+    double inches_per_sec = (motor_rpm * WHEEL_CIRCUMFERENCE_INCHES) / 60;
+    double miles_per_sec = inches_per_sec / 63360;   // 1 mile = 63360 inches
+    double miles_per_hour = (miles_per_sec * 3600);  // 1 hour = 3600 seconds
+
+    state.car_speed.store(static_cast<uint8_t>(std::round(miles_per_hour)));
+
+    return HAL_OK;
+}
+
 void can_init()
 {
     // throttle
@@ -46,6 +88,10 @@ void can_init()
     // all the user inputs from steering wheel
     ASSERT_TRUE(can_device.addCallbackId(
         0x064, sg::CANFrameIDType::STANDARD, &driverMessageCallback, nullptr));
+
+    // mitsuba frame 0 comes from mc
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
 
     // start
     ASSERT_HAL_OK(can_device.startCANDevice());
