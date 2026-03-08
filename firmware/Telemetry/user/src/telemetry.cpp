@@ -5,7 +5,9 @@
 #include "Steering_wheel_buttons.hpp"
 #include "can.h"
 #include "can_protocol.h"
+#include "maxm10s.hpp"
 #include "telem_state.h"
+#include "user_threads.hpp"
 
 #include <atomic>
 
@@ -95,6 +97,34 @@ void processLightsOutputs()
         default:
             Error_Handler();
     }
+}
+
+void queueGPSData()
+{
+    MaxM10S::Position coords = gps().getPosition();
+    float speed_kmh = gps().getSpeed();
+    uint8_t num_sats = gps().getNumSatellites();
+
+    uint8_t frame[10];
+
+    frame[0] = 0x20;
+    frame[1] = 0x00;
+    memcpy(frame + 2, &coords.latitude_deg, 8);
+    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
+
+    frame[0] = 0x20;
+    frame[1] = 0x01;
+    memcpy(frame + 2, &coords.longitude_deg, 8);
+    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
+
+    frame[0] = 0x20;
+    frame[1] = 0x02;
+    memcpy(frame + 2, &speed_kmh, 4);
+    frame[6] = num_sats;
+    frame[7] = 0;
+    frame[8] = 0;
+    frame[9] = 0;
+    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
 }
 
 }  // namespace telem

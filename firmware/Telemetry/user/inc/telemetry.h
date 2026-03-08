@@ -14,6 +14,7 @@ constexpr size_t led_toggle_period_ms = 500;
 void init();
 void sendKillFrame();
 void processLightsOutputs();
+void queueGPSData();
 
 }  // namespace telem
 

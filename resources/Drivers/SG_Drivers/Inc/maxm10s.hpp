@@ -38,10 +38,14 @@ class MaxM10S
     {
         double latitude_deg;
         double longitude_deg;
-        ;
     };
 
-    Position getPosition() { return position; }
+    Position getPosition()
+    {
+        osMutexAcquire(long_lat_read_mutex, osWaitForever);
+        return position;
+        osMutexRelease(long_lat_read_mutex);
+    }
     float getSpeed() { return ground_speed_knots; }
     uint8_t getNumSatellites() { return num_satellites; }
     uint8_t getQuality() { return quality; }
@@ -67,6 +71,7 @@ class MaxM10S
 #ifdef USING_FREERTOS
     SemaphoreHandle_t buffer_mutex = nullptr;
     SemaphoreHandle_t fix_data_mutex = nullptr;
+    SemaphoreHandle_t long_lat_read_mutex = nullptr;
 #endif
 
     volatile uint8_t gps_buffer[GPS_BUFFER_SIZE];

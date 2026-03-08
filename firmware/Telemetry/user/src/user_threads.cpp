@@ -10,6 +10,8 @@
 #include "telem_state.h"
 #include "telemetry.h"
 
+QueueHandle_t radioTXQueue;
+
 void init_user()
 {
     // turn lights off
@@ -19,6 +21,14 @@ void init_user()
     // TODO: turn off middle one here when we get it
 
     telem::init();
+
+    // Can hold ten standard can frames (2 bytes for ID + 8 data bytes)
+    radioTXQueue = xQueueCreate(10, 10);
+    if (!radioTXQueue)
+    {
+        while (1)
+            ;
+    }
 }
 
 void startHeartbeatTask_user(void* argument)
@@ -40,6 +50,7 @@ void startGPSReadBufferTask_user(void* argument)
     for (;;)
     {
         gps().readOutputBuffer();
+        telem::queueGPSData();
         osDelay(500);
     }
 }
@@ -56,8 +67,8 @@ void startGPSParseNMEATask_user(void* argument)
 extern UART_HandleTypeDef huart2;
 void startTXRadioTask_user(void* argument)
 {
+    // TODO: clean up this initialization
     rfd900SetUartHandle(&huart2);
-
     rfd900EnterLocalATCommandMode();
     uint8_t resp[256];
     uint16_t len;
@@ -89,21 +100,20 @@ void startTXRadioTask_user(void* argument)
     //frame.timestamp = 10482;
     //frame.can_id = 0x20;
 
-    uint8_t data[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-
     while (1)
     {
+        uint8_t long_frame[10];
+        xQueueReceive(radioTXQueue, long_frame, 10);
+
         uint8_t frame_packet[30];
 
         frame_packet[0] = 0x02;  // START
-        frame_packet[1] = 0x08;
-        frame_packet[2] = 0x00;
 
-        uint8_t pos = 3;
+        uint8_t pos = 1;
 
-        for (uint8_t i = 0; i < 8; i++)
+        for (uint8_t i = 0; i < 10; i++)
         {
-            uint8_t byte = data[i];
+            uint8_t byte = long_frame[i];
 
             if (byte == 0x02 || byte == 0x03 || byte == 0x1B)
             {
@@ -117,7 +127,7 @@ void startTXRadioTask_user(void* argument)
 
         volatile HAL_StatusTypeDef status = rfd900SendData(frame_packet, pos);
 
-        osDelay(1000);
+        osDelay(200);
     }
 }
 
