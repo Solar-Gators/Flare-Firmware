@@ -43,8 +43,9 @@ class MaxM10S
     Position getPosition()
     {
         osMutexAcquire(long_lat_read_mutex, osWaitForever);
-        return position;
+        Position temp = position;
         osMutexRelease(long_lat_read_mutex);
+        return temp;
     }
     float getSpeed() { return ground_speed_knots; }
     uint8_t getNumSatellites() { return num_satellites; }
