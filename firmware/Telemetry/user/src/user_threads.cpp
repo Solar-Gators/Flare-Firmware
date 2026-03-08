@@ -5,6 +5,7 @@
 
 #include "can.h"
 #include "main.h"
+#include "maxm10s.hpp"
 #include "telem_state.h"
 
 void init_user()
@@ -75,7 +76,8 @@ void startGPSReadBufferTask_user(void* argument)
 {
     for (;;)
     {
-        osDelay(1000);
+        gps().readOutputBuffer();
+        osDelay(500);
     }
 }
 
@@ -83,7 +85,8 @@ void startGPSParseNMEATask_user(void* argument)
 {
     for (;;)
     {
-        osDelay(1000);
+        gps().parseNMEA();
+        osDelay(200);
     }
 }
 

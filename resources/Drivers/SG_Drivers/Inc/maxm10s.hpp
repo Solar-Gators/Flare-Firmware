@@ -4,6 +4,8 @@ Ublox MAX M10S Driver
 */
 #pragma once
 
+#define USING_FREERTOS 1
+
 #include <cstdio>
 #include <cstring>
 
@@ -19,6 +21,8 @@ Ublox MAX M10S Driver
 #include "FreeRTOS.h"
 #include "semphr.h"
 #endif
+
+extern I2C_HandleTypeDef hi2c1;
 
 #define GPS_BUFFER_SIZE 1024
 
@@ -74,3 +78,9 @@ class MaxM10S
     static constexpr uint8_t LEN_REG_HIGH = 0xFD;
     static constexpr uint8_t DATA_REG = 0xFF;
 };
+
+inline MaxM10S& gps()
+{
+    static MaxM10S gps(&hi2c1);
+    return gps;
+}

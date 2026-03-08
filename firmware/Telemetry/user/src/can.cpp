@@ -22,6 +22,7 @@ void canInit()
         0x020, sg::CANFrameIDType::STANDARD, &telem::rearVCUStatusCallback));
     ASSERT_TRUE(telem::can_device.addCallbackId(
         0x040, sg::CANFrameIDType::STANDARD, &telem::bmsFaultsMessageCallback));
+
     ASSERT_HAL_OK(telem::can_device.startCANDevice());
 }
 

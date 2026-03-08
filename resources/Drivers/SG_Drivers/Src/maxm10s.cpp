@@ -76,7 +76,7 @@ void MaxM10S::readOutputBuffer()
 
 void MaxM10S::parseNMEA()
 {
-    char sentence[128];
+    char sentence[256];
     uint16_t start;
     uint16_t end;
 
