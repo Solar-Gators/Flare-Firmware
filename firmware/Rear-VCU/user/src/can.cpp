@@ -79,12 +79,6 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
-HAL_StatusTypeDef testCallback(const sg::CANFrame& msg, void* ctx)
-{
-    volatile uint8_t var = 10;
-    return HAL_OK;
-}
-
 void can_init()
 {
     // throttle
