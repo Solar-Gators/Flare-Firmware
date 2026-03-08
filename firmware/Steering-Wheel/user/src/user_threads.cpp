@@ -14,7 +14,6 @@
 
 void init_user()
 {
-    // total init
     steering::init();
 }
 
@@ -44,7 +43,7 @@ void startScreenTask_user(void* argument)
         // }
         // uint8_t speed = demo_speed;
         steering::processScreen();
-        osDelay(500);
+        osDelay(300);
     }
 }
 
@@ -52,12 +51,13 @@ void startPollButtons_user(void* argument)
 {
     for (;;)
     {
-        steering::sendRequestsMessage();
         // TODO: could consolidate these below functions into smt like processButtonLEDs
         steering::processHornButton();
         steering::processTurnAndKill();
         steering::processCC();
 
-        osDelay(30);
+        steering::sendRequestsMessage();
+
+        osDelay(20);
     }
 }

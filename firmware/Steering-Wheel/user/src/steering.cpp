@@ -178,7 +178,7 @@ void processHornButton()
 {
     // -- HORN POLLING LOGIC --
     bool horn_pressed = (HAL_GPIO_ReadPin(HORN_PORT, HORN_PIN) == GPIO_PIN_RESET);
-    state.horn_requested_on.store(horn_pressed);
+    state.horn_requested_on.store(horn_pressed, std::memory_order_relaxed);
 }
 
 // Process the Turn Signals and the Kill Status for blinking the top LEDs
