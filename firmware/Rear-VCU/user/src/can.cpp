@@ -93,9 +93,6 @@ void can_init()
     ASSERT_TRUE(can_device.addCallbackId(
         0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
 
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x40, sg::CANFrameIDType::STANDARD, &testCallback, nullptr));
-
     // start
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
