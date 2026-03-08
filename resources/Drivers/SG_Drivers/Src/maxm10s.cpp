@@ -1,5 +1,7 @@
 #include "maxm10s.hpp"
 
+#include "main.h"
+
 MaxM10S::MaxM10S(I2C_HandleTypeDef* hi2c)
 {
     i2c_handle = hi2c;
@@ -10,12 +12,17 @@ void MaxM10S::init()
 #ifdef USING_FREERTOS
     buffer_mutex = xSemaphoreCreateMutex();
     fix_data_mutex = xSemaphoreCreateMutex();
+    long_lat_read_mutex = xSemaphoreCreateMutex();
 
     if (buffer_mutex == nullptr)
     {
         Error_Handler();
     }
     if (fix_data_mutex == nullptr)
+    {
+        Error_Handler();
+    }
+    if (long_lat_read_mutex == nullptr)
     {
         Error_Handler();
     }
@@ -74,7 +81,7 @@ void MaxM10S::readOutputBuffer()
 
 void MaxM10S::parseNMEA()
 {
-    char sentence[128];
+    char sentence[256];
     uint16_t start;
     uint16_t end;
 
@@ -204,7 +211,9 @@ void MaxM10S::parseGNRMC(char* sentence)
 
                 if (latDir != nullptr && latStr[0] != '\0')
                 {
+                    osMutexAcquire(long_lat_read_mutex, osWaitForever);
                     this->position.latitude_deg = nmeaToDecimal(latStr, *latDir);
+                    osMutexRelease(long_lat_read_mutex);
                 }
                 break;
             }
@@ -218,7 +227,9 @@ void MaxM10S::parseGNRMC(char* sentence)
 
                 if (lonDir != nullptr && lonStr[0] != '\0')
                 {
+                    osMutexAcquire(long_lat_read_mutex, osWaitForever);
                     this->position.longitude_deg = nmeaToDecimal(lonStr, *lonDir);
+                    osMutexRelease(long_lat_read_mutex);
                 }
                 break;
             }
@@ -261,7 +272,9 @@ void MaxM10S::parseGNGGA(char* sentence)
 
                 if (latDir != nullptr && latStr[0] != '\0')
                 {
+                    osMutexAcquire(long_lat_read_mutex, osWaitForever);
                     this->position.latitude_deg = nmeaToDecimal(latStr, *latDir);
+                    osMutexRelease(long_lat_read_mutex);
                 }
                 break;
             }
@@ -275,7 +288,9 @@ void MaxM10S::parseGNGGA(char* sentence)
 
                 if (lonDir != nullptr && lonStr[0] != '\0')
                 {
+                    osMutexAcquire(long_lat_read_mutex, osWaitForever);
                     this->position.longitude_deg = nmeaToDecimal(lonStr, *lonDir);
+                    osMutexRelease(long_lat_read_mutex);
                 }
                 break;
             }

@@ -59,9 +59,6 @@ void init_user()
         // blink ok led
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
 
-        // send mitsuba request for frame0 to get wheel rpm, shouldnt be sent faster than every 500ms
-        rearvcu::can_device.send(rearvcu::mitsuba_frame0_request);
-
         // supp batt voltage can be read and sent in this thread as its not as urgent/important
         uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
         uint16_t supp_batt_current = 0xFFFF;     // TODO: could get current draw of supp batt here
