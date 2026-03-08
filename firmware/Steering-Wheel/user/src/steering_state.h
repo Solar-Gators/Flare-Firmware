@@ -26,6 +26,7 @@ struct SteeringState
 
     // recieving
     std::atomic<uint8_t> car_speed{};
+    std::atomic<uint16_t> motor_rpm{};
     std::atomic<flare_can::CarKilledStatus> killed_status{};
     std::atomic<flare_can::ArrayContactors> actual_array_contactors_status{};
     std::atomic<flare_can::Direction> actual_direction{};

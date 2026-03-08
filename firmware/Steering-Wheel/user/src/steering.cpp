@@ -78,6 +78,10 @@ void sendRequestsMessage()
 
     can_device.send(steering_requests_frame);
 }
+void sendMitsubaRequestMessage()
+{
+    can_device.send(mitsuba_frame0_request);
+}
 
 // TODO: some indicator for the button 7 light
 // TODO: important info not done: cruise control, regenerative breaking

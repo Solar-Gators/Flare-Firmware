@@ -22,7 +22,10 @@ void startHeartbeatTask_user(void* argument)
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
-        osDelay(500);
+
+        steering::sendMitsubaRequestMessage();
+
+        osDelay(steering::mitsuba_request_message_send_period_ms);
     }
 }
 

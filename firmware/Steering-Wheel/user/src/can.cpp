@@ -5,6 +5,21 @@
 #include "main.h"
 #include "steering_state.h"
 
+// from old dashboard defines
+#define MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX 35  // 1rpm/lsb
+#define MITSUBA_RPM_VELOCITY_LEN 12
+
+#define MITSUBA_VOLTAGE_LSB_BIT_INDEX 0  // 0.5V/lsb
+#define MITSUBA_VOLTAGE_LEN 10
+
+#define MITSUBA_CURRENT_LSB_BIT_INDEX 10  // 1A/lsb
+#define MITSUBA_CURRENT_LEN 9
+
+#define MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX \
+    19  // 0 = plus current (discharge), 1 = minus current (charge)
+
+#define WHEEL_CIRCUMFERENCE_INCHES 69.12
+
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
         Error_Handler();
@@ -29,8 +44,10 @@ void initCan()
         0x042, sg::CANFrameIDType::STANDARD, &bmsBatteryTempMessageCallback, nullptr));
     ASSERT_TRUE(can_device.addCallbackId(
         0x010, sg::CANFrameIDType::STANDARD, &telemKillStatusMessageCallback, nullptr));
-
-    // Speed in MPH frame
+    // mitsuba frame 0 comes from mc
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
+    // Speed frame from telem
     ASSERT_TRUE(can_device.addCallbackId(
         0x0A0, sg::CANFrameIDType::STANDARD, &speedMessageCallback, nullptr));
 
@@ -39,20 +56,21 @@ void initCan()
 
 HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
-    steering::state.actual_direction.store(static_cast<flare_can::Direction>(msg.data[1]),
-                                           std::memory_order_relaxed);
+    state.actual_direction.store(static_cast<flare_can::Direction>(msg.data[1]),
+                                 std::memory_order_relaxed);
 
-    steering::state.actual_array_contactors_status.store(
-        static_cast<flare_can::ArrayContactors>(msg.data[3]), std::memory_order_relaxed);
+    state.actual_array_contactors_status.store(static_cast<flare_can::ArrayContactors>(msg.data[3]),
+                                               std::memory_order_relaxed);
 
-    steering::state.car_speed.store(msg.data[4], std::memory_order_relaxed);
+    uint16_t rpm = msg.data[4] | (static_cast<uint16_t>(msg.data[5]) << 8);
+    state.motor_rpm.store(rpm, std::memory_order_relaxed);
 
     return HAL_OK;
 }
 HAL_StatusTypeDef rearVCUSuppBattMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     uint16_t supp_batt_voltage = (msg.data[0]) | (static_cast<uint16_t>(msg.data[1]) << 8);
-    steering::state.supp_batt_voltage_mv.store(supp_batt_voltage, std::memory_order_relaxed);
+    state.supp_batt_voltage_mv.store(supp_batt_voltage, std::memory_order_relaxed);
 
     return HAL_OK;
 }
@@ -60,7 +78,7 @@ HAL_StatusTypeDef rearVCUSuppBattMessageCallback(const sg::CANFrame& msg, void* 
 HAL_StatusTypeDef bmsBatteryVoltageMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     uint16_t main_batt_voltage_mv = static_cast<uint16_t>(msg.data[0] << 8) | (msg.data[1]);
-    steering::state.main_batt_voltage_cv.store(main_batt_voltage_mv, std::memory_order_relaxed);
+    state.main_batt_voltage_cv.store(main_batt_voltage_mv, std::memory_order_relaxed);
 
     return HAL_OK;
 }
@@ -69,7 +87,7 @@ HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* c
 {
     // dc here is like decicelcius
     uint16_t highest_temp_cell_dc = static_cast<uint16_t>(msg.data[0] << 8) | (msg.data[1]);
-    steering::state.high_temp_dc.store(highest_temp_cell_dc, std::memory_order_relaxed);
+    state.high_temp_dc.store(highest_temp_cell_dc, std::memory_order_relaxed);
 
     return HAL_OK;
 }
@@ -77,14 +95,43 @@ HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* c
 HAL_StatusTypeDef telemKillStatusMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     auto status = static_cast<flare_can::CarKilledStatus>(msg.data[0]);
-    steering::state.killed_status.store(status, std::memory_order_relaxed);
+    state.killed_status.store(status, std::memory_order_relaxed);
     return HAL_OK;
 }
 
 HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
-    auto status = static_cast<uint8_t>(msg.data[0]);
-    steering::state.car_speed.store(status, std::memory_order_relaxed);
+    uint8_t knots = msg.data[0];
+    float mph = static_cast<float>(knots) * 1.15078f;
+
+    state.car_speed.store(static_cast<uint8_t>(std::round(mph)), std::memory_order_relaxed);
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
+{
+    // need to get rpm here and calculate miles per hour
+    uint64_t full_data = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        full_data = (full_data << 8) | msg.data[7 - i];  // lsb first
+    }
+
+    uint16_t motor_rpm =
+        (full_data >> MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX) & ((1 << MITSUBA_RPM_VELOCITY_LEN) - 1);
+    /*
+    uint16_t motor_voltage = (full_data >> MITSUBA_VOLTAGE_LSB_BIT_INDEX) & ((1 << MITSUBA_VOLTAGE_LEN) - 1);
+    uint16_t motor_current = (full_data >> MITSUBA_CURRENT_LSB_BIT_INDEX) & ((1 << MITSUBA_CURRENT_LEN) - 1);
+    uint8_t motor_current_direction = (full_data >> MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX) & 0x01;
+    */
+
+    // convert to m/s from rpm TODO: verify this is correct in real life lol maybe with speed gun or something idk
+    double inches_per_sec = (motor_rpm * WHEEL_CIRCUMFERENCE_INCHES) / 60;
+    double miles_per_sec = inches_per_sec / 63360;   // 1 mile = 63360 inches
+    double miles_per_hour = (miles_per_sec * 3600);  // 1 hour = 3600 seconds
+
+    state.car_speed.store(static_cast<uint8_t>(std::round(miles_per_hour)));
+
     return HAL_OK;
 }
 
