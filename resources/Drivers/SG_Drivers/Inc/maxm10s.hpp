@@ -4,14 +4,18 @@ Ublox MAX M10S Driver
 */
 #pragma once
 
-#define USING_FREERTOS 1
-
 #include <cstdio>
 #include <cstring>
 
 #include <stdlib.h>
 
-#include "main.h"
+#if defined(STM32U575xx)
+#include "stm32u5xx_hal.h"
+#include "stm32u5xx_hal_i2c.h"
+#elif defined(STM32L467xx)
+#include "stm32l4xx_hal.h"
+#include "stm32l4xx_hal_i2c.h"
+#endif
 
 #include <string>
 
@@ -21,8 +25,6 @@ Ublox MAX M10S Driver
 #include "FreeRTOS.h"
 #include "semphr.h"
 #endif
-
-extern I2C_HandleTypeDef hi2c1;
 
 #define GPS_BUFFER_SIZE 1024
 
@@ -38,14 +40,10 @@ class MaxM10S
     {
         double latitude_deg;
         double longitude_deg;
+        ;
     };
 
-    Position getPosition()
-    {
-        osMutexAcquire(long_lat_read_mutex, osWaitForever);
-        return position;
-        osMutexRelease(long_lat_read_mutex);
-    }
+    Position getPosition() { return position; }
     float getSpeed() { return ground_speed_knots; }
     uint8_t getNumSatellites() { return num_satellites; }
     uint8_t getQuality() { return quality; }
@@ -71,7 +69,6 @@ class MaxM10S
 #ifdef USING_FREERTOS
     SemaphoreHandle_t buffer_mutex = nullptr;
     SemaphoreHandle_t fix_data_mutex = nullptr;
-    SemaphoreHandle_t long_lat_read_mutex = nullptr;
 #endif
 
     volatile uint8_t gps_buffer[GPS_BUFFER_SIZE];
@@ -83,9 +80,3 @@ class MaxM10S
     static constexpr uint8_t LEN_REG_HIGH = 0xFD;
     static constexpr uint8_t DATA_REG = 0xFF;
 };
-
-inline MaxM10S& gps()
-{
-    static MaxM10S gps(&hi2c1);
-    return gps;
-}
