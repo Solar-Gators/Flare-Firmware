@@ -51,6 +51,7 @@ void startGPSReadBufferTask_user(void* argument)
     {
         gps().readOutputBuffer();
         telem::queueGPSData();
+
         osDelay(500);
     }
 }
@@ -60,6 +61,7 @@ void startGPSParseNMEATask_user(void* argument)
     for (;;)
     {
         gps().parseNMEA();
+
         osDelay(200);
     }
 }
