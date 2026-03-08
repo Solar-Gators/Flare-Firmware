@@ -133,9 +133,22 @@ void startTXRadioTask_user(void* argument)
 
 void startKillSwitchTask_user(void* argument)
 {
+    GPIO_PinState brake_lights;
     for (;;)
     {
-        telem::sendKillFrame();
+        // Using kill switch input as brake input
+        // for testing
+        //telem::sendKillFrame();
+
+        if (HAL_GPIO_ReadPin(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin))
+        {
+            brake_lights = GPIO_PIN_RESET;
+        }
+        else
+        {
+            brake_lights = GPIO_PIN_SET;
+        }
+        HAL_GPIO_WritePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin, brake_lights);
         osDelay(50);
     }
 }

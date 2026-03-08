@@ -1,7 +1,9 @@
 #include "can.h"
 
 #include "CanDriver.hpp"
+#include "queue.h"
 #include "telem_state.h"
+#include "user_threads.hpp"
 
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
@@ -66,5 +68,11 @@ HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx)
 
 HAL_StatusTypeDef radioTXCallback(const sg::CANFrame& frame, void* ctx)
 {
+    uint8_t packed_frame[10];
+    packed_frame[0] = frame.can_id & 0xff;
+    packed_frame[1] = frame.can_id >> 8;
+    memcpy(packed_frame + 2, &frame.data, 8);
+
+    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
     return HAL_OK;
 }

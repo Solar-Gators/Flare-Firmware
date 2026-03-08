@@ -5,6 +5,7 @@
 #include "Steering_wheel_buttons.hpp"
 #include "can.h"
 #include "can_protocol.h"
+#include "main.h"
 #include "maxm10s.hpp"
 #include "telem_state.h"
 #include "user_threads.hpp"
@@ -32,7 +33,7 @@ namespace telem
 void init()
 {
     canInit();
-    killSwitchButtonInit();
+    //killSwitchButtonInit();
 }
 
 void sendKillFrame()
@@ -54,9 +55,22 @@ void sendKillFrame()
                                  sg::CANFrameLen::BYTES_1,
                                  0,
                                  {}};
-    // send current kill switch message
+
     mitsuba_request.data[0] = 0b00000111;
     can_device.send(mitsuba_request);
+}
+
+void sendSpeedFrame()
+{
+    sg::CANFrame speed_frame{0x0A0,
+                             sg::CANFrameIDType::STANDARD,
+                             sg::CANFrameRTRMode::DATA,
+                             sg::CANFrameLen::BYTES_1,
+                             0,
+                             {}};
+    // send current kill switch message
+    speed_frame.data[0] = (uint8_t) (gps().getSpeed() + 0.5f);
+    can_device.send(speed_frame);
 }
 
 void processLightsOutputs()
@@ -90,7 +104,6 @@ void processLightsOutputs()
         case flare_can::TurnSignals::HAZARDS:
             HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
             HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
-            // TODO: toggle middle one here when we get it
             break;
         case flare_can::TurnSignals::OFF:
             break;
