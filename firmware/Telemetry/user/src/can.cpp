@@ -19,8 +19,8 @@ void canInit()
         can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
     ASSERT_TRUE(
         can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
+    ASSERT_TRUE(can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &radioTXCallback));
+    ASSERT_TRUE(can_device.addCallbackId(0x041, sg::CANFrameIDType::STANDARD, &radioTXCallback));
 
     // MPPT 1 Input Measurements frame
     ASSERT_TRUE(can_device.addCallbackId(0x600, sg::CANFrameIDType::STANDARD, &radioTXCallback));

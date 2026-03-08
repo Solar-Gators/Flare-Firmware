@@ -117,16 +117,20 @@ void startScreenTask_user(void* argument)
         //     demo_speed--;
         //     if (demo_speed == 0) demo_up = true;
         // }
+        // }
         // uint8_t speed = demo_speed;
         uint8_t speed = steering::state.car_speed.load(std::memory_order_relaxed);
 
-        if (speed > 150) // >150 means can/sensor error
+        if (speed > 150)  // >150 means can/sensor error
         {
             snprintf(text_buffer.data(), sizeof(text_buffer), "ER");
         }
         else
         {
-            snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(speed));
+            snprintf(text_buffer.data(),
+                     sizeof(text_buffer),
+                     "%02lu",
+                     static_cast<unsigned long>(speed));
             // add leading 0 with %02
         }
         display.SetTextSize(5);
@@ -135,14 +139,18 @@ void startScreenTask_user(void* argument)
 
         // cruise draw
         uint8_t cc_val = steering::state.cc_mph_requested.load(std::memory_order_relaxed);
-        snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(cc_val));
+        snprintf(
+            text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(cc_val));
         display.SetTextSize(3);
         display.FillRect(210, 60, 30, 16, RGB565_BLUE);
         display.DrawText(210, 60, text_buffer.data(), RGB565_WHITE);
 
         // regen percent draw
         uint8_t regen = steering::state.regen_requested.load(std::memory_order_relaxed);
-        snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>((regen*100)/255));
+        snprintf(text_buffer.data(),
+                 sizeof(text_buffer),
+                 "%02lu",
+                 static_cast<unsigned long>((regen * 100) / 255));
         display.FillRect(260, 60, 30, 16, RGB565_BLUE);
         display.DrawText(260, 60, text_buffer.data(), RGB565_WHITE);
 
@@ -190,7 +198,6 @@ void startScreenTask_user(void* argument)
         display.FillRect(110, 205, 100, 16, RGB565_BLUE);
         display.DrawText(110, 205, arr_closed ? "CLSD" : "OPEN", RGB565_BLACK);
 
-
         // -- BOTTOM RIGHT (STATUS) SECTION --
 
         // kill status draw
@@ -215,7 +222,8 @@ void startScreenTask_user(void* argument)
         }
 
         // headlights draw
-        bool headlights_active = steering::state.headlights_requested_on.load(std::memory_order_relaxed);
+        bool headlights_active =
+            steering::state.headlights_requested_on.load(std::memory_order_relaxed);
         if (headlights_active)
         {
             display.DrawText(228, 155, "HDLGTS", RGB565_BLACK);
@@ -241,7 +249,7 @@ void startPollButtons_user(void* argument)
     steering::initButtons();
 
     // turn signal blinking variables
-    int blinker_ticks = 0; // also used for killed blinking
+    int blinker_ticks = 0;  // also used for killed blinking
     bool blinker_on = false;
 
     for (;;)
@@ -249,10 +257,10 @@ void startPollButtons_user(void* argument)
         // -- TURN SINGAL BLINKING LOGIC --
         // determine blink speed bc ticks shared with car killed status
         bool killed = (steering::state.killed_status.load() == flare_can::CarKilledStatus::DEAD);
-        int target_ticks = killed ? 10 : 20; // faster blinking when car killed blinking
+        int target_ticks = killed ? 10 : 20;  // faster blinking when car killed blinking
 
-        blinker_ticks++; // shared with car killed
-        if(blinker_ticks >= target_ticks) // roughly every 500ms
+        blinker_ticks++;                    // shared with car killed
+        if (blinker_ticks >= target_ticks)  // roughly every 500ms
         {
             blinker_on = !blinker_on;
             blinker_ticks = 0;
@@ -262,16 +270,18 @@ void startPollButtons_user(void* argument)
         auto current_signal = steering::state.turn_signals_requested.load();
 
         bool left_active = (current_signal == flare_can::TurnSignals::LEFT ||
-            current_signal == flare_can::TurnSignals::HAZARDS);
+                            current_signal == flare_can::TurnSignals::HAZARDS);
         bool right_active = (current_signal == flare_can::TurnSignals::RIGHT ||
-            current_signal == flare_can::TurnSignals::HAZARDS);
+                             current_signal == flare_can::TurnSignals::HAZARDS);
 
         // update the relative LEDs
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin,
-            (left_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port,
+                          BUTTON1_LED_Pin,
+                          (left_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,
-            (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port,
+                          BUTTON5_LED_Pin,
+                          (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
         // -- KILLED BLINKING LOGIC --
         if (killed)
@@ -303,8 +313,7 @@ void startPollButtons_user(void* argument)
             static_cast<uint8_t>(steering::state.array_contactors_requested_closed.load());
 
         // horn
-        steering_requests_frame.data[3] =
-            static_cast<uint8_t>(horn_pressed);
+        steering_requests_frame.data[3] = static_cast<uint8_t>(horn_pressed);
 
         // headlights
         steering_requests_frame.data[4] =

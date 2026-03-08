@@ -29,6 +29,10 @@ void can_init()
     ASSERT_TRUE(can_device.addCallbackId(
         0x010, sg::CANFrameIDType::STANDARD, &telemKillStatusMessageCallback, nullptr));
 
+    // Speed in MPH frame
+    ASSERT_TRUE(can_device.addCallbackId(
+        0x0A0, sg::CANFrameIDType::STANDARD, &speedMessageCallback, nullptr));
+
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 
@@ -73,6 +77,13 @@ HAL_StatusTypeDef telemKillStatusMessageCallback(const sg::CANFrame& msg, void* 
 {
     auto status = static_cast<flare_can::CarKilledStatus>(msg.data[0]);
     steering::state.killed_status.store(status, std::memory_order_relaxed);
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx)
+{
+    auto status = static_cast<uint8_t>(msg.data[0]);
+    steering::state.car_speed.store(status, std::memory_order_relaxed);
     return HAL_OK;
 }
 

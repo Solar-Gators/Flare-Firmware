@@ -15,5 +15,6 @@ HAL_StatusTypeDef rearVCUSuppBattMessageCallback(const sg::CANFrame& msg, void* 
 HAL_StatusTypeDef bmsBatteryVoltageMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef telemKillStatusMessageCallback(const sg::CANFrame& msg, void* ctx);
+HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx);
 
 }  // namespace steering
