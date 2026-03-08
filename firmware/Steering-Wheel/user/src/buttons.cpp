@@ -122,7 +122,7 @@ void button4PressedCallback()
     // Then handle CC functionality
     if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val > 1)
     {
-        state.cc_mph_requested.store(current_val-1);
+        state.cc_mph_requested.store(current_val - 1);
     }
 
     // Check for both buttons pressed (simplified)
@@ -149,7 +149,7 @@ void button8PressedCallback()
     // Then handle CC functionality
     if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val < 99)
     {
-        state.cc_mph_requested.store(current_val+1);
+        state.cc_mph_requested.store(current_val + 1);
     }
 
     // Check for both buttons pressed (simplified)

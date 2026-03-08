@@ -73,7 +73,8 @@ void sendRequestsMessage()
         static_cast<uint8_t>(state.mc_power_mode_requested.load(std::memory_order_relaxed));
 
     // cc mph
-    steering_requests_frame.data[7] = state.cc_mph_requested.load(std::memory_order_relaxed);;
+    steering_requests_frame.data[7] = state.cc_mph_requested.load(std::memory_order_relaxed);
+    ;
 
     can_device.send(steering_requests_frame);
 }
@@ -102,7 +103,7 @@ void processScreen()
         old_cc_val = cc_val;
     }
 
-    old_cc_on = cc_on; // update after
+    old_cc_on = cc_on;  // update after
 
     static uint16_t old_supp_batt_mv = state.supp_batt_voltage_mv.load(std::memory_order_relaxed);
     if (uint16_t sup_batt_mv = state.supp_batt_voltage_mv.load(std::memory_order_relaxed);
@@ -203,14 +204,16 @@ void processTurnAndKill()
     bool left_active = (current_signal == flare_can::TurnSignals::LEFT ||
                         current_signal == flare_can::TurnSignals::HAZARDS);
     bool right_active = (current_signal == flare_can::TurnSignals::RIGHT ||
-                        current_signal == flare_can::TurnSignals::HAZARDS);
+                         current_signal == flare_can::TurnSignals::HAZARDS);
 
     // update the relative LEDs
-    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin,
-                        (left_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port,
+                      BUTTON1_LED_Pin,
+                      (left_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,
-                        (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port,
+                      BUTTON5_LED_Pin,
+                      (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
     // set to hazard if killed
     if (killed)
@@ -226,17 +229,16 @@ void processTurnAndKill()
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, pin_state);
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, pin_state);
     }
-
 }
 
 void processCC()
 {
     bool active = state.is_cc_on.load();
 
-    HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin,
-                        active ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin,
-                        active ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(
+        BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(
+        BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
     // logic here for turning off CC
     // TODO: turn off CC if brake pressed

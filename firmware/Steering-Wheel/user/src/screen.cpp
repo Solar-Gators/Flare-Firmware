@@ -64,8 +64,7 @@ void drawLabels()
 
 void drawSpeed(uint8_t mph)
 {
-    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
-                                    RGB565_ORANGE : RGB565_WHITE;
+    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ? RGB565_ORANGE : RGB565_WHITE;
     display.SetTextSize(5);
     if (mph > 99)  // >99 means can/sensor error
     {
@@ -177,8 +176,7 @@ void drawCC(uint8_t mph)
     display.SetTextSize(3);
 
     // orange text for cc on, white for off
-    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
-                                    RGB565_ORANGE : RGB565_WHITE;
+    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ? RGB565_ORANGE : RGB565_WHITE;
 
     if (mph > 99)
     {
