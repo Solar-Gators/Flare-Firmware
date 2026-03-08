@@ -94,6 +94,7 @@ void startTXRadioTask_user(void* argument)
 {
     for (;;)
     {
+        // read FIFO for CAN ID, length, data bytes
         osDelay(1000);
     }
 }
