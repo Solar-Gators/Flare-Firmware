@@ -23,8 +23,7 @@ enum class TurnSignals : uint8_t
     OFF = 0,
     LEFT = 1,
     RIGHT = 2,
-    HAZARDS = 3,
-    BRAKE = 4
+    HAZARDS = 3
 };
 
 enum class Direction : uint8_t

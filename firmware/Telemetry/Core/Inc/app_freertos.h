@@ -59,7 +59,6 @@ extern osThreadId_t GPSReadBufferTaskHandle;
 extern osThreadId_t GPSParseNMEATaskHandle;
 extern osThreadId_t TXRadioTaskHandle;
 extern osThreadId_t KillSwitchTaskHandle;
-extern osMessageQueueId_t CANFramesTXHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */

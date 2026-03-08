@@ -16,8 +16,7 @@ set(CPU_PARAMETERS
     -mfpu=fpv5-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s
-)
+set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32U575xx_FLASH.ld)
 # ##############################################################################
 set(EXECUTABLE ${SOURCE_DIR_NAME})
@@ -58,9 +57,7 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
     ${USER_DIR}/src/*.c
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/maxm10s.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/rfd900x.c)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}
