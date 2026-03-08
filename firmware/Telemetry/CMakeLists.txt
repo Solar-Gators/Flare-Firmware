@@ -60,6 +60,7 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/maxm10s.cpp)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/rfd900x.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
