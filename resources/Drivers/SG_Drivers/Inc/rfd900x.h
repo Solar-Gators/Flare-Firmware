@@ -43,7 +43,6 @@ extern "C"
     HAL_StatusTypeDef rfd900EnterLocalATCommandMode();
     HAL_StatusTypeDef rfd900ExitLocalATCommandMode();
     HAL_StatusTypeDef rfd900SendData(uint8_t* databuffer, uint16_t sizeData);
-    HAL_StatusTypeDef rfd900SetRegister(uint8_t reg_num, uint16_t reg_val);
     HAL_StatusTypeDef rfd900SaveLocalRegisterValues();
     HAL_StatusTypeDef rfd900ResetBootMode();
 

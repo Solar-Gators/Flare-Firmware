@@ -72,37 +72,8 @@ void startTXRadioTask_user(void* argument)
     // TODO: clean up this initialization
     rfd900SetUartHandle(&huart2);
     rfd900EnterLocalATCommandMode();
-    uint8_t resp[256];
-    uint16_t len;
-    rfd900Read(resp, sizeof(resp), &len, 500);
 
-    if (rfd900GetLocalFirmwareData(0) == HAL_OK)
-    {
-        if (rfd900Read(resp, sizeof(resp), &len, 500) == HAL_OK)
-        {
-            volatile int x = 4;
-            //printf("Received (%d bytes): %s\r\n", len, resp);
-        }
-        else
-        {
-            volatile int x = 4;
-            //printf("No response\r\n");
-        }
-    }
-
-    volatile HAL_StatusTypeDef check = rfd900EnterLocalATCommandMode();
-    volatile HAL_StatusTypeDef status = rfd900RebootLocalRadio();  //WORKS
-    status = rfd900GetLocalRegisterValue(10);                      //WORKS
-    volatile HAL_StatusTypeDef t = rfd900ExitLocalATCommandMode();
-    status = rfd900ResetLocalParameters();
-
-    //frame.id_type = sg::CANFrameIDType::STANDARD;
-    //frame.len = sg::CANFrameLen::BYTES_8;
-    //frame.rtr_mode = sg::CANFrameRTRMode::DATA;
-    //frame.timestamp = 10482;
-    //frame.can_id = 0x20;
-
-    while (1)
+    for (;;)
     {
         uint8_t long_frame[10];
         xQueueReceive(radioTXQueue, long_frame, 10);
@@ -127,7 +98,7 @@ void startTXRadioTask_user(void* argument)
 
         frame_packet[pos++] = 0x03;  // END
 
-        volatile HAL_StatusTypeDef status = rfd900SendData(frame_packet, pos);
+        HAL_StatusTypeDef status = rfd900SendData(frame_packet, pos);
 
         osDelay(200);
     }

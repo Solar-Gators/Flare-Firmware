@@ -23,6 +23,11 @@ static std::array<sg::Button, 8> buttons = {{
     {BUTTON8_GPIO_Port, BUTTON8_Pin},
 }};
 
+// TODO: somethibng like this so we stop using magiv number indicies down in this file
+/*
+sg::Button& left_turn_button = buttons[0];
+*/
+
 // left turn
 void button1PressedCallback()
 {
@@ -55,16 +60,11 @@ void button2PressedCallback()
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_SET);
         state.mc_power_mode_requested.store(flare_can::MCPowerMode::POWER);
-
-        // steering::state.headlights_requested_on.store(true);
-        // Headlights no longer have button
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_RESET);
         state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
-
-        // steering::state.headlights_requested_on.store(false);
     }
 }
 
@@ -159,6 +159,7 @@ void button8PressedCallback()
         state.is_cc_on.store(!current_state);
     }
 }
+
 void initButtons()
 {
     buttons[0].RegisterNormalPressCallback(&button1PressedCallback);

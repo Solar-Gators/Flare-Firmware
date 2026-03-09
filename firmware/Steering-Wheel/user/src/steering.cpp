@@ -188,10 +188,20 @@ void processHornButton()
 // Process the Turn Signals and the Kill Status for blinking the top LEDs
 void processTurnAndKill()
 {
+    // statics
     static uint32_t blinker_ticks = 0;
     static bool blinker_on = false;
 
+    // -- KILLED BLINKING LOGIC --
     bool killed = (state.killed_status.load() == flare_can::CarKilledStatus::DEAD);
+    if (killed)
+    {
+        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
+        GPIO_PinState pin_state = blinker_on ? GPIO_PIN_SET : GPIO_PIN_RESET;
+        HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, pin_state);
+        HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, pin_state);
+    }
+
     uint32_t target_ticks = killed ? 10 : 20;
 
     blinker_ticks++;
@@ -218,21 +228,6 @@ void processTurnAndKill()
     HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port,
                       BUTTON5_LED_Pin,
                       (right_active && blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-
-    // set to hazard if killed
-    if (killed)
-    {
-        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
-    }
-
-    // -- KILLED BLINKING LOGIC --
-    if (killed)
-    {
-        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
-        GPIO_PinState pin_state = blinker_on ? GPIO_PIN_SET : GPIO_PIN_RESET;
-        HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, pin_state);
-        HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, pin_state);
-    }
 }
 
 void processCC()

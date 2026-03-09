@@ -62,9 +62,6 @@ HAL_StatusTypeDef rearVCUInfoMessageCallback(const sg::CANFrame& msg, void* ctx)
     state.actual_array_contactors_status.store(static_cast<flare_can::ArrayContactors>(msg.data[3]),
                                                std::memory_order_relaxed);
 
-    uint16_t rpm = msg.data[4] | (static_cast<uint16_t>(msg.data[5]) << 8);
-    state.motor_rpm.store(rpm, std::memory_order_relaxed);
-
     return HAL_OK;
 }
 HAL_StatusTypeDef rearVCUSuppBattMessageCallback(const sg::CANFrame& msg, void* ctx)
@@ -110,7 +107,7 @@ HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx)
 
 HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
 {
-    // need to get rpm here and calculate miles per hour
+    // need to get rpm here
     uint64_t full_data = 0;
     for (int i = 0; i < 8; i++)
     {
@@ -125,12 +122,7 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
     uint8_t motor_current_direction = (full_data >> MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX) & 0x01;
     */
 
-    // convert to m/s from rpm TODO: verify this is correct in real life lol maybe with speed gun or something idk
-    double inches_per_sec = (motor_rpm * WHEEL_CIRCUMFERENCE_INCHES) / 60;
-    double miles_per_sec = inches_per_sec / 63360;   // 1 mile = 63360 inches
-    double miles_per_hour = (miles_per_sec * 3600);  // 1 hour = 3600 seconds
-
-    state.car_speed.store(static_cast<uint8_t>(std::round(miles_per_hour)));
+    state.motor_rpm.store(motor_rpm, std::memory_order_relaxed);
 
     return HAL_OK;
 }

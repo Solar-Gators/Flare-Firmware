@@ -19,9 +19,11 @@ void canInit()
         can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
     ASSERT_TRUE(
         can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
-    ASSERT_TRUE(can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    ASSERT_TRUE(can_device.addCallbackId(0x041, sg::CANFrameIDType::STANDARD, &radioTXCallback));
+    ASSERT_TRUE(
+        can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
 
+    // batt voltage
+    ASSERT_TRUE(can_device.addCallbackId(0x041, sg::CANFrameIDType::STANDARD, &radioTXCallback));
     // MPPT 1 Input Measurements frame
     ASSERT_TRUE(can_device.addCallbackId(0x600, sg::CANFrameIDType::STANDARD, &radioTXCallback));
     // MPPT 1 Output Measurements frame
@@ -69,10 +71,10 @@ HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx)
 HAL_StatusTypeDef radioTXCallback(const sg::CANFrame& frame, void* ctx)
 {
     uint8_t packed_frame[10];
-    packed_frame[0] = frame.can_id & 0xff;
+    packed_frame[0] = frame.can_id & 0xFF;
     packed_frame[1] = frame.can_id >> 8;
-    memcpy(packed_frame + 2, &frame.data, 8);
+    memcpy(packed_frame + 2, frame.data, 8);
 
-    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
+    xQueueSend(radioTXQueue, &packed_frame, pdMS_TO_TICKS(100));
     return HAL_OK;
 }
