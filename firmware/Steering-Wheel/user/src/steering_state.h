@@ -35,7 +35,7 @@ struct SteeringState
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
 };
 
-static inline SteeringState state;
+inline SteeringState state;
 
 void initScreen();
 
