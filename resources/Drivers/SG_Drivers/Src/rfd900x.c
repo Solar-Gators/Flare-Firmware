@@ -113,7 +113,7 @@ HAL_StatusTypeDef rfd900EnterLocalATCommandMode()
 HAL_StatusTypeDef rfd900GetLocalFirmwareData(uint8_t ATI_val)
 {
     int index = 0;
-    uint8_t data[4];
+    uint8_t data[5];
     data[index++] = 'A';
     data[index++] = 'T';
     data[index++] = 'I';

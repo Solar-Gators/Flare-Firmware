@@ -15,7 +15,6 @@
 namespace
 {
 
-flare_can::TurnSignals old_turn_signals{};
 sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin, 50, GPIO_PIN_SET);
 void killSwitchButtonInit()
 {
@@ -63,6 +62,8 @@ void sendSpeedFrame()
 
 void processLightsOutputs()
 {
+    static flare_can::TurnSignals turn_signals{};
+
     // kill switch led logic
     if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
     {
@@ -70,18 +71,22 @@ void processLightsOutputs()
     }
 
     // turn signal led logic
+    static bool left_light{};
+    static bool right_light{};
+    static bool middle_light{};
+
     // if status changed, turn the lights off
     if (flare_can::TurnSignals new_turn_signals =
             turn_signals_status.load(std::memory_order_relaxed);
-        new_turn_signals != old_turn_signals)
+        new_turn_signals != turn_signals)
     {
         HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
         // TODO: turn off middle one here when we get it
-        old_turn_signals = new_turn_signals;
+        turn_signals = new_turn_signals;
     }
     // toggle correct led's
-    switch (old_turn_signals)
+    switch (turn_signals)
     {
         case flare_can::TurnSignals::LEFT:
             HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);

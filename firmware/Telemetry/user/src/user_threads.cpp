@@ -21,13 +21,13 @@ void init_user()
     // TODO: turn off middle one here when we get it
 
     telem::init();
+    gps().init();
 
     // Can hold ten standard can frames (2 bytes for ID + 8 data bytes)
     radioTXQueue = xQueueCreate(10, 10);
     if (!radioTXQueue)
     {
-        while (1)
-            ;
+        Error_Handler();
     }
 }
 
@@ -76,7 +76,11 @@ void startTXRadioTask_user(void* argument)
     for (;;)
     {
         uint8_t long_frame[10];
-        xQueueReceive(radioTXQueue, long_frame, 10);
+
+        if (xQueueReceive(radioTXQueue, long_frame, 100) != pdTRUE)
+        {
+            continue;
+        }
 
         uint8_t frame_packet[30];
 
@@ -98,30 +102,15 @@ void startTXRadioTask_user(void* argument)
 
         frame_packet[pos++] = 0x03;  // END
 
-        HAL_StatusTypeDef status = rfd900SendData(frame_packet, pos);
-
-        osDelay(200);
+        rfd900SendData(frame_packet, pos);
     }
 }
 
 void startKillSwitchTask_user(void* argument)
 {
-    GPIO_PinState brake_lights;
     for (;;)
     {
-        // Using kill switch input as brake input
-        // for testing
-        //telem::sendKillFrame();
-
-        if (HAL_GPIO_ReadPin(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin))
-        {
-            brake_lights = GPIO_PIN_RESET;
-        }
-        else
-        {
-            brake_lights = GPIO_PIN_SET;
-        }
-        HAL_GPIO_WritePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin, brake_lights);
+        telem::sendKillFrame();
         osDelay(50);
     }
 }
