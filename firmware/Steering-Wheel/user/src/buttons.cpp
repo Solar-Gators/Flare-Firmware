@@ -113,10 +113,11 @@ void button4PressedCallback()
         state.is_cc_on.store(!current_state);
 
         // blink led to alert entering/exiting cc
+        // TODO: evaluate this, migth not be needed and blocking operation
         for (int i = 0; i < 3; i++) {
             HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
             HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-            HAL_Delay(110);
+            HAL_Delay(150);
             HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
             HAL_Delay(50);

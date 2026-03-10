@@ -249,6 +249,12 @@ void processCC()
     HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin,
                         active ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
+    if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD)
+    {
+        // turn off cc if car dead
+        state.is_cc_on.store(false);
+    }
+
     // logic here for turning off CC
     // TODO: turn off CC if brake pressed
     // TODO: turn off CC if car is KILLED
