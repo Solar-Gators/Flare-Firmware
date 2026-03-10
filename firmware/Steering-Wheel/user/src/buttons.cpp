@@ -9,9 +9,6 @@
 
 #include <array>
 
-namespace steering
-{
-
 static std::array<sg::Button, 8> buttons = {{
     {BUTTON1_GPIO_Port, BUTTON1_Pin},
     {BUTTON2_GPIO_Port, BUTTON2_Pin},
@@ -120,7 +117,7 @@ void button4PressedCallback()
     }
 
     // Then handle CC functionality
-    if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val > 1)
+    if (uint8_t current_val = state.cc_mph_requested.load(); current_val > 1)
     {
         state.cc_mph_requested.store(current_val - 1);
     }
@@ -147,7 +144,7 @@ void button8PressedCallback()
     }
 
     // Then handle CC functionality
-    if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val < 99)
+    if (uint8_t current_val = state.cc_mph_requested.load(); current_val < 99)
     {
         state.cc_mph_requested.store(current_val + 1);
     }
@@ -187,5 +184,3 @@ void recalculateTurnSignals()
     else
         state.turn_signals_requested.store(flare_can::TurnSignals::OFF);
 }
-
-}  // namespace steering

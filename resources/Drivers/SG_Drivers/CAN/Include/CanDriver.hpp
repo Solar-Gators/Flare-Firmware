@@ -7,12 +7,15 @@
  */
 
 #pragma once
-#include <string.h>
+
+#include <cstring>
 
 #include "CanDriverApi.hpp"
 #include "FreeRTOS.h"
 
+#include <array>
 #include <atomic>
+#include <unordered_map>
 #include <vector>
 
 namespace sg
@@ -45,7 +48,7 @@ class CANFrame
     {
         uint8_t copy_len =
             (max_len < static_cast<uint8_t>(len)) ? max_len : static_cast<uint8_t>(len);
-        memcpy(this->data, data, copy_len);
+        std::memcpy(this->data, data, copy_len);
     }
 
     uint32_t can_id;          /* CAN ID, can be either 11 bits for standard or 29 for extended */
@@ -65,11 +68,6 @@ class CANFrame
 
 using CanCallback = HAL_StatusTypeDef (*)(const CANFrame& msg, void* ctx);
 
-struct IdEntry
-{
-    uint32_t id;
-    CanCallback cb;
-};
 struct RangeEntry
 {
     uint32_t start, end;
@@ -92,8 +90,15 @@ class CANDevice
      * @param hcan Pointer to the HAL CAN/FDCAN handle for this device.
      *             This handle must remain valid for the lifetime of the CANDevice,
      *             and cannot be reused to construct another CANDevice.
+     * @param std_id_callbacks directly initialize the unordered map (key=id, value=callback)
+     * @param ext_id_callbacks directly initialize the unordered map (key=id, value=callback)
      */
-    explicit CANDevice(CanHandle_t* hcan);
+    explicit CANDevice(
+        CanHandle_t* hcan,
+        std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallback>>>
+            std_id_callbacks,
+        std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallback>>>
+            ext_id_callbacks);
 
     /*!
      * @brief Loads configured filters and starts the physical CAN device.
@@ -153,28 +158,6 @@ class CANDevice
                                      sg::CANFramePriority priority);
 
     /*!
-     * @brief Adds a callback function for a single CAN identifier.
-     *
-     * @details Registers a callback that will be invoked whenever a CAN frame with
-     *          the specified identifier and type is received.
-     *
-     * @param can_id   The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
-     * @param id_type  The type of identifier. Typically CAN_STD_ID for standard (11-bit) or
-     *                 CAN_EXT_ID for extended (29-bit). Used to distinguish how @p can_id is interpreted.
-     * @param cb       The callback function to be invoked when a matching frame is received.
-     *                 Must conform to the CanCallback signature.
-     * @param ctx      Optional user context pointer. Passed back to the callback when invoked
-     *                 to allow per-registration state or user data.
-     *
-     * @return true  If the callback was successfully registered.
-     * @return false If registration failed (e.g., maximum number of callbacks reached).
-     */
-    bool addCallbackId(uint32_t can_id,
-                       sg::CANFrameIDType id_type,
-                       CanCallback cb,
-                       void* ctx = nullptr);
-
-    /*!
      * @brief Adds a callback function for a range of CAN identifiers.
      *
      * @details Registers a callback that will be invoked whenever a CAN frame falls
@@ -199,7 +182,8 @@ class CANDevice
                           CanCallback cb,
                           void* ctx = nullptr);
 
-    void addCallbackAll(CanCallback cb);
+    // if message is received and its not recognized this will be called on it
+    void addDefaultCallback(CanCallback cb);
 
     /**
      * @brief Sends a CANFrame message.
@@ -210,16 +194,19 @@ class CANDevice
     HAL_StatusTypeDef send(const CANFrame& msg);
 
     // returns the total number of messages that have been recieved and processed (ie a callback was called on it) by the device
-    uint32_t getProcessedMessagesCount()
+    uint32_t getProcessedMessagesCount() const
     {
         return processed_messages_count_.load(std::memory_order_relaxed);
     }
 
     // returns the total number of messages that have been sent by the device (ie added to a tx mailbox)
-    uint32_t getSentMessagesCount() { return sent_messages_count_.load(std::memory_order_relaxed); }
+    uint32_t getSentMessagesCount() const
+    {
+        return sent_messages_count_.load(std::memory_order_relaxed);
+    }
 
     // returns total number of frames that were dropped by the device because when trying to push frame when recieved in isr the queue was full
-    uint32_t getDroppedFrameCount()
+    uint32_t getDroppedFrameCount() const
     {
         return dropped_rx_frame_count_.load(std::memory_order_relaxed);
     }
@@ -236,18 +223,20 @@ class CANDevice
    private:
     CanHandle_t* hcan_ = nullptr;
 
-    // TODO: Change to std::array
-    std::vector<CanFilter_t> filters_;
-    std::vector<IdEntry> idCallbacks_;
-    std::vector<RangeEntry> rangeCallbacks_;
+    std::array<CanFilter_t, NUM_FILTER_BANKS> filters_;
+    size_t filterCount_;
 
-    CanCallback allCallback_ = nullptr;
+    // key = id, value = callback
+    const std::unordered_map<uint32_t, const std::vector<CanCallback>> stdIDCallbacks_;
+    const std::unordered_map<uint32_t, const std::vector<CanCallback>> extIDCallbacks_;
+
+    CanCallback defaultCallback_ = nullptr;
 
     osMessageQueueId_t tx_queue_;
     osMessageQueueId_t rx_queue_;
 
     std::atomic<uint32_t>
-        processed_messages_count_{};               // number of messages a callback was called on
+        processed_messages_count_{};               // count of messages a callback was called on
     std::atomic<uint32_t> sent_messages_count_{};  // count of messages added to mailbox to be sent
     std::atomic<uint32_t> dropped_rx_frame_count_{};  // count of dropped rx frames
 
@@ -261,8 +250,7 @@ class CANDevice
     static CANDevice* findByHandle(CanHandle_t* h);
     static bool registerHandle(CanHandle_t* h, CANDevice* d);
     static void unregisterHandle(CanHandle_t* h);
-    const CanCallback* find_by_id(uint32_t id);
-    const CanCallback* find_by_range(uint32_t id);
+    const std::vector<CanCallback>* find_by_id(uint32_t id, CANFrameIDType type) const;
 
     // ====== Tx and Rx Methods ======
 

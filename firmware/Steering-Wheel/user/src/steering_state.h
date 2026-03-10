@@ -8,9 +8,6 @@
 #include "CanDriver.hpp"
 #include "can_protocol.h"
 
-namespace steering
-{
-
 struct SteeringState
 {
     // sending
@@ -38,7 +35,5 @@ struct SteeringState
 inline SteeringState state;
 
 void initScreen();
-
-}  // namespace steering
 
 #endif  //FLAREFIRMWARE_STEERING_INTERNAL_H
