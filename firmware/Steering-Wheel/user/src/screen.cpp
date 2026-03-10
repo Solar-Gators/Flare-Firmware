@@ -35,11 +35,13 @@ void initScreen()
     display.ClearScreen(background_color);
 
     drawLabels();
+    drawStartup();
     drawSpeed(state.car_speed.load(std::memory_order_relaxed));
     drawCC(state.cc_mph_requested.load(std::memory_order_relaxed));
     drawSuppBatt(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));
     drawDirection(state.actual_direction.load(std::memory_order_relaxed));
-    drawMainBatt(10000); //state.main_batt_voltage_cv.load(std::memory_order_relaxed) // TODO: remove hardcoded
+    drawPowerMode(state.mc_power_mode_requested.load(std::memory_order_relaxed));
+    drawMainBatt(state.main_batt_voltage_cv.load(std::memory_order_relaxed));
     drawHighTemp(state.high_temp_dc.load(std::memory_order_relaxed));
     // TODO: change this to actual to work with rvcu
     drawArrayContactors(state.array_contactors_requested_closed.load(std::memory_order_relaxed) ?
@@ -50,10 +52,53 @@ void initScreen()
     drawHornStatus(state.horn_requested_on.load(std::memory_order_relaxed));
 }
 
+// startup for turning everything on, yk like in car where when u start the car all the icons turn on
+void drawStartup()
+{
+
+
+    for (int i = 90; i > 0; i-=10)
+    {
+        drawSpeed(i);
+        drawCC(i);
+        drawSuppBatt((i+10)*120);
+        drawDirection(i<50 ? flare_can::Direction::REVERSE : flare_can::Direction::FORWARD);
+        drawPowerMode(i>50 ? flare_can::MCPowerMode::ECO : flare_can::MCPowerMode::POWER);
+        drawMainBatt((i+30)*120);
+        drawHighTemp(i);
+        drawArrayContactors(i>50 ?
+            flare_can::ArrayContactors::MAIN_CLOSED : flare_can::ArrayContactors::BOTH_OPEN);
+        drawKillStatus(flare_can::CarKilledStatus::DEAD);
+        drawHeadlightsStatus(true);
+        drawHornStatus(true);
+        drawTurnIndicator(true, true, true);
+
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, i<30 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin,  i<40 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin,  i<50 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin,  i<60 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,  i<70 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin,  i<80 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin,  i<90 ? GPIO_PIN_SET:GPIO_PIN_RESET);
+
+        HAL_Delay(10);
+    }
+
+    HAL_Delay(200);
+
+    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin,  GPIO_PIN_RESET);
+
+    HAL_Delay(10);
+}
+
 void drawLabels()
 {
-    // on startup draw all of them on or something idk
-
     display.SetTextSize(2);
     display.DrawText(140, 90, "MPH", RGB565_GRAY);
     display.DrawText(210, 90, "CC", RGB565_GRAY);
@@ -73,7 +118,7 @@ void drawSpeed(uint8_t mph)
     auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
                                     RGB565_ORANGE : RGB565_WHITE;
     display.SetTextSize(5);
-    if (mph > 99)  // >99 means can/sensor error
+    if (mph > 120)  // >99 means can/sensor error
     {
         snprintf(text_buffer.data(), text_buffer.size(), "ER");
     }
@@ -103,8 +148,8 @@ void drawSuppBatt(uint16_t millivolts)
     // battery 'bar' drawing
     // max is 150v
     // min is ~50v
-    const uint16_t MAX_VOLT = 15000;
-    const uint16_t MIN_VOLT = 5000;
+    const uint16_t MAX_VOLT = 12000;
+    const uint16_t MIN_VOLT = 1000;
     uint16_t level = 0;
     if (millivolts >= MAX_VOLT) {
         level = 100;
@@ -255,7 +300,7 @@ void drawCC(uint8_t mph)
     auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ?
                                     RGB565_ORANGE : RGB565_WHITE;
 
-    if (mph > 99)
+    if (mph > 110)
     {
         snprintf(text_buffer.data(), text_buffer.size(), "ER");
     }

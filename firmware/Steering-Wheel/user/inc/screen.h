@@ -14,6 +14,7 @@ namespace steering
 void initScreen();
 
 void drawLabels();
+void drawStartup();
 void drawSpeed(uint8_t mph);  // mph shouldn't be more than 2 digit
 void drawSuppBatt(uint16_t millivolts);
 void drawDirection(flare_can::Direction direction);
