@@ -3,9 +3,6 @@
 
 extern FDCAN_HandleTypeDef hfdcan1;
 
-namespace steering
-{
-
 constexpr sg::CANFrame mitsuba_frame0_request = {
     .can_id = 0x08F89540,
     .id_type = sg::CANFrameIDType::EXTENDED,
@@ -25,5 +22,3 @@ HAL_StatusTypeDef bmsBatteryTempMessageCallback(const sg::CANFrame& msg, void* c
 HAL_StatusTypeDef telemKillStatusMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx);
-
-}  // namespace steering

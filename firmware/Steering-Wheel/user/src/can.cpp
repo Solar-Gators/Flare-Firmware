@@ -28,9 +28,6 @@
     if (!statement)            \
         Error_Handler();
 
-namespace steering
-{
-
 void initCan()
 {
     // recieve message from rear vcu
@@ -126,5 +123,3 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
 
     return HAL_OK;
 }
-
-}  // namespace steering

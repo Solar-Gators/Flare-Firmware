@@ -16,12 +16,8 @@ namespace
 ILI9341 display(240, 320);
 std::array<char, 16> text_buffer{};
 // const screen variables
-constexpr uint16_t text_color{RGB565_BLUE};
 constexpr uint16_t background_color{RGB565_BLUE};
 }  // namespace
-
-namespace steering
-{
 
 void initScreen()
 {
@@ -227,5 +223,3 @@ void drawHornStatus(bool on)
         display.DrawText(252, 130, "HORN", RGB565_BLACK);
     }
 }
-
-}  // namespace steering

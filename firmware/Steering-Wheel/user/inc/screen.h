@@ -8,9 +8,6 @@
 
 #include "can_protocol.h"
 
-namespace steering
-{
-
 void initScreen();
 
 void drawLabels();
@@ -26,7 +23,5 @@ void drawRegen(uint8_t amt);
 void drawKillStatus(flare_can::CarKilledStatus killed);
 void drawHeadlightsStatus(bool on);
 void drawHornStatus(bool on);
-
-}  // namespace steering
 
 #endif  //FLAREFIRMWARE_SCREEN_H
