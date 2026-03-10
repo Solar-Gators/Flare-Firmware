@@ -173,7 +173,7 @@ void drawPowerMode(flare_can::MCPowerMode mode)
     }
     else
     {
-        display.DrawText(64, 70, "PWdr", RGB565_ORANGE);
+        display.DrawText(64, 70, "PW", RGB565_ORANGE);
     }
 }
 void drawCC(uint8_t mph)
@@ -229,5 +229,49 @@ void drawHornStatus(bool on)
         display.DrawText(252, 130, "HORN", RGB565_BLACK);
     }
 }
+void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
+{
+    // track the prev states
+    static bool prev_left_active = false;
+    static bool prev_right_active = false;
+    static bool prev_blink_state = false;
 
+    // check if changed, only draw when changed
+    bool left_changed = (left_active != prev_left_active) ||
+                        (left_active && blink_state != prev_blink_state);
+    bool right_changed = (right_active != prev_right_active) ||
+                        (right_active && blink_state != prev_blink_state);
+
+    if (left_changed)
+    {
+        display.FillRect(10, 10, 30, 30, RGB565_BLUE);  // clear Left
+        // left 'arrow'
+        if (left_active && blink_state) {
+            display.FillRect(10, 20, 5, 1, RGB565_GREEN);
+            display.FillRect(15, 19, 5, 3, RGB565_GREEN);
+            display.FillRect(20, 18, 5, 5, RGB565_GREEN);
+            display.FillRect(25, 17, 5, 7, RGB565_GREEN);
+            display.FillRect(30, 15, 5, 11, RGB565_GREEN);
+        }
+    }
+
+    if (right_changed)
+    {
+        display.FillRect(290, 10, 30, 30, RGB565_BLUE); // clear Right
+        // right 'arrow'
+        if (right_active && blink_state)
+        {
+            display.FillRect(310, 20, 5, 1, RGB565_GREEN);
+            display.FillRect(305, 19, 5, 3, RGB565_GREEN);
+            display.FillRect(300, 18, 5, 5, RGB565_GREEN);
+            display.FillRect(295, 17, 5, 7, RGB565_GREEN);
+            display.FillRect(290, 15, 5, 11, RGB565_GREEN);
+        }
+    }
+
+    // update states
+    prev_left_active = left_active;
+    prev_right_active = right_active;
+    prev_blink_state = blink_state;
+}
 }  // namespace steering

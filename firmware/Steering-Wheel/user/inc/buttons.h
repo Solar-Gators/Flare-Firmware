@@ -8,7 +8,7 @@
 // 1(lt)      5(rt) (both for hazards)
 // 2(pwr,eco)    6(fwrd/rev) // prev. 2 was headlights
 // 3(array)   7(horn)
-// 4(cc down/disable)     8(cc inc/enable)
+// 4(cc down)     8(cc inc) || to en/dis cc press both
 
 // paddles do cc or regen strengths depending on mode maybe
 
