@@ -39,7 +39,7 @@ void initScreen()
     drawCC(state.cc_mph_requested.load(std::memory_order_relaxed));
     drawSuppBatt(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));
     drawDirection(state.actual_direction.load(std::memory_order_relaxed));
-    drawMainBatt(state.main_batt_voltage_cv.load(std::memory_order_relaxed));
+    drawMainBatt(10000); //state.main_batt_voltage_cv.load(std::memory_order_relaxed) // TODO: remove hardcoded
     drawHighTemp(state.high_temp_dc.load(std::memory_order_relaxed));
     // TODO: change this to actual to work with rvcu
     drawArrayContactors(state.array_contactors_requested_closed.load(std::memory_order_relaxed) ?
@@ -52,6 +52,8 @@ void initScreen()
 
 void drawLabels()
 {
+    // on startup draw all of them on or something idk
+
     display.SetTextSize(2);
     display.DrawText(140, 90, "MPH", RGB565_GRAY);
     display.DrawText(210, 90, "CC", RGB565_GRAY);
@@ -96,6 +98,41 @@ void drawSuppBatt(uint16_t millivolts)
              static_cast<unsigned long>(frac));
     display.FillRect(110, 155, 80, 16, RGB565_BLUE);
     display.DrawText(110, 155, text_buffer.data(), RGB565_BLACK);
+
+    // battery 'bar' drawing
+    // battery 'bar' drawing
+    // max is 150v
+    // min is ~50v
+    const uint16_t MAX_VOLT = 15000;
+    const uint16_t MIN_VOLT = 5000;
+    uint16_t level = 0;
+    if (millivolts >= MAX_VOLT) {
+        level = 100;
+    } else if (millivolts <= MIN_VOLT) {
+        level = 0;
+    } else {
+        level = ((millivolts - MIN_VOLT) * 100) / (MAX_VOLT - MIN_VOLT);
+    }
+
+    // outline
+    const int16_t batt_x = 190;
+    const int16_t batt_y = 155;
+    const int16_t batt_width = 120;
+    const int16_t batt_height = 16;
+    const int16_t batt_tip_width = 4;
+
+    // battery outline
+    display.FillRect(batt_x, batt_y, batt_width + batt_tip_width, batt_height, RGB565_BLUE);
+    display.DrawRect(batt_x, batt_y, batt_width, batt_height, RGB565_BLACK);
+    display.FillRect(batt_x + batt_width, batt_y + 4, batt_tip_width, batt_height - 8, RGB565_BLACK);
+
+    // fill battery
+    uint16_t fill_width = (level * (batt_width - 4)) / 100;
+    uint16_t fill_color = level > 20 ? RGB565_GREEN : RGB565_RED; // red if low
+    if (fill_width > 0)
+    {
+        display.FillRect(batt_x + 2, batt_y + 2, fill_width, batt_height - 4, fill_color);
+    }
 }
 
 void drawDirection(flare_can::Direction direction)
@@ -130,6 +167,40 @@ void drawMainBatt(uint16_t centivolts)
              static_cast<unsigned long>(frac));
     display.FillRect(110, 130, 80, 16, RGB565_BLUE);
     display.DrawText(110, 130, text_buffer.data(), RGB565_BLACK);
+
+    // battery 'bar' drawing
+    // max is 150v
+    // min is ~50v
+    const uint16_t MAX_VOLT = 15000;
+    const uint16_t MIN_VOLT = 5000;
+    uint16_t level = 0;
+    if (centivolts >= MAX_VOLT) {
+        level = 100;
+    } else if (centivolts <= MIN_VOLT) {
+        level = 0;
+    } else {
+        level = ((centivolts - MIN_VOLT) * 100) / (MAX_VOLT - MIN_VOLT);
+    }
+
+    // outline
+    const int16_t batt_x = 190;
+    const int16_t batt_y = 130;
+    const int16_t batt_width = 120;
+    const int16_t batt_height = 16;
+    const int16_t batt_tip_width = 4;
+
+    // battery outline
+    display.FillRect(batt_x, batt_y, batt_width + batt_tip_width, batt_height, RGB565_BLUE);
+    display.DrawRect(batt_x, batt_y, batt_width, batt_height, RGB565_BLACK);
+    display.FillRect(batt_x + batt_width, batt_y + 4, batt_tip_width, batt_height - 8, RGB565_BLACK);
+
+    // fill battery
+    uint16_t fill_width = (level * (batt_width - 4)) / 100;
+    uint16_t fill_color = level > 20 ? RGB565_GREEN : RGB565_RED; // red if low
+    if (fill_width > 0)
+    {
+        display.FillRect(batt_x + 2, batt_y + 2, fill_width, batt_height - 4, fill_color);
+    }
 }
 
 void drawHighTemp(uint16_t decicelcius)
@@ -212,10 +283,10 @@ void drawHeadlightsStatus(bool on)
 {
     // headlights draw
     display.SetTextSize(2);
-    display.FillRect(228, 155, 72, 16, RGB565_BLUE);
+    display.FillRect(45, 15, 20, 20, RGB565_BLUE);
     if (on)
     {
-        display.DrawText(228, 155, "HDLGTS", RGB565_BLACK);
+        display.DrawText(45, 15, "L", RGB565_ORANGE);
     }
 }
 
@@ -223,10 +294,10 @@ void drawHornStatus(bool on)
 {
     // horn draw
     display.SetTextSize(2);
-    display.FillRect(252, 130, 48, 16, RGB565_BLUE);
+    display.FillRect(265, 15, 20, 20, RGB565_BLUE);
     if (on)
     {
-        display.DrawText(252, 130, "HORN", RGB565_BLACK);
+        display.DrawText(265, 15, "H", RGB565_ORANGE);
     }
 }
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)

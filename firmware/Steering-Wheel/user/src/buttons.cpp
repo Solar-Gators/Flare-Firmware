@@ -101,6 +101,7 @@ void button7PressedCallback()
     // update: still messing with b8, keep this light off
 }
 
+// TODO: for CC buttons make it so holding will go in multiples of 5
 // cc- button
 void button4PressedCallback()
 {
