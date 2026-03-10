@@ -5,6 +5,7 @@
 #ifndef FLAREFIRMWARE_STEERING_INTERNAL_H
 #define FLAREFIRMWARE_STEERING_INTERNAL_H
 
+#include <atomic>
 #include "CanDriver.hpp"
 #include "can_protocol.h"
 
@@ -34,7 +35,8 @@ struct SteeringState
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
 };
 
-static inline SteeringState state;
+// Single shared instance of state across translation units
+inline SteeringState state;
 
 void initScreen();
 

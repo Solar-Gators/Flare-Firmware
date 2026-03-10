@@ -44,7 +44,7 @@ void startScreenTask_user(void* argument)
         // }
         // uint8_t speed = demo_speed;
         steering::processScreen();
-        osDelay(500);
+        osDelay(100);
     }
 }
 

@@ -81,6 +81,8 @@ void button3PressedCallback()
         HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin, GPIO_PIN_RESET);
         state.array_contactors_requested_closed.store(false);
     }
+
+    auto var = state.array_contactors_requested_closed.load(std::memory_order_relaxed);
 }
 
 // frwd / rev
@@ -109,54 +111,38 @@ void button7PressedCallback()
 // cc-
 void button4PressedCallback()
 {
-    // Directly control LED first for debugging
-    if (buttons[3].GetToggleState())
-    {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
-    }
-
-    // Then handle CC functionality
-    if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val > 1)
-    {
-        state.cc_mph_requested.store(current_val-1);
-    }
-
-    // Check for both buttons pressed (simplified)
+    // Check for both buttons pressed first
     if (HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin) == GPIO_PIN_RESET)
     {
         bool current_state = state.is_cc_on.load();
         state.is_cc_on.store(!current_state);
+        return; // Don't adjust speed if toggling on/off
+    }
+
+    // Decrement speed
+    uint8_t current_val = state.cc_mph_requested.load();
+    if (current_val > 1)
+    {
+        state.cc_mph_requested.store(current_val - 1);
     }
 }
 
 // cc+
 void button8PressedCallback()
 {
-    // Directly control LED first for debugging
-    if (buttons[7].GetToggleState())
-    {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
-    }
-
-    // Then handle CC functionality
-    if (uint8_t current_val = steering::state.cc_mph_requested.load(); current_val < 99)
-    {
-        state.cc_mph_requested.store(current_val+1);
-    }
-
-    // Check for both buttons pressed (simplified)
+    // Check for both buttons pressed first
     if (HAL_GPIO_ReadPin(BUTTON4_GPIO_Port, BUTTON4_Pin) == GPIO_PIN_RESET)
     {
         bool current_state = state.is_cc_on.load();
         state.is_cc_on.store(!current_state);
+        return; // Don't adjust speed if toggling on/off
+    }
+
+    // Increment speed
+    uint8_t current_val = state.cc_mph_requested.load();
+    if (current_val < 99)
+    {
+        state.cc_mph_requested.store(current_val + 1);
     }
 }
 void initButtons()

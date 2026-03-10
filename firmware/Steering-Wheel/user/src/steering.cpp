@@ -137,13 +137,12 @@ void processScreen()
         old_high_temp_dc = high_temp_dc;
     }
 
-    static auto old_array_contactors =
-        state.actual_array_contactors_status.load(std::memory_order_relaxed);
-    if (auto array_contactors =
-            state.actual_array_contactors_status.load(std::memory_order_relaxed);
+    // TODO: change to actual when begin testing with rvcu
+    static bool old_array_contactors = state.array_contactors_requested_closed.load(std::memory_order_relaxed);
+    if (bool array_contactors = state.array_contactors_requested_closed.load(std::memory_order_relaxed);
         old_array_contactors != array_contactors)
     {
-        drawArrayContactors(array_contactors);
+        drawArrayContactors(array_contactors ? flare_can::ArrayContactors::MAIN_CLOSED : flare_can::ArrayContactors::BOTH_OPEN);
         old_array_contactors = array_contactors;
     }
 
