@@ -47,7 +47,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE END Variables */
 /* Definitions for hearbeatTask */
 osThreadId_t hearbeatTaskHandle;
-uint32_t heartbeatTaskBuffer[ 64 ];
+uint32_t heartbeatTaskBuffer[ 256 ];
 osStaticThreadDef_t heartbeatTaskCB;
 const osThreadAttr_t hearbeatTask_attributes = {
   .name = "hearbeatTask",
@@ -59,7 +59,7 @@ const osThreadAttr_t hearbeatTask_attributes = {
 };
 /* Definitions for regenThrottleTask */
 osThreadId_t regenThrottleTaskHandle;
-uint32_t regenThrottleTaskBuffer[ 128 ];
+uint32_t regenThrottleTaskBuffer[ 512 ];
 osStaticThreadDef_t regenThrottleTaskCB;
 const osThreadAttr_t regenThrottleTask_attributes = {
   .name = "regenThrottleTask",
@@ -71,7 +71,7 @@ const osThreadAttr_t regenThrottleTask_attributes = {
 };
 /* Definitions for outputsTask */
 osThreadId_t outputsTaskHandle;
-uint32_t outputsTaskBuffer[ 128 ];
+uint32_t outputsTaskBuffer[ 512 ];
 osStaticThreadDef_t outputsTaskCB;
 const osThreadAttr_t outputsTask_attributes = {
   .name = "outputsTask",

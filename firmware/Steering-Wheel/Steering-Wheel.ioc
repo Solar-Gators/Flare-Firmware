@@ -466,5 +466,5 @@ VP_TIM1_VS_ClockSourceINT.Signal=TIM1_VS_ClockSourceINT
 board=custom
 rtos.0.ip=STMicroelectronics.X-CUBE-FREERTOS.1.3.1
 rtos.0.tasks.0=allocationType,Static;bufferName,heartbeatTaskBuffer;codeGen,Default;controlBlockName,heartbeatTaskCB;entry,startHeartbeatTask;name,heartbeatTask;parameter,NULL;priority,osPriorityNormal;stackSize,512
-rtos.0.tasks.1=allocationType,Static;bufferName,screenTaskBuffer;codeGen,Default;controlBlockName,screenTaskCB;entry,startScreenTask;name,screenTask;parameter,NULL;priority,osPriorityAboveNormal;stackSize,512
+rtos.0.tasks.1=allocationType,Static;bufferName,screenTaskBuffer;codeGen,Default;controlBlockName,screenTaskCB;entry,startScreenTask;name,screenTask;parameter,NULL;priority,osPriorityNormal;stackSize,512
 rtos.0.tasks.2=allocationType,Dynamic;bufferName,NULL;codeGen,Default;controlBlockName,NULL;entry,StartPollButtons;name,PollButtons;parameter,NULL;priority,osPriorityNormal;stackSize,512

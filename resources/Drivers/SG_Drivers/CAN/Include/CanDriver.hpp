@@ -36,6 +36,11 @@ namespace sg
 #define CANDEVICE_MAX_BUSES 2
 #endif
 
+// uncomment for flexible datarate and bit rate switching
+#ifndef FDCAN_USE_FD_BRS
+// #define FDCAN_USE_FD_BRS 0
+#endif
+
 class CANFrame
 {
    public:

@@ -41,7 +41,7 @@ void can_init()
 {
     // throttle
     ASSERT_TRUE(can_device.addCallbackId(
-        0x040, sg::CANFrameIDType::STANDARD, &throttleMessageCallback, nullptr));
+        0x080, sg::CANFrameIDType::STANDARD, &throttleMessageCallback, nullptr));
 
     // all the user inputs from steering wheel
     ASSERT_TRUE(can_device.addCallbackId(

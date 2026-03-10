@@ -99,7 +99,7 @@ void init_user()
                                         0,
                                         {}};
     rearvcu_statuses_frame.data[0] =
-        1;  // mc enable should always be enabled if this board is alive, written to at startup
+        0xAA;  // mc enable should always be enabled if this board is alive, written to at startup
 
     flare_can::ArrayContactors array_contactors = flare_can::ArrayContactors::BOTH_OPEN;
     uint32_t precharge_closed_timestamp = 0;

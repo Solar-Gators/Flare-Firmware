@@ -703,11 +703,15 @@ void CANDevice::HandleTxTrampoline(void* arg)
                                                                             : FDCAN_DATA_FRAME,
             .DataLength = CAN_BytesToDlc(tx_msg.len),
             .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+#ifdef FDCAN_USE_FD_BRS
             .BitRateSwitch = FDCAN_BRS_ON,
             .FDFormat = FDCAN_FD_CAN,
+#else
+            .BitRateSwitch = FDCAN_BRS_OFF,
+            .FDFormat = FDCAN_CLASSIC_CAN,
+#endif
             .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
             .MessageMarker = 0};
-
         // Request HAL message send
         HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg.data);
         sent_messages_count_.fetch_add(1, std::memory_order_relaxed);
