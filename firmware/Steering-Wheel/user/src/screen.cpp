@@ -36,11 +36,15 @@ void initScreen()
 
     drawLabels();
     drawSpeed(state.car_speed.load(std::memory_order_relaxed));
+    drawCC(state.cc_mph_requested.load(std::memory_order_relaxed));
     drawSuppBatt(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));
     drawDirection(state.actual_direction.load(std::memory_order_relaxed));
     drawMainBatt(state.main_batt_voltage_cv.load(std::memory_order_relaxed));
     drawHighTemp(state.high_temp_dc.load(std::memory_order_relaxed));
-    drawArrayContactors(state.actual_array_contactors_status.load(std::memory_order_relaxed));
+    // TODO: change this to actual to work with rvcu
+    drawArrayContactors(state.array_contactors_requested_closed.load(std::memory_order_relaxed)
+                            ? flare_can::ArrayContactors::MAIN_CLOSED
+                            : flare_can::ArrayContactors::BOTH_OPEN);
     drawKillStatus(state.killed_status.load(std::memory_order_relaxed));
     drawHeadlightsStatus(state.headlights_requested_on.load(std::memory_order_relaxed));
     drawHornStatus(state.horn_requested_on.load(std::memory_order_relaxed));
@@ -168,7 +172,7 @@ void drawPowerMode(flare_can::MCPowerMode mode)
     }
     else
     {
-        display.DrawText(64, 70, "PW", RGB565_ORANGE);
+        display.DrawText(64, 70, "PWdr", RGB565_ORANGE);
     }
 }
 void drawCC(uint8_t mph)

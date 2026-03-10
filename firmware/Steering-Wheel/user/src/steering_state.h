@@ -8,6 +8,8 @@
 #include "CanDriver.hpp"
 #include "can_protocol.h"
 
+#include <atomic>
+
 namespace steering
 {
 
