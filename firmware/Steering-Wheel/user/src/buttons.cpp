@@ -113,6 +113,15 @@ void button4PressedCallback()
         bool current_state = state.is_cc_on.load();
         state.is_cc_on.store(!current_state);
 
+        if (!current_state)
+        {
+            // if turning on, set the cc to be the currect speed
+            uint8_t current_speed = state.car_speed.load();
+            if (current_speed >= 1 && current_speed <= 99) {
+                state.cc_mph_requested.store(current_speed);
+            }
+        }
+
         // blink led to alert entering/exiting cc
         // TODO: evaluate this, migth not be needed and blocking operation
         for (int i = 0; i < 3; i++) {
@@ -123,7 +132,6 @@ void button4PressedCallback()
             HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
             HAL_Delay(50);
         }
-
         return;
     }
 
