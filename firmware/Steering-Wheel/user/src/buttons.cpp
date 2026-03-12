@@ -34,7 +34,12 @@ void button1PressedCallback()
     {
         buttons[0].SetToggleState(false);
         buttons[4].SetToggleState(false);
+        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_RESET);
     }
+
+    GPIO_PinState state = (buttons[0].GetToggleState()) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, state);
+
     recalculateTurnSignals();
 }
 // right turn
@@ -46,7 +51,12 @@ void button5PressedCallback()
     {
         buttons[0].SetToggleState(false);
         buttons[4].SetToggleState(false);
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
     }
+
+    GPIO_PinState state = (buttons[4].GetToggleState()) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, state);
+
     recalculateTurnSignals();
 }
 
