@@ -5,6 +5,8 @@
 #ifndef FLAREFIRMWARE_TELEMETRY_H
 #define FLAREFIRMWARE_TELEMETRY_H
 
+#include <cstdint>
+
 namespace telem
 {
 
