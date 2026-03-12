@@ -19,7 +19,7 @@ struct SteeringState
     std::atomic<bool> array_contactors_requested_closed{};
     std::atomic<bool> horn_requested_on{};
     std::atomic<bool> headlights_requested_on{};
-    std::atomic<flare_can::Direction> direction_requested{};
+    std::atomic<flare_can::Direction> direction_requested{flare_can::Direction::FORWARD};
     std::atomic<flare_can::MCPowerMode> mc_power_mode_requested{};
     std::atomic<flare_can::TurnSignals> turn_signals_requested{};
 

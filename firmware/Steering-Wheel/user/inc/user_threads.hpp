@@ -6,15 +6,13 @@ extern "C"
 {
 #endif
 
-    < < < < < < < Updated upstream void init_user();
+    void init_user();
 
     [[noreturn]] void startHeartbeatTask_user(void* argument);
     [[noreturn]] void startScreenTask_user(void* argument);
     [[noreturn]] void startPollButtons_user(void* argument);
-=======
-[[noreturn]] void startHeartbeatTask_user(void* argument);
-[[noreturn]] void startScreenTask_user(void* argument);
->>>>>>> Stashed changes
+    [[noreturn]] void startHeartbeatTask_user(void* argument);
+    [[noreturn]] void startScreenTask_user(void* argument);
 
 #ifdef __cplusplus
 }
