@@ -47,7 +47,11 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE END Variables */
 /* Definitions for heartbeatTask */
 osThreadId_t heartbeatTaskHandle;
+<<<<<<< Updated upstream
 uint32_t heartbeatTaskBuffer[ 512 ];
+=======
+uint32_t heartbeatTaskBuffer[ 128 ];
+>>>>>>> Stashed changes
 osStaticThreadDef_t heartbeatTaskCB;
 const osThreadAttr_t heartbeatTask_attributes = {
   .name = "heartbeatTask",
@@ -59,7 +63,11 @@ const osThreadAttr_t heartbeatTask_attributes = {
 };
 /* Definitions for screenTask */
 osThreadId_t screenTaskHandle;
+<<<<<<< Updated upstream
 uint32_t screenTaskBuffer[ 512 ];
+=======
+uint32_t screenTaskBuffer[ 128 ];
+>>>>>>> Stashed changes
 osStaticThreadDef_t screenTaskCB;
 const osThreadAttr_t screenTask_attributes = {
   .name = "screenTask",
@@ -67,6 +75,7 @@ const osThreadAttr_t screenTask_attributes = {
   .stack_size = sizeof(screenTaskBuffer),
   .cb_mem = &screenTaskCB,
   .cb_size = sizeof(screenTaskCB),
+<<<<<<< Updated upstream
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for PollButtons */
@@ -75,6 +84,9 @@ const osThreadAttr_t PollButtons_attributes = {
   .name = "PollButtons",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 512 * 4
+=======
+  .priority = (osPriority_t) osPriorityAboveNormal,
+>>>>>>> Stashed changes
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -112,9 +124,12 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of screenTask */
   screenTaskHandle = osThreadNew(startScreenTask, NULL, &screenTask_attributes);
+<<<<<<< Updated upstream
 
   /* creation of PollButtons */
   PollButtonsHandle = osThreadNew(StartPollButtons, NULL, &PollButtons_attributes);
+=======
+>>>>>>> Stashed changes
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -151,6 +166,7 @@ void startScreenTask(void *argument)
   /* USER CODE BEGIN screenTask */
     startScreenTask_user(argument);
   /* USER CODE END screenTask */
+<<<<<<< Updated upstream
 }
 
 /* USER CODE BEGIN Header_StartPollButtons */
@@ -165,6 +181,8 @@ void StartPollButtons(void *argument)
   /* USER CODE BEGIN PollButtons */
     startPollButtons_user(argument);
   /* USER CODE END PollButtons */
+=======
+>>>>>>> Stashed changes
 }
 
 /* Private application code --------------------------------------------------*/
