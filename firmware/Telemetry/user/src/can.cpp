@@ -73,7 +73,7 @@ HAL_StatusTypeDef radioTXCallback(const sg::CANFrame& frame, void* ctx)
     uint8_t packed_frame[10];
     packed_frame[0] = frame.can_id & 0xFF;
     packed_frame[1] = frame.can_id >> 8;
-    memcpy(packed_frame + 2, frame.data, 8);
+    memcpy(packed_frame + 2, frame.data.data(), 8);
 
     xQueueSend(radioTXQueue, &packed_frame, pdMS_TO_TICKS(100));
     return HAL_OK;

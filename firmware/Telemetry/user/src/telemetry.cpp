@@ -2,6 +2,8 @@
 // Created by justin on 2/25/26.
 //
 
+#include "telemetry.h"
+
 #include "Steering_wheel_buttons.hpp"
 #include "can.h"
 #include "can_protocol.h"
@@ -63,45 +65,54 @@ void sendSpeedFrame()
 void processLightsOutputs()
 {
     static flare_can::TurnSignals turn_signals{};
+    static uint32_t last_toggle_tick{};
+
+    uint32_t current_tick = HAL_GetTick();
+    if (current_tick - last_toggle_tick < led_toggle_period_ms)
+    {
+        return;  // rest of code toggles
+    }
+
+    last_toggle_tick = current_tick;
 
     // kill switch led logic
     if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
     {
+        led_toggle_period_ms = 250;
         HAL_GPIO_TogglePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin);
+        HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
+        HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
     }
-
-    // turn signal led logic
-    static bool left_light{};
-    static bool right_light{};
-    static bool middle_light{};
-
-    // if status changed, turn the lights off
-    if (flare_can::TurnSignals new_turn_signals =
-            turn_signals_status.load(std::memory_order_relaxed);
-        new_turn_signals != turn_signals)
+    else
     {
-        HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
-        // TODO: turn off middle one here when we get it
-        turn_signals = new_turn_signals;
-    }
-    // toggle correct led's
-    switch (turn_signals)
-    {
-        case flare_can::TurnSignals::LEFT:
-            HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
-            break;
-        case flare_can::TurnSignals::RIGHT:
-            HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
-            break;
-        case flare_can::TurnSignals::HAZARDS:
-            HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
-            HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
-            break;
-        case flare_can::TurnSignals::OFF:
-            break;
-        default:
-            Error_Handler();
+        // if status changed, turn the lights off
+        if (flare_can::TurnSignals new_turn_signals =
+                turn_signals_status.load(std::memory_order_relaxed);
+            new_turn_signals != turn_signals)
+        {
+            HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
+            // TODO: turn off middle one here when we get it
+            turn_signals = new_turn_signals;
+        }
+        // toggle correct led's
+        switch (turn_signals)
+        {
+            case flare_can::TurnSignals::LEFT:
+                HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
+                break;
+            case flare_can::TurnSignals::RIGHT:
+                HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
+                break;
+            case flare_can::TurnSignals::HAZARDS:
+                HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
+                HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
+                break;
+            case flare_can::TurnSignals::OFF:
+                break;
+            default:
+                Error_Handler();
+        }
     }
 }
 

@@ -9,7 +9,7 @@ namespace telem
 {
 
 // give to delay of the lights processing task
-constexpr size_t led_toggle_period_ms = 500;
+inline uint32_t led_toggle_period_ms = 500;
 
 void init();
 void sendKillFrame();

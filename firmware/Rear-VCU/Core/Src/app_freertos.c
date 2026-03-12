@@ -57,16 +57,16 @@ const osThreadAttr_t hearbeatTask_attributes = {
   .cb_size = sizeof(heartbeatTaskCB),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for regenThrottleTask */
-osThreadId_t regenThrottleTaskHandle;
-uint32_t regenThrottleTaskBuffer[ 512 ];
-osStaticThreadDef_t regenThrottleTaskCB;
-const osThreadAttr_t regenThrottleTask_attributes = {
-  .name = "regenThrottleTask",
-  .stack_mem = &regenThrottleTaskBuffer[0],
-  .stack_size = sizeof(regenThrottleTaskBuffer),
-  .cb_mem = &regenThrottleTaskCB,
-  .cb_size = sizeof(regenThrottleTaskCB),
+/* Definitions for sendStatusTask */
+osThreadId_t sendStatusTaskHandle;
+uint32_t sendStatusTaskBuffer[ 256 ];
+osStaticThreadDef_t sendStatusTaskCB;
+const osThreadAttr_t sendStatusTask_attributes = {
+  .name = "sendStatusTask",
+  .stack_mem = &sendStatusTaskBuffer[0],
+  .stack_size = sizeof(sendStatusTaskBuffer),
+  .cb_mem = &sendStatusTaskCB,
+  .cb_size = sizeof(sendStatusTaskCB),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for outputsTask */
@@ -115,8 +115,8 @@ void MX_FREERTOS_Init(void) {
   /* creation of hearbeatTask */
   hearbeatTaskHandle = osThreadNew(startHeartbeatTask, NULL, &hearbeatTask_attributes);
 
-  /* creation of regenThrottleTask */
-  regenThrottleTaskHandle = osThreadNew(startRegenThrottleTask, NULL, &regenThrottleTask_attributes);
+  /* creation of sendStatusTask */
+  sendStatusTaskHandle = osThreadNew(startSendStatusTask, NULL, &sendStatusTask_attributes);
 
   /* creation of outputsTask */
   outputsTaskHandle = osThreadNew(startOutputsTask, NULL, &outputsTask_attributes);
@@ -144,18 +144,18 @@ void startHeartbeatTask(void *argument)
   /* USER CODE END hearbeatTask */
 }
 
-/* USER CODE BEGIN Header_startRegenThrottleTask */
+/* USER CODE BEGIN Header_startSendStatusTask */
 /**
-* @brief Function implementing the regenThrottleTask thread.
+* @brief Function implementing the sendStatusTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_startRegenThrottleTask */
-void startRegenThrottleTask(void *argument)
+/* USER CODE END Header_startSendStatusTask */
+void startSendStatusTask(void *argument)
 {
-  /* USER CODE BEGIN regenThrottleTask */
-    startRegenThrottleTask_user(argument);
-  /* USER CODE END regenThrottleTask */
+  /* USER CODE BEGIN sendStatusTask */
+    startSendStatusTask_user(argument);
+  /* USER CODE END sendStatusTask */
 }
 
 /* USER CODE BEGIN Header_startOutputsTask */

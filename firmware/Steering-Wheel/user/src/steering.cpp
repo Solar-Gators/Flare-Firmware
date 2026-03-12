@@ -74,7 +74,6 @@ void sendRequestsMessage()
 
     // cc mph
     steering_requests_frame.data[7] = state.cc_mph_requested.load(std::memory_order_relaxed);
-    ;
 
     can_device.send(steering_requests_frame);
 }

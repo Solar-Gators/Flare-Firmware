@@ -77,6 +77,7 @@ void startTXRadioTask_user(void* argument)
     {
         uint8_t long_frame[10];
 
+        // block on queue
         if (xQueueReceive(radioTXQueue, long_frame, 100) != pdTRUE)
         {
             continue;
@@ -106,11 +107,19 @@ void startTXRadioTask_user(void* argument)
     }
 }
 
-void startKillSwitchTask_user(void* argument)
+void startKillSwitchMessageTask_user(void* argument)
 {
     for (;;)
     {
         telem::sendKillFrame();
         osDelay(50);
+    }
+}
+void startLightsOutputsTask_user(void* argument)
+{
+    for (;;)
+    {
+        telem::processLightsOutputs();
+        osDelay(30);
     }
 }
