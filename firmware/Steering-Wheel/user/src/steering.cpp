@@ -231,6 +231,9 @@ void processTurnAndKill()
 
         HAL_GPIO_WritePin(
             BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, (blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+        left_active = true;
+        right_active = true;
     }
 
     // draw on screen
