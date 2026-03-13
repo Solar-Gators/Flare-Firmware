@@ -15,31 +15,6 @@
 
 void canInit()
 {
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD, &steeringRequestsCallback));
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x020, sg::CANFrameIDType::STANDARD, &rearVCUStatusCallback));
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x040, sg::CANFrameIDType::STANDARD, &bmsFaultsMessageCallback));
-
-    // batt voltage
-    ASSERT_TRUE(can_device.addCallbackId(0x041, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    // MPPT 1 Input Measurements frame
-    ASSERT_TRUE(can_device.addCallbackId(0x600, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    // MPPT 1 Output Measurements frame
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x600 + 1, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    // MPPT 2 Input Measurements frame
-    ASSERT_TRUE(can_device.addCallbackId(0x610, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    // MPPT 2 Output Measurements frame
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x610 + 1, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    // MPPT 3 Input Measurements frame
-    ASSERT_TRUE(can_device.addCallbackId(0x620, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-    // MPPT 3 Output Measurements frame
-    ASSERT_TRUE(
-        can_device.addCallbackId(0x620 + 1, sg::CANFrameIDType::STANDARD, &radioTXCallback));
-
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 
@@ -54,8 +29,6 @@ HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
 
 HAL_StatusTypeDef rearVCUStatusCallback(const sg::CANFrame& frame, void* ctx)
 {
-    // do stuff
-    volatile int x = 5;
     return HAL_OK;
 }
 

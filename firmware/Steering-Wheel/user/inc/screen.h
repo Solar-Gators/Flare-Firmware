@@ -26,4 +26,6 @@ void drawHeadlightsStatus(bool on);
 void drawHornStatus(bool on);
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state);
 
+void drawCar(flare_can::Direction direction);
+
 #endif  //FLAREFIRMWARE_SCREEN_H

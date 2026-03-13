@@ -105,7 +105,6 @@ void processScreen()
         drawCC(cc_val);
         old_cc_val = cc_val;
     }
-
     old_cc_on = cc_on;  // update after
 
     static auto old_power_mode = state.mc_power_mode_requested.load(std::memory_order::relaxed);
@@ -183,6 +182,9 @@ void processScreen()
         drawKillStatus(killed_status);
         old_killed_status = killed_status;
     }
+
+    auto direction = state.actual_direction.load(std::memory_order_relaxed);
+    drawCar(direction);
 }
 
 void processHornButton()
