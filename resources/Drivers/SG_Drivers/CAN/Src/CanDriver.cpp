@@ -8,6 +8,8 @@
 
 #include "CanDriver.hpp"
 
+#include <ranges>
+
 namespace sg
 {
 
@@ -212,7 +214,7 @@ HAL_StatusTypeDef CANDevice::startCANDevice()
 
 #if defined(HAL_CAN_MODULE_ENABLED)
     // ===================== bxCAN =====================
-    if (filters_.empty())
+    if (filterCount_ == 0)
     {
         CanFilter_t filter = {};
 
@@ -233,9 +235,9 @@ HAL_StatusTypeDef CANDevice::startCANDevice()
     }
     else
     {
-        for (const auto& filter : filters_)
+        for (size_t i = 0; i < filterCount_; i++)
         {
-            TRY(HAL_CAN_ConfigFilter(hcan_, &filter));
+            TRY(HAL_CAN_ConfigFilter(hcan_, &filters_[i]));
         }
     }
 
@@ -246,7 +248,7 @@ HAL_StatusTypeDef CANDevice::startCANDevice()
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     // ===================== FDCAN (M_CAN) =====================
     // If there are no filters to add, then accept all messages
-    if (filters_.empty())
+    if (filterCount_)
     {
         CanFilter_t filter = {};
 
@@ -272,9 +274,9 @@ HAL_StatusTypeDef CANDevice::startCANDevice()
     }
     else
     {
-        for (const auto& filter : filters_)
+        for (size_t i = 0; i < filterCount_; i++)
         {
-            TRY(HAL_FDCAN_ConfigFilter(hcan_, &filter));
+            TRY(HAL_FDCAN_ConfigFilter(hcan_, &filters_[i]));
         }
     }
 
@@ -297,7 +299,7 @@ HAL_StatusTypeDef CANDevice::addFilterId(uint32_t can_id,
                                          CANFrameRTRMode rtr_mode,
                                          CANFramePriority priority)
 {
-    if (filters_.size() >= NUM_FILTER_BANKS)
+    if (filterCount_ >= NUM_FILTER_BANKS)
         return HAL_ERROR;
 
 #if defined(HAL_CAN_MODULE_ENABLED)
@@ -322,7 +324,7 @@ HAL_StatusTypeDef CANDevice::addFilterId(uint32_t can_id,
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
             (priority == sg::CANFramePriority::HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
-        f.FilterBank = filters_.size();
+        f.FilterBank = filterCount_;
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
         f.FilterActivation = ENABLE;
@@ -347,7 +349,7 @@ HAL_StatusTypeDef CANDevice::addFilterId(uint32_t can_id,
         f.FilterMaskIdLow = filter_mask & 0xFFFFu;
         f.FilterFIFOAssignment =
             (priority == sg::CANFramePriority::HIGH) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
-        f.FilterBank = filters_.size();
+        f.FilterBank = filterCount_;
         f.FilterMode = CAN_FILTERMODE_IDMASK;
         f.FilterScale = CAN_FILTERSCALE_32BIT;
         f.FilterActivation = ENABLE;
@@ -390,7 +392,7 @@ HAL_StatusTypeDef CANDevice::addFilterId(uint32_t can_id,
         return HAL_ERROR;
     }
 
-    f.FilterIndex = filters_.size();
+    f.FilterIndex = filterCount_;
     f.FilterConfig = (priority == sg::CANFramePriority::HIGH) ? FDCAN_FILTER_TO_RXFIFO0
                                                               : FDCAN_FILTER_TO_RXFIFO1;
     filters_[filterCount_++] = f;
@@ -407,7 +409,7 @@ HAL_StatusTypeDef CANDevice::addFilterRange(uint32_t can_id,
                                             sg::CANFrameRTRMode rtr_mode,
                                             sg::CANFramePriority priority)
 {
-    if (filters_.size() >= NUM_FILTER_BANKS || range == 0)
+    if (filterCount_ >= NUM_FILTER_BANKS || range == 0)
         return HAL_ERROR;
 
     // ---------- Compute window alignment ----------

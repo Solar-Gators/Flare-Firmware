@@ -22,10 +22,10 @@ HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx);
 HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx);
 
 inline sg::CANDevice can_device(&hfdcan1,
-                                {{0x020, {&rearVCUInfoMessageCallback}},
+                                {{0x020, {&rearVCUInfoMessageCallback}},  // std id callbacks
                                  {0x021, {&rearVCUSuppBattMessageCallback}},
                                  {0x041, {&bmsBatteryVoltageMessageCallback}},
                                  {0x042, {&bmsBatteryTempMessageCallback}},
                                  {0x010, {&telemKillStatusMessageCallback}},
                                  {0x0A0, {&speedMessageCallback}}},
-                                {{0x08850225, {&mitsubaFrame0Callback}}});
+                                {{0x08850225, {&mitsubaFrame0Callback}}});  // ext id callbacks
