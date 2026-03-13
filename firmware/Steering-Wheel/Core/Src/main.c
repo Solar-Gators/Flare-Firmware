@@ -138,7 +138,7 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE3) != HAL_OK)
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -156,7 +156,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLN = 8;
   RCC_OscInitStruct.PLL.PLLP = 2;
   RCC_OscInitStruct.PLL.PLLQ = 1;
-  RCC_OscInitStruct.PLL.PLLR = 2;
+  RCC_OscInitStruct.PLL.PLLR = 1;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLLVCIRANGE_1;
   RCC_OscInitStruct.PLL.PLLFRACN = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -169,13 +169,13 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_PCLK3;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB3CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -200,7 +200,7 @@ static void MX_FDCAN1_Init(void)
   hfdcan1.Init.ClockDivider = FDCAN_CLOCK_DIV1;
   hfdcan1.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
   hfdcan1.Init.Mode = FDCAN_MODE_NORMAL;
-  hfdcan1.Init.AutoRetransmission = ENABLE;
+  hfdcan1.Init.AutoRetransmission = DISABLE;
   hfdcan1.Init.TransmitPause = DISABLE;
   hfdcan1.Init.ProtocolException = DISABLE;
   hfdcan1.Init.NominalPrescaler = 16;
@@ -428,10 +428,10 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SCREEN_nRST_GPIO_Port, SCREEN_nRST_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : EEPROM_CS_Pin BUTTON8_LED_Pin BUTTON2_LED_Pin SCREEN_WRITE_READY_Pin
-                           SCREEN_CMD_DATA_SEL_Pin SCREEN_PARALLEL_CS_Pin OK_LED_Pin ERROR_LED_Pin */
-  GPIO_InitStruct.Pin = EEPROM_CS_Pin|BUTTON8_LED_Pin|BUTTON2_LED_Pin|SCREEN_WRITE_READY_Pin
-                          |SCREEN_CMD_DATA_SEL_Pin|SCREEN_PARALLEL_CS_Pin|OK_LED_Pin|ERROR_LED_Pin;
+  /*Configure GPIO pins : EEPROM_CS_Pin BUTTON8_LED_Pin BUTTON2_LED_Pin OK_LED_Pin
+                           ERROR_LED_Pin */
+  GPIO_InitStruct.Pin = EEPROM_CS_Pin|BUTTON8_LED_Pin|BUTTON2_LED_Pin|OK_LED_Pin
+                          |ERROR_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -444,13 +444,22 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : SCREEN_D0_Pin SCREEN_D1_Pin SCREEN_D2_Pin SCREEN_D3_Pin
-                           SCREEN_D4_Pin SCREEN_D5_Pin SCREEN_D6_Pin SCREEN_D7_Pin */
+                           SCREEN_D4_Pin SCREEN_D5_Pin SCREEN_D6_Pin SCREEN_D7_Pin
+                           SCREEN_nRST_Pin SCREEN_DC_SEL_Pin */
   GPIO_InitStruct.Pin = SCREEN_D0_Pin|SCREEN_D1_Pin|SCREEN_D2_Pin|SCREEN_D3_Pin
-                          |SCREEN_D4_Pin|SCREEN_D5_Pin|SCREEN_D6_Pin|SCREEN_D7_Pin;
+                          |SCREEN_D4_Pin|SCREEN_D5_Pin|SCREEN_D6_Pin|SCREEN_D7_Pin
+                          |SCREEN_nRST_Pin|SCREEN_DC_SEL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SCREEN_WRITE_READY_Pin SCREEN_CMD_DATA_SEL_Pin SCREEN_PARALLEL_CS_Pin */
+  GPIO_InitStruct.Pin = SCREEN_WRITE_READY_Pin|SCREEN_CMD_DATA_SEL_Pin|SCREEN_PARALLEL_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BUTTON1_Pin BUTTON2_Pin BUTTON6_Pin BUTTON7_Pin
                            BUTTON8_Pin BUTTON4_Pin BUTTON3_Pin BUTTON5_Pin */
@@ -468,13 +477,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : SCREEN_nRST_Pin SCREEN_DC_SEL_Pin */
-  GPIO_InitStruct.Pin = SCREEN_nRST_Pin|SCREEN_DC_SEL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);

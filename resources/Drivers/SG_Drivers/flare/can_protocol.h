@@ -38,6 +38,12 @@ enum class MCPowerMode : uint8_t
     POWER = 1
 };
 
+enum class CarKilledStatus : uint8_t
+{
+    ALIVE = 0,
+    DEAD = 1
+};
+
 }  // namespace flare_can
 
 #endif  //SOLARGATORSSTM32PROJECTS_CAN_PROTOCOL_H

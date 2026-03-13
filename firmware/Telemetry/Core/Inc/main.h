@@ -69,6 +69,7 @@ void Error_Handler(void);
 #define RR_CTRL_GPIO_Port GPIOC
 #define KILL_SW_INPUT_Pin GPIO_PIN_12
 #define KILL_SW_INPUT_GPIO_Port GPIOB
+#define KILL_SW_INPUT_EXTI_IRQn EXTI12_IRQn
 #define RADIO_CTS_Pin GPIO_PIN_14
 #define RADIO_CTS_GPIO_Port GPIOB
 #define EEPROM_CS_Pin GPIO_PIN_15
