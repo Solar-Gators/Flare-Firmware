@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "user_threads.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,12 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-<<<<<<< HEAD
-DMA_NodeTypeDef Node_GPDMA1_Channel0;
-DMA_QListTypeDef List_GPDMA1_Channel0;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
-=======
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
 
 FDCAN_HandleTypeDef hfdcan1;
 
@@ -64,39 +59,16 @@ void MX_FREERTOS_Init(void);
 static void MX_GPIO_Init(void);
 static void MX_GPDMA1_Init(void);
 static void MX_ICACHE_Init(void);
-static void MX_ADC1_Init(void);
 static void MX_FDCAN1_Init(void);
-<<<<<<< HEAD
-=======
 static void MX_ADC1_Init(void);
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
-static void MX_I2C2_Init(void);
 static void MX_I2C4_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-const double lowpass_filter_taps[100] = {-0.0020288494932644433, -0.005421114393927915, -0.006841936765849006, -0.005654280604419443, -0.0022072098882766865,
-0.0022568101104851663, 0.006044230990931122, 0.007646870503007711, 0.0063355192314579305, 0.002479704936212081, -0.0025424822763693644, -0.00682919605468841,
--0.008666453236742073, -0.00720339857823299, -0.0028289591525800114, 0.002910957968596807, 0.007848479047925487, 0.009999753734702391, 0.008346795177952513,
-0.0032927229480849323, -0.003404340675138637, -0.009225405196684343, -0.011817890777375556, -0.009921662192660536, -0.003938354898689822, 0.004099104078228153,
-0.011188257366191664, 0.014444088727903455, 0.012229025493279252, 0.004898929264223927, -0.00515015640597896, -0.014212110708405626, -0.018570971221590158,
--0.015934790794272968, -0.0064792290268767755, 0.006926072408040666, 0.019475855415222523, 0.02599935971022622, 0.022862960704826442, 0.009564576182532385,
--0.01057137367543055, -0.030932240953588683, -0.04333226618371037, -0.04044985355469292, -0.018259645439380037, 0.022317344425908922, 0.07512115660157256,
-0.12999679855113108, 0.17528269873700267, 0.20085609983318026, 0.20085609983318026, 0.17528269873700267, 0.12999679855113108, 0.07512115660157256, 0.022317344425908922,
--0.018259645439380037, -0.04044985355469292, -0.04333226618371037, -0.030932240953588683, -0.01057137367543055, 0.009564576182532385, 0.022862960704826442, 0.02599935971022622,
-0.019475855415222523, 0.006926072408040666, -0.0064792290268767755, -0.015934790794272968, -0.018570971221590158, -0.014212110708405626, -0.00515015640597896,
-0.004898929264223927, 0.012229025493279252, 0.014444088727903455, 0.011188257366191664, 0.004099104078228153, -0.003938354898689822, -0.009921662192660536,
--0.011817890777375556, -0.009225405196684343, -0.003404340675138637, 0.0032927229480849323, 0.008346795177952513, 0.009999753734702391, 0.007848479047925487,
-0.002910957968596807, -0.0028289591525800114, -0.00720339857823299, -0.008666453236742073, -0.00682919605468841, -0.0025424822763693644, 0.002479704936212081,
-0.0063355192314579305, 0.007646870503007711, 0.006044230990931122, 0.0022568101104851663, -0.0022072098882766865, -0.005654280604419443, -0.006841936765849006,
--0.005421114393927915, -0.0020288494932644433
-};
-
-
-const int16_t adc_values[100];
 
 /* USER CODE END 0 */
 
@@ -131,16 +103,12 @@ int main(void)
   MX_GPIO_Init();
   MX_GPDMA1_Init();
   MX_ICACHE_Init();
-  MX_ADC1_Init();
   MX_FDCAN1_Init();
-<<<<<<< HEAD
-=======
   MX_ADC1_Init();
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
-  MX_I2C2_Init();
   MX_I2C4_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-
+    init_user();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -233,11 +201,6 @@ static void MX_ADC1_Init(void)
 
   /* USER CODE END ADC1_Init 0 */
 
-<<<<<<< HEAD
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-=======
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
@@ -246,18 +209,6 @@ static void MX_ADC1_Init(void)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-<<<<<<< HEAD
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.GainCompensation = 0;
-  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
-  hadc1.Init.LowPowerAutoWait = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.NbrOfConversion = 10;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-=======
   hadc1.Init.Resolution = ADC_RESOLUTION_14B;
   hadc1.Init.GainCompensation = 0;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
@@ -266,109 +217,16 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc1.Init.LeftBitShift = ADC_LEFTBITSHIFT_NONE;
-<<<<<<< HEAD
-  hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_ONESHOT;
-=======
   hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   hadc1.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
   }
-<<<<<<< HEAD
-
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_11;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_5CYCLE;
-  sConfig.SingleDiff = ADC_SINGLE_ENDED;
-  sConfig.OffsetNumber = ADC_OFFSET_NONE;
-  sConfig.Offset = 0;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_2;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_3;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_4;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_5;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_6;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_7;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_8;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_9;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_10;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-=======
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
@@ -419,7 +277,6 @@ static void MX_FDCAN1_Init(void)
 }
 
 /**
-<<<<<<< HEAD
   * @brief GPDMA1 Initialization Function
   * @param None
   * @retval None
@@ -448,8 +305,6 @@ static void MX_GPDMA1_Init(void)
 }
 
 /**
-=======
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
   * @brief I2C2 Initialization Function
   * @param None
   * @retval None
@@ -591,40 +446,43 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-<<<<<<< HEAD
-  HAL_GPIO_WritePin(GPIOA, OK_LED_Pin|GPIO_PIN_1|GPIO_PIN_2, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : OK_LED_Pin PA1 PA2 */
-  GPIO_InitStruct.Pin = OK_LED_Pin|GPIO_PIN_1|GPIO_PIN_2;
-=======
-  HAL_GPIO_WritePin(EEPROM_WRITE_CTRL_GPIO_Port, EEPROM_WRITE_CTRL_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, FR_LIGHT_CTRL_Pin|R_HEADLIGHT_CTRL_Pin|L_HEADLIGHT_CTRL_Pin|FL_LIGHT_CTRL_Pin
+                          |STROBE_LED_Pin|ERROR_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, OK_LED_Pin|ERROR_LED_Pin|STROBE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, EXTRA1_CTRL_Pin|EXTRA2_CTRL_Pin|FAN_CTRL_Pin|HORN_CTRL_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : EEPROM_WRITE_CTRL_Pin */
-  GPIO_InitStruct.Pin = EEPROM_WRITE_CTRL_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OK_LED_GPIO_Port, OK_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : FR_LIGHT_CTRL_Pin R_HEADLIGHT_CTRL_Pin L_HEADLIGHT_CTRL_Pin FL_LIGHT_CTRL_Pin
+                           STROBE_LED_Pin ERROR_LED_Pin */
+  GPIO_InitStruct.Pin = FR_LIGHT_CTRL_Pin|R_HEADLIGHT_CTRL_Pin|L_HEADLIGHT_CTRL_Pin|FL_LIGHT_CTRL_Pin
+                          |STROBE_LED_Pin|ERROR_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EEPROM_WRITE_CTRL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OK_LED_Pin ERROR_LED_Pin STROBE_Pin */
-  GPIO_InitStruct.Pin = OK_LED_Pin|ERROR_LED_Pin|STROBE_Pin;
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
+  /*Configure GPIO pins : EXTRA1_CTRL_Pin EXTRA2_CTRL_Pin FAN_CTRL_Pin HORN_CTRL_Pin */
+  GPIO_InitStruct.Pin = EXTRA1_CTRL_Pin|EXTRA2_CTRL_Pin|FAN_CTRL_Pin|HORN_CTRL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-<<<<<<< HEAD
-=======
 
   /*Configure GPIO pin : BRAKE_Pin */
   GPIO_InitStruct.Pin = BRAKE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BRAKE_GPIO_Port, &GPIO_InitStruct);
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
+
+  /*Configure GPIO pin : OK_LED_Pin */
+  GPIO_InitStruct.Pin = OK_LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(OK_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

@@ -57,25 +57,32 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-<<<<<<< HEAD
-#define OK_LED_Pin GPIO_PIN_0
-#define OK_LED_GPIO_Port GPIOA
-#define Throttle_Pin GPIO_PIN_6
-#define Throttle_GPIO_Port GPIOA
-=======
-#define EEPROM_WRITE_CTRL_Pin GPIO_PIN_3
-#define EEPROM_WRITE_CTRL_GPIO_Port GPIOC
-#define OK_LED_Pin GPIO_PIN_0
-#define OK_LED_GPIO_Port GPIOA
-#define ERROR_LED_Pin GPIO_PIN_1
-#define ERROR_LED_GPIO_Port GPIOA
-#define STROBE_Pin GPIO_PIN_2
-#define STROBE_GPIO_Port GPIOA
+#define FR_LIGHT_CTRL_Pin GPIO_PIN_0
+#define FR_LIGHT_CTRL_GPIO_Port GPIOC
+#define R_HEADLIGHT_CTRL_Pin GPIO_PIN_1
+#define R_HEADLIGHT_CTRL_GPIO_Port GPIOC
+#define L_HEADLIGHT_CTRL_Pin GPIO_PIN_2
+#define L_HEADLIGHT_CTRL_GPIO_Port GPIOC
+#define FL_LIGHT_CTRL_Pin GPIO_PIN_3
+#define FL_LIGHT_CTRL_GPIO_Port GPIOC
+#define EXTRA1_CTRL_Pin GPIO_PIN_0
+#define EXTRA1_CTRL_GPIO_Port GPIOA
+#define EXTRA2_CTRL_Pin GPIO_PIN_1
+#define EXTRA2_CTRL_GPIO_Port GPIOA
+#define FAN_CTRL_Pin GPIO_PIN_2
+#define FAN_CTRL_GPIO_Port GPIOA
+#define HORN_CTRL_Pin GPIO_PIN_3
+#define HORN_CTRL_GPIO_Port GPIOA
 #define THROTTLE_Pin GPIO_PIN_6
 #define THROTTLE_GPIO_Port GPIOA
 #define BRAKE_Pin GPIO_PIN_7
 #define BRAKE_GPIO_Port GPIOA
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
+#define OK_LED_Pin GPIO_PIN_15
+#define OK_LED_GPIO_Port GPIOB
+#define STROBE_LED_Pin GPIO_PIN_6
+#define STROBE_LED_GPIO_Port GPIOC
+#define ERROR_LED_Pin GPIO_PIN_7
+#define ERROR_LED_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
 

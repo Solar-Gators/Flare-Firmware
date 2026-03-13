@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_freertos.h"
+#include "user_threads.hpp"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -44,24 +45,37 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for Heartbeat */
-osThreadId_t HeartbeatHandle;
-const osThreadAttr_t Heartbeat_attributes = {
-  .name = "Heartbeat",
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
-/* Definitions for ThrottleRead */
-osThreadId_t ThrottleReadHandle;
-const osThreadAttr_t ThrottleRead_attributes = {
-  .name = "ThrottleRead",
+/* Definitions for ThrottleBrakeRead */
+osThreadId_t ThrottleBrakeReadHandle;
+const osThreadAttr_t ThrottleBrakeRead_attributes = {
+  .name = "ThrottleBrakeRead",
   .priority = (osPriority_t) osPriorityAboveNormal,
+  .stack_size = 128 * 4
+};
+/* Definitions for LoadsControl */
+osThreadId_t LoadsControlHandle;
+const osThreadAttr_t LoadsControl_attributes = {
+  .name = "LoadsControl",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
+/* Definitions for CANMessagesTX */
+osThreadId_t CANMessagesTXHandle;
+const osThreadAttr_t CANMessagesTX_attributes = {
+  .name = "CANMessagesTX",
+  .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
 /* USER CODE END FunctionPrototypes */
 
 /**
@@ -89,11 +103,17 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of Heartbeat */
-  HeartbeatHandle = osThreadNew(StartHeartbeat, NULL, &Heartbeat_attributes);
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of ThrottleRead */
-  ThrottleReadHandle = osThreadNew(StartThrottleRead, NULL, &ThrottleRead_attributes);
+  /* creation of ThrottleBrakeRead */
+  ThrottleBrakeReadHandle = osThreadNew(StartThrottleBrakeRead, NULL, &ThrottleBrakeRead_attributes);
+
+  /* creation of LoadsControl */
+  LoadsControlHandle = osThreadNew(StartLightsControl, NULL, &LoadsControl_attributes);
+
+  /* creation of CANMessagesTX */
+  CANMessagesTXHandle = osThreadNew(StartCANMessagesTX, NULL, &CANMessagesTX_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -104,34 +124,80 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartHeartbeat */
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
-* @brief Function implementing the Heartbeat thread.
+* @brief Function implementing the defaultTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartHeartbeat */
-void StartHeartbeat(void *argument)
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN Heartbeat */
+  /* USER CODE BEGIN defaultTask */
   /* Infinite loop */
-  StartHeartbeat_user(argument);
-  /* USER CODE END Heartbeat */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END defaultTask */
 }
 
-/* USER CODE BEGIN Header_StartThrottleRead */
+/* USER CODE BEGIN Header_StartThrottleBrakeRead */
 /**
-* @brief Function implementing the ThrottleRead thread.
+* @brief Function implementing the ThrottleBrakeRead thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartThrottleRead */
-void StartThrottleRead(void *argument)
+/* USER CODE END Header_StartThrottleBrakeRead */
+void StartThrottleBrakeRead(void *argument)
 {
-  /* USER CODE BEGIN ThrottleRead */
+  /* USER CODE BEGIN ThrottleBrakeRead */
   /* Infinite loop */
-  StartThrottleRead_user(argument);
-  /* USER CODE END ThrottleRead */
+
+    StartThrottleBrakeRead_user(argument);
+    for(;;)
+    {
+        osDelay(1);
+    }
+  /* USER CODE END ThrottleBrakeRead */
+}
+
+/* USER CODE BEGIN Header_StartLightsControl */
+/**
+* @brief Function implementing the LoadsControl thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartLightsControl */
+void StartLightsControl(void *argument)
+{
+  /* USER CODE BEGIN LoadsControl */
+  /* Infinite loop */
+  StartLightsControl_user(argument);
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END LoadsControl */
+}
+
+/* USER CODE BEGIN Header_StartCANMessagesTX */
+/**
+* @brief Function implementing the CANMessagesTX thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCANMessagesTX */
+void StartCANMessagesTX(void *argument)
+{
+  /* USER CODE BEGIN CANMessagesTX */
+  /* Infinite loop */
+  StartCANMessagesTX_user(argument);
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END CANMessagesTX */
 }
 
 /* Private application code --------------------------------------------------*/

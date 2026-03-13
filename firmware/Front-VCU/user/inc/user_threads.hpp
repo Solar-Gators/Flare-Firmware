@@ -6,13 +6,12 @@ extern "C"
 {
 #endif
 
-<<<<<<< HEAD
     void StartHeartbeat_user(void *argument);
-    void StartThrottleRead_user(void *argument);
-
-=======
+    void StartThrottleBrakeRead_user(void *argument);
     void StartDefaultTask_user(void* argument);
->>>>>>> 745957a33c4905311f22df88344c6068da7ca1af
+    void StartCANMessagesTX_user(void* argument);
+    void StartLightsControl_user(void* argument);
+    void init_user();
 
 #ifdef __cplusplus
 }
