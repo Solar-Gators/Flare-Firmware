@@ -17,7 +17,7 @@ ILI9341 display(240, 320);
 std::array<char, 16> text_buffer{};
 // const screen variables
 constexpr uint16_t text_color{0};
-constexpr uint16_t background_color{RGB565_CYAN};
+constexpr uint16_t background_color{RGB565_PINK};
 }  // namespace
 
 void initScreen()
