@@ -5,7 +5,12 @@
 
 #include "can.h"
 #include "main.h"
+#include "maxm10s.hpp"
+#include "rfd900x.h"
 #include "telem_state.h"
+#include "telemetry.h"
+
+QueueHandle_t radioTXQueue;
 
 void init_user()
 {
@@ -15,57 +20,26 @@ void init_user()
     HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
     // TODO: turn off middle one here when we get it
 
-    telem::killSwitchButtonInit();
-    telem::canInit();
+    telem::init();
+    gps().init();
+
+    // Can hold ten standard can frames (2 bytes for ID + 8 data bytes)
+    radioTXQueue = xQueueCreate(10, 10);
+    if (!radioTXQueue)
+    {
+        Error_Handler();
+    }
 }
 
 void startHeartbeatTask_user(void* argument)
 {
-    flare_can::TurnSignals turn_signals{};
-
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
         HAL_GPIO_TogglePin(GPS_LED_GPIO_Port, GPS_LED_Pin);
         HAL_GPIO_TogglePin(RADIO_LED_GPIO_Port, RADIO_LED_Pin);
 
-        // kill switch led logic
-        if (telem::killed_status.load(std::memory_order_relaxed) ==
-            flare_can::CarKilledStatus::DEAD)
-        {
-            HAL_GPIO_TogglePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin);
-        }
-
-        // turn signal led logic
-        // if status changed, turn the lights off
-        if (flare_can::TurnSignals new_turn_signals =
-                telem::turn_signals_status.load(std::memory_order_relaxed);
-            new_turn_signals != turn_signals)
-        {
-            HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
-            // TODO: turn off middle one here when we get it
-            turn_signals = new_turn_signals;
-        }
-        // toggle correct led's
-        switch (turn_signals)
-        {
-            case flare_can::TurnSignals::LEFT:
-                HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
-                break;
-            case flare_can::TurnSignals::RIGHT:
-                HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
-                break;
-            case flare_can::TurnSignals::HAZARDS:
-                HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
-                HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
-                // TODO: toggle middle one here when we get it
-                break;
-            case flare_can::TurnSignals::OFF:
-                break;
-            default:
-                Error_Handler();
-        }
+        telem::processLightsOutputs();
 
         osDelay(telem::led_toggle_period_ms);
     }
@@ -75,7 +49,10 @@ void startGPSReadBufferTask_user(void* argument)
 {
     for (;;)
     {
-        osDelay(1000);
+        gps().readOutputBuffer();
+        telem::queueGPSData();
+
+        osDelay(500);
     }
 }
 
@@ -83,34 +60,66 @@ void startGPSParseNMEATask_user(void* argument)
 {
     for (;;)
     {
-        osDelay(1000);
+        gps().parseNMEA();
+
+        osDelay(200);
     }
 }
 
+extern UART_HandleTypeDef huart2;
 void startTXRadioTask_user(void* argument)
 {
+    // TODO: clean up this initialization
+    rfd900SetUartHandle(&huart2);
+    rfd900EnterLocalATCommandMode();
+
     for (;;)
     {
-        osDelay(1000);
+        uint8_t long_frame[10];
+
+        // block on queue
+        if (xQueueReceive(radioTXQueue, long_frame, 100) != pdTRUE)
+        {
+            continue;
+        }
+
+        uint8_t frame_packet[30];
+
+        frame_packet[0] = 0x02;  // START
+
+        uint8_t pos = 1;
+
+        for (uint8_t i = 0; i < 10; i++)
+        {
+            uint8_t byte = long_frame[i];
+
+            if (byte == 0x02 || byte == 0x03 || byte == 0x1B)
+            {
+                frame_packet[pos++] = 0x1B;  // escape
+            }
+
+            frame_packet[pos++] = byte;
+        }
+
+        frame_packet[pos++] = 0x03;  // END
+
+        rfd900SendData(frame_packet, pos);
     }
 }
 
-void startKillSwitchTask_user(void* argument)
+void startKillSwitchMessageTask_user(void* argument)
 {
-    sg::CANFrame kill_frame{0x010,
-                            sg::CANFrameIDType::STANDARD,
-                            sg::CANFrameRTRMode::DATA,
-                            sg::CANFrameLen::BYTES_1,
-                            0,
-                            {}};
-
     for (;;)
     {
-        // send current kill switch message
-        kill_frame.data[0] =
-            static_cast<uint8_t>(telem::killed_status.load(std::memory_order_relaxed));
-        telem::can_device.send(kill_frame);
-
+        telem::sendKillFrame();
         osDelay(50);
+    }
+}
+void startLightsOutputsTask_user(void* argument)
+{
+    for (;;)
+    {
+        telem::processLightsOutputs();
+        osDelay(30);
     }
 }

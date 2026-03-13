@@ -140,7 +140,7 @@ static inline bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
 
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     FDCAN_RxHeaderTypeDef hdr{};
-    if (HAL_FDCAN_GetRxMessage(h, FDCAN_RX_FIFO0, &hdr, out.data) != HAL_OK)
+    if (HAL_FDCAN_GetRxMessage(h, FDCAN_RX_FIFO0, &hdr, out.data.data()) != HAL_OK)
         return false;
     //out.hcan = h;
     out.can_id = hdr.Identifier & ((hdr.IdType == FDCAN_EXTENDED_ID) ? 0x1FFFFFFF : 0x7FF);
@@ -619,7 +619,10 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
     {
         CANFrame msg{};  // Simple struct, no mutex
 
-        CAN_ReadOne(hcan, msg);
+        if (!CAN_ReadOne(hcan, msg))
+        {
+            break;
+        }
 
         // Queue the simple struct (safe to copy)
         osStatus_t stat = osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
@@ -703,13 +706,17 @@ void CANDevice::HandleTxTrampoline(void* arg)
                                                                             : FDCAN_DATA_FRAME,
             .DataLength = CAN_BytesToDlc(tx_msg.len),
             .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+#ifdef FDCAN_USE_FD_BRS
             .BitRateSwitch = FDCAN_BRS_ON,
             .FDFormat = FDCAN_FD_CAN,
+#else
+            .BitRateSwitch = FDCAN_BRS_OFF,
+            .FDFormat = FDCAN_CLASSIC_CAN,
+#endif
             .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
             .MessageMarker = 0};
-
         // Request HAL message send
-        HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg.data);
+        HAL_FDCAN_AddMessageToTxFifoQ(hcan_, &txHeader, tx_msg.data.data());
         sent_messages_count_.fetch_add(1, std::memory_order_relaxed);
 #else
         while (!HAL_CAN_GetTxMailboxesFreeLevel(hcan_))

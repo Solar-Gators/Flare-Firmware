@@ -9,9 +9,6 @@
 
 #include <array>
 
-namespace steering
-{
-
 static std::array<sg::Button, 8> buttons = {{
     {BUTTON1_GPIO_Port, BUTTON1_Pin},
     {BUTTON2_GPIO_Port, BUTTON2_Pin},
@@ -23,45 +20,58 @@ static std::array<sg::Button, 8> buttons = {{
     {BUTTON8_GPIO_Port, BUTTON8_Pin},
 }};
 
+// TODO: somethibng like this so we stop using magiv number indicies down in this file
+/*
+sg::Button& left_turn_button = buttons[0];
+*/
+
 // left turn
 void button1PressedCallback()
 {
-    if (buttons[0].GetToggleState())
+    // LED blinking implemented in user_threads.cpp
+    // if hazards on and one pressed -> deactivate both
+    if (state.turn_signals_requested.load() == flare_can::TurnSignals::HAZARDS)
     {
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_SET);
+        buttons[0].SetToggleState(false);
+        buttons[4].SetToggleState(false);
+        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_RESET);
     }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
-    }
+
+    GPIO_PinState state = (buttons[0].GetToggleState()) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, state);
+
     recalculateTurnSignals();
 }
 // right turn
 void button5PressedCallback()
 {
-    if (buttons[4].GetToggleState())
+    // LED blinking implemented in user_threads.cpp
+    // if hazards on and one pressed -> deactivate both
+    if (state.turn_signals_requested.load() == flare_can::TurnSignals::HAZARDS)
     {
-        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_SET);
+        buttons[0].SetToggleState(false);
+        buttons[4].SetToggleState(false);
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
     }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_RESET);
-    }
+
+    GPIO_PinState state = (buttons[4].GetToggleState()) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, state);
+
     recalculateTurnSignals();
 }
 
-// headlights
+// power/eco
 void button2PressedCallback()
 {
     if (buttons[1].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_SET);
-        steering::state.headlights_requested_on.store(true);
+        state.mc_power_mode_requested.store(flare_can::MCPowerMode::POWER);
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON2_LED_GPIO_Port, BUTTON2_LED_Pin, GPIO_PIN_RESET);
-        steering::state.headlights_requested_on.store(false);
+        state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
     }
 }
 
@@ -71,12 +81,12 @@ void button3PressedCallback()
     if (buttons[2].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin, GPIO_PIN_SET);
-        steering::state.array_contactors_requested_closed.store(true);
+        state.array_contactors_requested_closed.store(true);
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON3_LED_GPIO_Port, BUTTON3_LED_Pin, GPIO_PIN_RESET);
-        steering::state.array_contactors_requested_closed.store(false);
+        state.array_contactors_requested_closed.store(false);
     }
 }
 
@@ -86,56 +96,92 @@ void button6PressedCallback()
     if (buttons[5].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, GPIO_PIN_SET);
-        steering::state.direction_requested.store(flare_can::Direction::FORWARD);
+        state.direction_requested.store(flare_can::Direction::REVERSE);  // light on when rev
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, GPIO_PIN_RESET);
-        steering::state.direction_requested.store(flare_can::Direction::REVERSE);
+        state.direction_requested.store(flare_can::Direction::FORWARD);  // light off when fwd
     }
 }
 
 // horn, should just poll for this one, not a toggle ideally
 void button7PressedCallback()
 {
-    /*
-    // don't toggle this light this light is messing with other stuff i think its hardware issues
-    if (buttons[6].GetToggleState())
-    {
-        HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON7_LED_GPIO_Port, BUTTON7_LED_Pin, GPIO_PIN_RESET);
-    }
-    */
+    // poll logic in user_threads
+    // don't toggle this light, this light is messing with other stuff i think its hardware issues
+    // update: still messing with b8, keep this light off
 }
 
-// cc-
+// TODO: for CC buttons make it so holding will go in multiples of 5
+// cc- button
 void button4PressedCallback()
 {
-    if (buttons[3].GetToggleState())
+    bool b4_pressed = (HAL_GPIO_ReadPin(BUTTON4_GPIO_Port, BUTTON4_Pin) == GPIO_PIN_RESET);
+    bool b8_pressed = (HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin) == GPIO_PIN_RESET);
+
+    if (b4_pressed && b8_pressed)
     {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
+        // toggle cc state (both pressed)
+        bool current_state = state.is_cc_on.load();
+        state.is_cc_on.store(!current_state);
+
+        if (!current_state)
+        {
+            // if turning on, set the cc to be the currect speed
+            uint8_t current_speed = state.car_speed.load();
+            if (current_speed >= 1 && current_speed <= 99)
+            {
+                state.cc_mph_requested.store(current_speed);
+            }
+        }
+
+        // blink led to alert entering/exiting cc
+        // TODO: evaluate this, migth not be needed and blocking operation
+        for (int i = 0; i < 3; i++)
+        {
+            HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
+            HAL_Delay(150);
+            HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
+            HAL_Delay(50);
+        }
+        return;
     }
-    else
+
+    // normal dec
+    if (b4_pressed)
     {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
+        uint8_t current_val = state.cc_mph_requested.load();
+        if (current_val > 1)
+        {
+            state.cc_mph_requested.store(current_val - 1);
+        }
     }
 }
 
-// cc+
+// cc+ button
 void button8PressedCallback()
 {
-    if (buttons[7].GetToggleState())
+    // Read the current states of both buttons
+    bool b4_pressed = (HAL_GPIO_ReadPin(BUTTON4_GPIO_Port, BUTTON4_Pin) == GPIO_PIN_RESET);
+    bool b8_pressed = (HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin) == GPIO_PIN_RESET);
+
+    if (b4_pressed && b8_pressed)
     {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::POWER);
+        // if both being pressed return (don't inc)
+        return;
     }
-    else
+
+    // normal inc
+    if (b8_pressed)
     {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
-        steering::state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
+        uint8_t current_val = state.cc_mph_requested.load();
+        if (current_val < 99)
+        {
+            state.cc_mph_requested.store(current_val + 1);
+        }
     }
 }
 
@@ -154,17 +200,16 @@ void initButtons()
 
 void recalculateTurnSignals()
 {
+    // TODO: might want to consider when left signal on, then press right signal -> it goes to right signal instead of hazards.
     bool left = buttons[0].GetToggleState();
     bool right = buttons[4].GetToggleState();
 
     if (left && right)
-        steering::state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
+        state.turn_signals_requested.store(flare_can::TurnSignals::HAZARDS);
     else if (left)
-        steering::state.turn_signals_requested.store(flare_can::TurnSignals::LEFT);
+        state.turn_signals_requested.store(flare_can::TurnSignals::LEFT);
     else if (right)
-        steering::state.turn_signals_requested.store(flare_can::TurnSignals::RIGHT);
+        state.turn_signals_requested.store(flare_can::TurnSignals::RIGHT);
     else
-        steering::state.turn_signals_requested.store(flare_can::TurnSignals::OFF);
+        state.turn_signals_requested.store(flare_can::TurnSignals::OFF);
 }
-
-}  // namespace steering

@@ -58,7 +58,9 @@ extern osThreadId_t HeartbeatTaskHandle;
 extern osThreadId_t GPSReadBufferTaskHandle;
 extern osThreadId_t GPSParseNMEATaskHandle;
 extern osThreadId_t TXRadioTaskHandle;
-extern osThreadId_t KillSwitchTaskHandle;
+extern osThreadId_t KillSwitchMessageTaskHandle;
+extern osThreadId_t lightsOutputsTaskHandle;
+extern osMessageQueueId_t CANFramesTXHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -69,7 +71,8 @@ void StartHeartbeatTask(void *argument);
 void StartGPSReadBufferTask(void *argument);
 void StartGPSParseNMEATask(void *argument);
 void StartTXRadioTask(void *argument);
-void StartKillSwitchTask(void *argument);
+void StartKillSwitchMessageTask(void *argument);
+void startLightsOutputsTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 

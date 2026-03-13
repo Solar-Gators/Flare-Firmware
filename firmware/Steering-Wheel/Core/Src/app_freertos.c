@@ -67,7 +67,7 @@ const osThreadAttr_t screenTask_attributes = {
   .stack_size = sizeof(screenTaskBuffer),
   .cb_mem = &screenTaskCB,
   .cb_size = sizeof(screenTaskCB),
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for PollButtons */
 osThreadId_t PollButtonsHandle;
