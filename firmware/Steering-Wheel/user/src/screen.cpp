@@ -1034,7 +1034,7 @@ constexpr uint8_t car[]{
 };
 
 // should be 100 x 50
-void drawCar()
+void drawCar(flare_can::Direction direction)
 {
     static constexpr uint32_t animation_dt = 60;
     static constexpr uint8_t max_offset = 2;
@@ -1060,10 +1060,20 @@ void drawCar()
     if (y_offset <= 0)
         increasing = true;
 
-    x_offset -= 3;
+    if (direction == flare_can::Direction::FORWARD)
+    {
+        x_offset -= 3;
+    }
+    else
+    {
+        x_offset += 3;
+    }
 
     if (x_offset < -245)
         x_offset = 0;
+
+    if (x_offset > 80)
+        x_offset = -245;
 
     for (int y = 0; y < 50; y++)
     {

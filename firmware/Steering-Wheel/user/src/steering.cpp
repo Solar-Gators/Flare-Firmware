@@ -183,7 +183,8 @@ void processScreen()
         old_killed_status = killed_status;
     }
 
-    drawCar();
+    auto direction = state.actual_direction.load(std::memory_order_relaxed);
+    drawCar(direction);
 }
 
 void processHornButton()
