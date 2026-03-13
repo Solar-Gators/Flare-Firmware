@@ -248,7 +248,7 @@ HAL_StatusTypeDef CANDevice::startCANDevice()
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
     // ===================== FDCAN (M_CAN) =====================
     // If there are no filters to add, then accept all messages
-    if (filterCount_)
+    if (filterCount_ == 0)
     {
         CanFilter_t filter = {};
 
