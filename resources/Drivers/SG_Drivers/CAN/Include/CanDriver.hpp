@@ -28,8 +28,8 @@ namespace sg
 
 #define THREAD_STACK_SIZE_WORDS 512
 
-#define TX_QUEUE_SIZE 5 /* Size of Tx message queue */
-#define RX_QUEUE_SIZE 5 /* Size of Tx message queue */
+#define TX_QUEUE_SIZE 8 /* Size of Tx message queue */
+#define RX_QUEUE_SIZE 8 /* Size of Tx message queue */
 #define TX_TIMEOUT 10   /* Timeout for tx thread in ms */
 
 #define MAX_CAN_ID_STD 0x7FFu
@@ -37,6 +37,11 @@ namespace sg
 
 #ifndef CANDEVICE_MAX_BUSES
 #define CANDEVICE_MAX_BUSES 2
+#endif
+
+// uncomment for flexible datarate and bit rate switching
+#ifndef FDCAN_USE_FD_BRS
+// #define FDCAN_USE_FD_BRS 1
 #endif
 
 class CANFrame
@@ -48,7 +53,7 @@ class CANFrame
     {
         uint8_t copy_len =
             (max_len < static_cast<uint8_t>(len)) ? max_len : static_cast<uint8_t>(len);
-        std::memcpy(this->data, data, copy_len);
+        memcpy(this->data.data(), data, copy_len);
     }
 
     uint32_t can_id;          /* CAN ID, can be either 11 bits for standard or 29 for extended */
@@ -58,7 +63,7 @@ class CANFrame
     uint32_t timestamp;       /* timestamp of last message received */
 
 #if defined(HAL_FDCAN_MODULE_ENABLED)
-    uint8_t data[64];                      /* payload data array, maximum of 64 bytes */
+    std::array<uint8_t, 64> data;          /* payload data array, maximum of 64 bytes */
     static constexpr uint8_t max_len = 64; /* maximum payload length */
 #else
     uint8_t data[8];                      /* payload data array, maximum of 8 bytes */
@@ -68,6 +73,11 @@ class CANFrame
 
 using CanCallback = HAL_StatusTypeDef (*)(const CANFrame& msg, void* ctx);
 
+struct IdEntry
+{
+    uint32_t id;
+    CanCallback cb;
+};
 struct RangeEntry
 {
     uint32_t start, end;

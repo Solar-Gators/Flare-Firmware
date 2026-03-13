@@ -34,7 +34,12 @@ void button1PressedCallback()
     {
         buttons[0].SetToggleState(false);
         buttons[4].SetToggleState(false);
+        HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, GPIO_PIN_RESET);
     }
+
+    GPIO_PinState state = (buttons[0].GetToggleState()) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, state);
+
     recalculateTurnSignals();
 }
 // right turn
@@ -46,7 +51,12 @@ void button5PressedCallback()
     {
         buttons[0].SetToggleState(false);
         buttons[4].SetToggleState(false);
+        HAL_GPIO_WritePin(BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, GPIO_PIN_RESET);
     }
+
+    GPIO_PinState state = (buttons[4].GetToggleState()) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    HAL_GPIO_WritePin(BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, state);
+
     recalculateTurnSignals();
 }
 
@@ -86,12 +96,12 @@ void button6PressedCallback()
     if (buttons[5].GetToggleState())
     {
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, GPIO_PIN_SET);
-        state.direction_requested.store(flare_can::Direction::FORWARD);
+        state.direction_requested.store(flare_can::Direction::REVERSE);  // light on when rev
     }
     else
     {
         HAL_GPIO_WritePin(BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, GPIO_PIN_RESET);
-        state.direction_requested.store(flare_can::Direction::REVERSE);
+        state.direction_requested.store(flare_can::Direction::FORWARD);  // light off when fwd
     }
 }
 
@@ -103,57 +113,75 @@ void button7PressedCallback()
     // update: still messing with b8, keep this light off
 }
 
-// cc-
+// TODO: for CC buttons make it so holding will go in multiples of 5
+// cc- button
 void button4PressedCallback()
 {
-    // Directly control LED first for debugging
-    if (buttons[3].GetToggleState())
-    {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
-    }
+    bool b4_pressed = (HAL_GPIO_ReadPin(BUTTON4_GPIO_Port, BUTTON4_Pin) == GPIO_PIN_RESET);
+    bool b8_pressed = (HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin) == GPIO_PIN_RESET);
 
-    // Then handle CC functionality
-    if (uint8_t current_val = state.cc_mph_requested.load(); current_val > 1)
+    if (b4_pressed && b8_pressed)
     {
-        state.cc_mph_requested.store(current_val - 1);
-    }
-
-    // Check for both buttons pressed (simplified)
-    if (HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin) == GPIO_PIN_RESET)
-    {
+        // toggle cc state (both pressed)
         bool current_state = state.is_cc_on.load();
         state.is_cc_on.store(!current_state);
+
+        if (!current_state)
+        {
+            // if turning on, set the cc to be the currect speed
+            uint8_t current_speed = state.car_speed.load();
+            if (current_speed >= 1 && current_speed <= 99)
+            {
+                state.cc_mph_requested.store(current_speed);
+            }
+        }
+
+        // blink led to alert entering/exiting cc
+        // TODO: evaluate this, migth not be needed and blocking operation
+        for (int i = 0; i < 3; i++)
+        {
+            HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
+            HAL_Delay(150);
+            HAL_GPIO_WritePin(BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
+            HAL_Delay(50);
+        }
+        return;
+    }
+
+    // normal dec
+    if (b4_pressed)
+    {
+        uint8_t current_val = state.cc_mph_requested.load();
+        if (current_val > 1)
+        {
+            state.cc_mph_requested.store(current_val - 1);
+        }
     }
 }
 
-// cc+
+// cc+ button
 void button8PressedCallback()
 {
-    // Directly control LED first for debugging
-    if (buttons[7].GetToggleState())
+    // Read the current states of both buttons
+    bool b4_pressed = (HAL_GPIO_ReadPin(BUTTON4_GPIO_Port, BUTTON4_Pin) == GPIO_PIN_RESET);
+    bool b8_pressed = (HAL_GPIO_ReadPin(BUTTON8_GPIO_Port, BUTTON8_Pin) == GPIO_PIN_RESET);
+
+    if (b4_pressed && b8_pressed)
     {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, GPIO_PIN_RESET);
+        // if both being pressed return (don't inc)
+        return;
     }
 
-    // Then handle CC functionality
-    if (uint8_t current_val = state.cc_mph_requested.load(); current_val < 99)
+    // normal inc
+    if (b8_pressed)
     {
-        state.cc_mph_requested.store(current_val + 1);
-    }
-
-    // Check for both buttons pressed (simplified)
-    if (HAL_GPIO_ReadPin(BUTTON4_GPIO_Port, BUTTON4_Pin) == GPIO_PIN_RESET)
-    {
-        bool current_state = state.is_cc_on.load();
-        state.is_cc_on.store(!current_state);
+        uint8_t current_val = state.cc_mph_requested.load();
+        if (current_val < 99)
+        {
+            state.cc_mph_requested.store(current_val + 1);
+        }
     }
 }
 
@@ -172,6 +200,7 @@ void initButtons()
 
 void recalculateTurnSignals()
 {
+    // TODO: might want to consider when left signal on, then press right signal -> it goes to right signal instead of hazards.
     bool left = buttons[0].GetToggleState();
     bool right = buttons[4].GetToggleState();
 

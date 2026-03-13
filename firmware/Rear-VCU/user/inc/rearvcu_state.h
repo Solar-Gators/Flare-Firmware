@@ -7,9 +7,6 @@
 #include <atomic>
 #include <limits>
 
-namespace rearvcu
-{
-
 struct RearVCUState
 {
     std::atomic<uint16_t> throttle_requested{};  // 0 - 65535 from front vcu
@@ -22,8 +19,8 @@ struct RearVCUState
     std::atomic<bool> array_contactors_requested_closed{};
     std::atomic<flare_can::Direction> direction_requested{};
     std::atomic<flare_can::MCPowerMode> mc_power_mode_requested{};
+
+    std::atomic<flare_can::ArrayContactors> array_contactors{flare_can::ArrayContactors::BOTH_OPEN};
 };
 
 inline RearVCUState state;
-
-}  // namespace rearvcu

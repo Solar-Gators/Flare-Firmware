@@ -83,7 +83,7 @@ const osThreadAttr_t GPSParseNMEATask_attributes = {
 };
 /* Definitions for TXRadioTask */
 osThreadId_t TXRadioTaskHandle;
-uint32_t TXRadioBuffer[ 128 ];
+uint32_t TXRadioBuffer[ 256 ];
 osStaticThreadDef_t TXRadioCB;
 const osThreadAttr_t TXRadioTask_attributes = {
   .name = "TXRadioTask",
@@ -93,17 +93,29 @@ const osThreadAttr_t TXRadioTask_attributes = {
   .cb_size = sizeof(TXRadioCB),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for KillSwitchTask */
-osThreadId_t KillSwitchTaskHandle;
-uint32_t KillSwitchTaskBuffer[ 128 ];
-osStaticThreadDef_t KillSwitchTaskCB;
-const osThreadAttr_t KillSwitchTask_attributes = {
-  .name = "KillSwitchTask",
-  .stack_mem = &KillSwitchTaskBuffer[0],
-  .stack_size = sizeof(KillSwitchTaskBuffer),
-  .cb_mem = &KillSwitchTaskCB,
-  .cb_size = sizeof(KillSwitchTaskCB),
+/* Definitions for KillSwitchMessageTask */
+osThreadId_t KillSwitchMessageTaskHandle;
+uint32_t KillSwitchMessageTaskBuffer[ 128 ];
+osStaticThreadDef_t KillSwitchMessageTaskCB;
+const osThreadAttr_t KillSwitchMessageTask_attributes = {
+  .name = "KillSwitchMessageTask",
+  .stack_mem = &KillSwitchMessageTaskBuffer[0],
+  .stack_size = sizeof(KillSwitchMessageTaskBuffer),
+  .cb_mem = &KillSwitchMessageTaskCB,
+  .cb_size = sizeof(KillSwitchMessageTaskCB),
   .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for lightsOutputsTask */
+osThreadId_t lightsOutputsTaskHandle;
+uint32_t lightsOutputsTaskBuffer[ 256 ];
+osStaticThreadDef_t lightsOutputsTaskCB;
+const osThreadAttr_t lightsOutputsTask_attributes = {
+  .name = "lightsOutputsTask",
+  .stack_mem = &lightsOutputsTaskBuffer[0],
+  .stack_size = sizeof(lightsOutputsTaskBuffer),
+  .cb_mem = &lightsOutputsTaskCB,
+  .cb_size = sizeof(lightsOutputsTaskCB),
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for CANFramesTX */
 osMessageQueueId_t CANFramesTXHandle;
@@ -155,8 +167,11 @@ void MX_FREERTOS_Init(void) {
   /* creation of TXRadioTask */
   TXRadioTaskHandle = osThreadNew(StartTXRadioTask, NULL, &TXRadioTask_attributes);
 
-  /* creation of KillSwitchTask */
-  KillSwitchTaskHandle = osThreadNew(StartKillSwitchTask, NULL, &KillSwitchTask_attributes);
+  /* creation of KillSwitchMessageTask */
+  KillSwitchMessageTaskHandle = osThreadNew(StartKillSwitchMessageTask, NULL, &KillSwitchMessageTask_attributes);
+
+  /* creation of lightsOutputsTask */
+  lightsOutputsTaskHandle = osThreadNew(startLightsOutputsTask, NULL, &lightsOutputsTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -223,18 +238,32 @@ void StartTXRadioTask(void *argument)
   /* USER CODE END TXRadioTask */
 }
 
-/* USER CODE BEGIN Header_StartKillSwitchTask */
+/* USER CODE BEGIN Header_StartKillSwitchMessageTask */
 /**
-* @brief Function implementing the KillSwitchTask thread.
+* @brief Function implementing the KillSwitchMessageTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartKillSwitchTask */
-void StartKillSwitchTask(void *argument)
+/* USER CODE END Header_StartKillSwitchMessageTask */
+void StartKillSwitchMessageTask(void *argument)
 {
-  /* USER CODE BEGIN KillSwitchTask */
-    startKillSwitchTask_user(argument);
-  /* USER CODE END KillSwitchTask */
+  /* USER CODE BEGIN KillSwitchMessageTask */
+    startKillSwitchMessageTask_user(argument);
+  /* USER CODE END KillSwitchMessageTask */
+}
+
+/* USER CODE BEGIN Header_startLightsOutputsTask */
+/**
+* @brief Function implementing the lightsOutputsTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_startLightsOutputsTask */
+void startLightsOutputsTask(void *argument)
+{
+  /* USER CODE BEGIN lightsOutputsTask */
+    startLightsOutputsTask_user(argument);
+  /* USER CODE END lightsOutputsTask */
 }
 
 /* Private application code --------------------------------------------------*/

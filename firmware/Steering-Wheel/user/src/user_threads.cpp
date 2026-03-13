@@ -14,6 +14,7 @@
 
 void init_user()
 {
+    // total init
     steering::init();
 }
 
@@ -26,6 +27,7 @@ void startHeartbeatTask_user(void* argument)
         steering::sendMitsubaRequestMessage();
 
         osDelay(steering::mitsuba_request_message_send_period_ms);
+        osDelay(500);
     }
 }
 
@@ -46,7 +48,8 @@ void startScreenTask_user(void* argument)
         // }
         // uint8_t speed = demo_speed;
         steering::processScreen();
-        osDelay(300);
+        osDelay(200);  // screen refresh rate
+        // TODO: optimize the refresh rate
     }
 }
 
