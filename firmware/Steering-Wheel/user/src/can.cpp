@@ -30,24 +30,6 @@
 
 void initCan()
 {
-    // recieve message from rear vcu
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x020, sg::CANFrameIDType::STANDARD, &rearVCUInfoMessageCallback, nullptr));
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x021, sg::CANFrameIDType::STANDARD, &rearVCUSuppBattMessageCallback, nullptr));
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x041, sg::CANFrameIDType::STANDARD, &bmsBatteryVoltageMessageCallback, nullptr));
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x042, sg::CANFrameIDType::STANDARD, &bmsBatteryTempMessageCallback, nullptr));
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x010, sg::CANFrameIDType::STANDARD, &telemKillStatusMessageCallback, nullptr));
-    // mitsuba frame 0 comes from mc
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x08850225, sg::CANFrameIDType::EXTENDED, &mitsubaFrame0Callback, nullptr));
-    // Speed frame from telem
-    ASSERT_TRUE(can_device.addCallbackId(
-        0x0A0, sg::CANFrameIDType::STANDARD, &speedMessageCallback, nullptr));
-
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 

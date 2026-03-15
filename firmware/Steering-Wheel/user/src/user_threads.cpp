@@ -48,7 +48,7 @@ void startScreenTask_user(void* argument)
         // }
         // uint8_t speed = demo_speed;
         steering::processScreen();
-        osDelay(200);  // screen refresh rate
+        osDelay(20);  // screen refresh rate
         // TODO: optimize the refresh rate
     }
 }
