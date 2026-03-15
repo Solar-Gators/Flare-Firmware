@@ -19,7 +19,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_freertos.h"
-#include "user_threads.hpp"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -70,6 +69,13 @@ const osThreadAttr_t LoadsControl_attributes = {
 osThreadId_t CANMessagesTXHandle;
 const osThreadAttr_t CANMessagesTX_attributes = {
   .name = "CANMessagesTX",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
+/* Definitions for CurrentSense */
+osThreadId_t CurrentSenseHandle;
+const osThreadAttr_t CurrentSense_attributes = {
+  .name = "CurrentSense",
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
@@ -115,6 +121,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of CANMessagesTX */
   CANMessagesTXHandle = osThreadNew(StartCANMessagesTX, NULL, &CANMessagesTX_attributes);
 
+  /* creation of CurrentSense */
+  CurrentSenseHandle = osThreadNew(StartCurrentSense, NULL, &CurrentSense_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -135,10 +144,10 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
   /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    StartHeartbeat_user(argument);
+    for(;;) {
+        osDelay(1);
+    }
   /* USER CODE END defaultTask */
 }
 
@@ -173,7 +182,7 @@ void StartLightsControl(void *argument)
 {
   /* USER CODE BEGIN LoadsControl */
   /* Infinite loop */
-  StartLightsControl_user(argument);
+  StartLoadsControl_user(argument);
   for(;;)
   {
     osDelay(1);
@@ -198,6 +207,25 @@ void StartCANMessagesTX(void *argument)
     osDelay(1);
   }
   /* USER CODE END CANMessagesTX */
+}
+
+/* USER CODE BEGIN Header_StartCurrentSense */
+/**
+* @brief Function implementing the CurrentSense thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCurrentSense */
+void StartCurrentSense(void *argument)
+{
+  /* USER CODE BEGIN CurrentSense */
+    StartCurrentSense_user(argument);
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END CurrentSense */
 }
 
 /* Private application code --------------------------------------------------*/

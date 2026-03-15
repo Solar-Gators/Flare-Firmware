@@ -21,12 +21,20 @@ enum class LIGHTS_STATES : uint8_t
 struct FrontVCUState
 {
   static constexpr uint8_t ADC_BUF_LEN  = 20;
+  // throttle and brake
   std::atomic<uint16_t> throttle_data{};
   std::atomic<uint8_t> brake_state{};
+  // lights
   std::atomic<LIGHTS_STATES>  lights_req[2];
   std::atomic<LIGHTS_STATES> lights[2];
+  // horn and fan
   std::atomic<uint8_t> horn_state{};
   std::atomic<uint8_t> fan_state{};
+  // fh and lights power
+  std::atomic<uint8_t> fh_power_lsb;
+  std::atomic<uint8_t> fh_power_msb;
+  std::atomic<uint8_t> lights_power_lsb;
+  std::atomic<uint8_t> lights_power_msb;
 };
 
 inline FrontVCUState state;
