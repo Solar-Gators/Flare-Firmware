@@ -53,6 +53,8 @@ namespace frontvcu
 
 
     void can_init() {
-        ASSERT_TRUE(can_device.addCallbackId(0x064, sg::CANFrameIDType::STANDARD,  &steering_wheel_msg_cb, nullptr));
+        ASSERT_TRUE(can_device.addFilterId(0x064, sg::CANFrameIDType::STANDARD, sg::CANFrameRTRMode::DATA, sg::CANFramePriority::HIGH));
+        ASSERT_TRUE(can_device.startCANDevice());
+        
     }
 }
