@@ -2,11 +2,6 @@
 
 #include "main.h"
 
-MaxM10S::MaxM10S(I2C_HandleTypeDef* hi2c)
-{
-    i2c_handle = hi2c;
-}
-
 void MaxM10S::init()
 {
 #ifdef USING_FREERTOS
@@ -28,10 +23,7 @@ void MaxM10S::init()
     }
 #endif
 
-    /*
-	uint8_t disableNMEA_enableUBX[] = { 0xB5, 0x62, 0x06, 0x8A, 0x14, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x72, 0x10, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x72, 0x10, 0x00, 0x00, 0x00, 0x00, 0xD5, 0x10 };
-	HAL_I2C_Master_Transmit(i2c_handle, (I2C_ADDRESS << 1), disableNMEA_enableUBX, 28, HAL_MAX_DELAY);
-	*/
+    // TODO: Disable unused NMEA sentences and all UBX formatted data
 }
 
 void MaxM10S::readOutputBuffer()
@@ -45,7 +37,7 @@ void MaxM10S::readOutputBuffer()
         {
             bytes_available = 256;
         }
-
+        /*
         HAL_I2C_Mem_Read(i2c_handle,
                          (I2C_ADDRESS << 1),
                          DATA_REG,
@@ -53,6 +45,8 @@ void MaxM10S::readOutputBuffer()
                          rx_buff,
                          bytes_available,
                          HAL_MAX_DELAY);
+        */
+        readN(DATA_REG, rx_buff, bytes_available);
 
 #ifdef USING_FREERTOS
         osMutexAcquire(buffer_mutex, osWaitForever);
@@ -173,8 +167,11 @@ uint16_t MaxM10S::getDataLength()
     HAL_StatusTypeDef status;
 
     uint8_t rx[2];
+    /*
     status = HAL_I2C_Mem_Read(
         i2c_handle, (I2C_ADDRESS << 1), LEN_REG_HIGH, I2C_MEMADD_SIZE_8BIT, rx, 2, HAL_MAX_DELAY);
+    */
+    status = readN(LEN_REG_HIGH, rx, 2);
     error_count += (status != HAL_OK);
 
     if (error_count > 0)
@@ -199,6 +196,7 @@ void MaxM10S::parseGNRMC(char* sentence)
         {
             case 1:
                 // Field 1: UTC time in hhmmss.sss format
+                // TODO: finish code to get time
                 //fix_data.time = token;
                 break;
 

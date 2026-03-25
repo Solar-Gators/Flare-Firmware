@@ -14,6 +14,8 @@
 
 #include <atomic>
 
+extern "C" I2C_HandleTypeDef hi2c1;
+
 namespace
 {
 
@@ -58,7 +60,7 @@ void sendSpeedFrame()
                              sg::CANFrameLen::BYTES_1,
                              0,
                              {}};
-    speed_frame.data[0] = static_cast<uint8_t>(std::round(gps().getSpeed()));
+    speed_frame.data[0] = static_cast<uint8_t>(std::round(gps.getSpeed()));
     can_device.send(speed_frame);
 }
 
@@ -118,9 +120,9 @@ void processLightsOutputs()
 
 void queueGPSData()
 {
-    MaxM10S::Position coords = gps().getPosition();
-    float speed_kmh = gps().getSpeed();
-    uint8_t num_sats = gps().getNumSatellites();
+    MaxM10S::Position coords = gps.getPosition();
+    float speed_kmh = gps.getSpeed();
+    uint8_t num_sats = gps.getNumSatellites();
 
     uint8_t frame[10];
 

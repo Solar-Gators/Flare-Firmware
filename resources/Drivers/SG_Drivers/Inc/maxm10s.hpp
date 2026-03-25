@@ -11,6 +11,7 @@ Ublox MAX M10S Driver
 
 #include <stdlib.h>
 
+#include "i2c_api.hpp"
 #include "main.h"
 
 #include <string>
@@ -22,14 +23,12 @@ Ublox MAX M10S Driver
 #include "semphr.h"
 #endif
 
-extern I2C_HandleTypeDef hi2c1;
-
 #define GPS_BUFFER_SIZE 1024
 
-class MaxM10S
+class MaxM10S : public I2CDevice
 {
    public:
-    MaxM10S(I2C_HandleTypeDef* hi2c);
+    MaxM10S(I2C_HandleTypeDef* hi2c) : I2CDevice(hi2c, I2C_ADDRESS) {};
     void init();
     void readOutputBuffer();
     void parseNMEA();
@@ -84,9 +83,3 @@ class MaxM10S
     static constexpr uint8_t LEN_REG_HIGH = 0xFD;
     static constexpr uint8_t DATA_REG = 0xFF;
 };
-
-inline MaxM10S& gps()
-{
-    static MaxM10S gps(&hi2c1);
-    return gps;
-}
