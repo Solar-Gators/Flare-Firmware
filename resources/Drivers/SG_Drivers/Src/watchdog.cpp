@@ -1,56 +1,54 @@
 #include "watchdog.hpp"
 
-#include "stm32u5xx.h"   // CMSIS device header
+//#include "stm32u5xx.h"   // CMSIS device header
 
-namespace mcu
+namespace sg
 {
 
-    // LSI frequency = 32 kHz
-    static constexpr uint32_t LSI_FREQ_HZ = 32000;
-
-    // IWDG limits from reference manual
-    static constexpr uint32_t IWDG_MAX_RELOAD = 0x0FFF;
-
-    void Watchdog::Init(uint32_t timeout_ms)
+    /**
+    * @brief  This function is executed in case of error occurrence.
+    * @retval None
+    */
+    void Watchdog::Error_Handler(void)
     {
-        if (initialized_){return;}
+        /* USER CODE BEGIN Error_Handler_Debug */
+        /* User can add his own implementation to report the HAL error return state */
+        __disable_irq();
+        while (1)
+        {
+        }
+        /* USER CODE END Error_Handler_Debug */
+    }
 
-        EnableLSI();
+    /**
+    * @brief IWDG Initialization Function
+    * @param None
+    * @retval None
+    */
+    HAL_StatusTypeDef Watchdog::MX_IWDG_Init(void)
+    {
 
-        // Enable write access to IWDG registers
-        IWDG->KR = 0x5555;
+        hiwdg.Instance = IWDG;
+        hiwdg.Init.Prescaler = (IWDG_PR_PR_1 | IWDG_PR_PR_0);
+        hiwdg.Init.Window = 4095;
+        hiwdg.Init.Reload = 4095;
+        hiwdg.Init.EWI = 0;
+        if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+        {
+            Error_Handler();
+        }
 
-        IWDG->PR = IWDG_PR_PR_3; // prescaler = 32, might be IWDG_PR_PR_2
-
-        uint32_t reload = ComputeReload(timeout_ms);
-        IWDG->RLR = reload & IWDG_MAX_RELOAD;
-
-        // reload counter
-        IWDG->KR = 0xAAAA;
-
-        // start watchdog
-        IWDG->KR = 0xCCCC;
-
-        initialized_ = true;
+        return HAL_OK;
     }
 
     void Watchdog::Kick()
     {
         // Reload counter
-        IWDG->KR = 0xAAAA;
+        // hiwdg.Instance.Reload = 4095;
+        HAL_IWDG_Refresh(&hiwdg);
     }
 
-    bool Watchdog::WasWatchdogReset()
-    {
-        // Check reset flags
-        bool caused_by_iwdg = (RCC->CSR & RCC_CSR_IWDGRSTF) != 0;
-
-        // Clear reset flags (write 1 to RMVF)
-        RCC->CSR |= RCC_CSR_RMVF;
-
-        return caused_by_iwdg;
-    }
-
+    /*
     void Watchdog::EnableLSI()
     {
         // Enable LSI clock if not already enabled
@@ -64,23 +62,6 @@ namespace mcu
                 // spin
             }
         }
-    }
+    }*/
 
-    uint32_t Watchdog::ComputeReload(uint32_t timeout_ms)
-    {
-        // Prescaler = 32
-        constexpr uint32_t prescaler = 32;
-
-        uint64_t ticks =
-            (static_cast<uint64_t>(timeout_ms) * (LSI_FREQ_HZ / prescaler)) / 1000;
-
-        if (ticks > IWDG_MAX_RELOAD)
-            ticks = IWDG_MAX_RELOAD;
-
-        if (ticks == 0)
-            ticks = 1;
-
-        return static_cast<uint32_t>(ticks);
-    }
-
-} // namespace mcu
+} // namespace sg

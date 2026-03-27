@@ -9,6 +9,7 @@
 #include "can.h"
 #include "main.h"
 #include "steering_state.h"
+#include "watchdog.hpp"
 
 #include <array>
 #include <string>
@@ -22,6 +23,10 @@ void init_user()
 
     // start can
     steering::can_init();
+
+    // start watchdog
+    sg::Watchdog wdog;
+    wdog.MX_IWDG_Init();
 }
 
 void startHeartbeatTask_user(void* argument)

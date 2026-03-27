@@ -1,31 +1,31 @@
 #pragma once
 
-#include <cstdint>
+#include "stm32u5xx.h"
+#include "stm32u5xx_hal.h"
 
-namespace mcu
+namespace sg
 {
-
-    // IWDG driver, after started, cannot be stopped until reset
+    // IWDG driver
     class Watchdog
     {
     public:
+        // error handling
+        static void Error_Handler(void);
+
         // Initialize the watchdog
         // called once during board init
-        static void Init(uint32_t timeout_ms);
+        HAL_StatusTypeDef MX_IWDG_Init(void);
+        void Kick(void);
 
-        // kicking the wd
-        static void Kick();
+        // may need to call this is not automatically enabled
+        // static void EnableLSI();
 
-        // check if last reset watch by wd, if so, return true
-        static bool WasWatchdogReset();
+        // other options for expansion, would need to write
+        // bool IsReset(); // check if last reset was caused by IWDG
+        // void ClearResetFlag(); // clear the reset flag
 
     private:
-        // computing ticks
-        static uint32_t ComputeReload(uint32_t timeout_ms);
-        // turn on timer
-        static void EnableLSI();
-
-        static inline bool initialized_ = false;
+        IWDG_HandleTypeDef hiwdg;
     };
 
-} // namespace mcu
+} // namespace sg

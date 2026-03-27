@@ -58,7 +58,8 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.c
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/ILI9341.cpp)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/ILI9341.cpp
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/watchdog.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}
