@@ -16,6 +16,7 @@ constexpr uint32_t array_precharge_hold_time_ms = 500;
 
 namespace rearvcu
 {
+
 void init()
 {
     // assert atomics work

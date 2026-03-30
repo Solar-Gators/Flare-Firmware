@@ -27,14 +27,18 @@ void init_user()
 // should continuously write to pins like power/eco, direction, contactors, and send CAN message to tell car that mc is enabled and such
 [[noreturn]] void startOutputsTask_user(void* argument)
 {
+    uint32_t next_wake = osKernelGetTickCount();
     for (;;)
     {
-        rearvcu::processRegenThrottleOutputs();
+        next_wake += rearvcu::throttle_output_loop_rate_ms;
+        osDelayUntil(next_wake);
+
         rearvcu::processArrayContactors();
+        rearvcu::processMCOutputs();
         rearvcu::processRegenThrottleOutputs();
-        osDelay(25);
     }
 }
+
 void startSendStatusTask_user(void* argument)
 {
     for (;;)

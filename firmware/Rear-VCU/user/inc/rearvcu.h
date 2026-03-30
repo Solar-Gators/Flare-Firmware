@@ -8,6 +8,9 @@
 namespace rearvcu
 {
 
+constexpr uint32_t throttle_output_loop_rate_ms =
+    10;  // it should always be this so we don't have to pass in delta time for pid loop
+
 void init();
 void sendSuppBattFrame();
 void processRegenThrottleOutputs();
