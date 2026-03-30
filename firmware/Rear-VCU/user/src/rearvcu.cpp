@@ -23,18 +23,6 @@ void init()
     static_assert(std::atomic<uint16_t>::is_always_lock_free);
     static_assert(std::atomic<uint8_t>::is_always_lock_free);
 
-    // watchdog init
-    HAL_GPIO_WritePin(WATCHDOG_SET1_GPIO_Port,
-                      WATCHDOG_SET1_Pin,
-                      GPIO_PIN_SET);  // set to 0b10 mode to use ratio of 8
-    HAL_GPIO_WritePin(WATCHDOG_SET0_GPIO_Port,
-                      WATCHDOG_SET0_Pin,
-                      GPIO_PIN_RESET);  // 8 * 5 = 40ms timeout and needs to be kicked before
-    HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_SET);
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(
-        WATCHDOG_ENABLE_GPIO_Port, WATCHDOG_ENABLE_Pin, GPIO_PIN_SET);  // enable watchdog
-
     // array contactors should start open
     HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
@@ -42,8 +30,8 @@ void init()
     // turn on mc
     HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin, GPIO_PIN_SET);
 
-    // select analog throttle
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+    // select regen and throttle from our mcu's dac pins by writing high
+    HAL_GPIO_WritePin(THROTTLE_SRC_SEL_GPIO_Port, THROTTLE_SRC_SEL_Pin, GPIO_PIN_SET);
 
     // TODO: initialize ina chip here
 
@@ -75,10 +63,8 @@ void processRegenThrottleOutputs()
 {
     // TODO: This whole thing once we get a dac
 
-    // kick watchdog by sending a falling edge
-    HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_RESET);
-    osDelay(1);
-    HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_SET);
+    // write to regen and throttle dacs here constantly
+    // maybe get george's pid loop haha
 
     // consistently update throttle and regen here based on..
     // throttle value over can
