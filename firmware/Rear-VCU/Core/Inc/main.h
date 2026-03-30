@@ -59,28 +59,22 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SUPP_BATT_V_Pin GPIO_PIN_2
 #define SUPP_BATT_V_GPIO_Port GPIOC
-#define DAC_SPI_SS_Pin GPIO_PIN_3
-#define DAC_SPI_SS_GPIO_Port GPIOC
-#define MAIN_ARRAY_CTRL_Pin GPIO_PIN_0
-#define MAIN_ARRAY_CTRL_GPIO_Port GPIOA
-#define PRE_ARRAY_CTRL_Pin GPIO_PIN_2
-#define PRE_ARRAY_CTRL_GPIO_Port GPIOA
 #define THROTTLE_SRC_SEL_Pin GPIO_PIN_3
 #define THROTTLE_SRC_SEL_GPIO_Port GPIOA
-#define MC_FWD_REV_CTRL_Pin GPIO_PIN_4
-#define MC_FWD_REV_CTRL_GPIO_Port GPIOA
-#define MC_PWR_ECO_CTRL_Pin GPIO_PIN_5
-#define MC_PWR_ECO_CTRL_GPIO_Port GPIOA
+#define REGEN_OUT_Pin GPIO_PIN_4
+#define REGEN_OUT_GPIO_Port GPIOA
+#define THROTTLE_OUT_Pin GPIO_PIN_5
+#define THROTTLE_OUT_GPIO_Port GPIOA
 #define MC_MAIN_CTRL_Pin GPIO_PIN_6
 #define MC_MAIN_CTRL_GPIO_Port GPIOA
 #define THROTTLE_V_Pin GPIO_PIN_4
 #define THROTTLE_V_GPIO_Port GPIOC
 #define REGEN_V_Pin GPIO_PIN_5
 #define REGEN_V_GPIO_Port GPIOC
-#define WATCHDOG_INPUT_Pin GPIO_PIN_0
-#define WATCHDOG_INPUT_GPIO_Port GPIOB
-#define WATCHDOG_SET0_Pin GPIO_PIN_1
-#define WATCHDOG_SET0_GPIO_Port GPIOB
+#define PRE_ARRAY_CTRL_Pin GPIO_PIN_0
+#define PRE_ARRAY_CTRL_GPIO_Port GPIOB
+#define MAIN_ARRAY_CTRL_Pin GPIO_PIN_1
+#define MAIN_ARRAY_CTRL_GPIO_Port GPIOB
 #define WATCHDOG_SET1_Pin GPIO_PIN_2
 #define WATCHDOG_SET1_GPIO_Port GPIOB
 #define WATCHDOG_ENABLE_Pin GPIO_PIN_10
@@ -91,6 +85,10 @@ void Error_Handler(void);
 #define THROTTLE_MODE_INPUT_GPIO_Port GPIOB
 #define EEPROM_SPI_SS_Pin GPIO_PIN_15
 #define EEPROM_SPI_SS_GPIO_Port GPIOA
+#define MC_PWR_ECO_CTRL_Pin GPIO_PIN_6
+#define MC_PWR_ECO_CTRL_GPIO_Port GPIOB
+#define MC_FWD_REV_CTRL_Pin GPIO_PIN_7
+#define MC_FWD_REV_CTRL_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
