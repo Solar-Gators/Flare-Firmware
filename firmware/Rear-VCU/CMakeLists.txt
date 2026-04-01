@@ -16,7 +16,8 @@ set(CPU_PARAMETERS
     -mfpu=fpv5-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s)
+set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s
+)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32U575xx_FLASH.ld)
 # ##############################################################################
 set(EXECUTABLE ${SOURCE_DIR_NAME})

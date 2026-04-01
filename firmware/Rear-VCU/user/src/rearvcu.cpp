@@ -9,10 +9,17 @@
 
 #include <atomic>
 
+extern DAC_HandleTypeDef hadc1;
+
 namespace
 {
 constexpr uint32_t array_precharge_hold_time_ms = 500;
-}
+
+// dacs
+DAC_HandleTypeDef& dac = hadc1;
+constexpr uint32_t dac_channel_regen = DAC_CHANNEL_1;
+constexpr uint32_t dac_channel_throttle = DAC_CHANNEL_2;
+}  // namespace
 
 namespace rearvcu
 {
@@ -33,6 +40,10 @@ void init()
 
     // select regen and throttle from our mcu's dac pins by writing high
     HAL_GPIO_WritePin(THROTTLE_SRC_SEL_GPIO_Port, THROTTLE_SRC_SEL_Pin, GPIO_PIN_SET);
+
+    // init the regen and throttle dacs
+    HAL_DAC_Start(&dac, dac_channel_regen);
+    HAL_DAC_Start(&dac, dac_channel_throttle);
 
     // TODO: initialize ina chip here
 
@@ -72,6 +83,30 @@ void processRegenThrottleOutputs()
     // regen value over can
     // cruise control stuff
     // pid loop prolly
+
+    uint16_t throttle_vol = state.throttle_requested.load(std::memory_order_relaxed);
+    uint16_t regen_vol = state.regen_requested.load(std::memory_order_relaxed);
+
+    // if physical brake is pressed, set throttle to 0 and regen to max
+    if (bool brake_pressed = state.brake_pressed.load(std::memory_order_relaxed))
+    {
+        HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+        HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, 0xFFF);
+        return;
+    }
+
+    // if throttle is 0, turn on regen at driver's requested strength
+    if (throttle_vol <
+        10)  // less than 10 here in case of transcience or something in front vcus adc?
+    {
+        HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, regen_vol);
+        HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+        return;
+    }
+
+    // otherwise actually use the throttle requested by driver
+    HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+    HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, throttle_vol);
 }
 
 void processMCOutputs()

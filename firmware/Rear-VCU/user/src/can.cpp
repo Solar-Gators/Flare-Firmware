@@ -24,6 +24,9 @@ HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx)
         (static_cast<uint16_t>(throttle_high) << 8) | static_cast<uint16_t>(throttle_low);
     state.throttle_requested.store(throttle_value);
 
+    bool brake_pressed = msg.data[7];
+    state.brake_pressed.store(brake_pressed);
+
     return HAL_OK;
 }
 
