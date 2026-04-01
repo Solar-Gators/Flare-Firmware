@@ -18,14 +18,17 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "app_freertos.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "main.h"
+#include "cmsis_os2.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "user_threads.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -44,18 +47,27 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+/* Definitions for StatusFlash */
+osThreadId_t StatusFlashHandle;
+uint32_t StatusBuff00[ 128 ];
+osStaticThreadDef_t StatuscontrolBlocTask00;
+const osThreadAttr_t StatusFlash_attributes = {
+  .name = "StatusFlash",
+  .stack_mem = &StatusBuff00[0],
+  .stack_size = sizeof(StatusBuff00),
+  .cb_mem = &StatuscontrolBlocTask00,
+  .cb_size = sizeof(StatuscontrolBlocTask00),
+  .priority = (osPriority_t) osPriorityLow,
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
+
+void StartStatusFlash(void *argument);
+
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
   * @brief  FreeRTOS initialization
@@ -82,8 +94,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of StatusFlash */
+  StatusFlashHandle = osThreadNew(StartStatusFlash, NULL, &StatusFlash_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -94,19 +106,25 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_StartStatusFlash */
 /**
-* @brief Function implementing the defaultTask thread.
+* @brief Function implementing the StatusFlash thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_StartStatusFlash */
+void StartStatusFlash(void *argument)
 {
-  /* USER CODE BEGIN defaultTask */
+  /* USER CODE BEGIN StatusFlash */
   /* Infinite loop */
-  StartDefaultTask_user(argument);
-  /* USER CODE END defaultTask */
+  for(;;)
+  {
+      HAL_GPIO_TogglePin(GPIOC, OK_LED_Pin);
+      HAL_Delay(1000);
+
+    osDelay(1);
+  }
+  /* USER CODE END StatusFlash */
 }
 
 /* Private application code --------------------------------------------------*/
