@@ -15,8 +15,8 @@ constexpr size_t max_radio_message_array_size = 21;
 
 struct RadioMessage
 {
-    uint32_t id{};    // id of the radio message
-    uint32_t size{};  // how many bytes in this array are we actually using
+    uint32_t id{};   // id of the radio message
+    uint8_t size{};  // how many bytes in this array are we actually using
     std::array<uint8_t, max_radio_message_array_size> data{};  // this is so fragile im kms
 };
 

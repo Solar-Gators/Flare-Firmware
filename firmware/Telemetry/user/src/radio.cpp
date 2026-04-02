@@ -20,13 +20,23 @@ namespace
 {
 osMessageQueueId_t queue;
 
+constexpr uint8_t FRAME_START = 0x02;
+constexpr uint8_t FRAME_END = 0x03;
+constexpr uint8_t FRAME_ESCAPE = 0x1B;
+
+constexpr size_t RAW_BODY_MAX_SIZE =
+    sizeof(uint8_t) + sizeof(uint32_t) +
+    max_radio_message_array_size;  // just the size byte + id + data
+constexpr size_t ESCAPED_FRAME_MAX_SIZE =
+    2 + (RAW_BODY_MAX_SIZE * 2);  // start + escaped body + end
+
 // Constructor wires the radio object to UART2 once for this task.
 sg::Rfd900 radio(&huart2);
 }  // namespace
 
 void radioInit()
 {
-    radio.enterLocalATCommandMode();
+    // radio.enterLocalATCommandMode(); // we probably don't wanna call this? we wanna be in data mode not command (at) mode
     queue = osMessageQueueNew(10, sizeof(RadioMessage), nullptr);
     if (!queue)
     {
@@ -92,21 +102,48 @@ RadioMessage waitForRadioMessageData()
     return msg;
 }
 
+// TODO: MAKE THIS SHITE CLEANER
+// TODO: add checksum
 void radioSend(const RadioMessage& msg)
 {
-    static std::array<uint8_t, max_radio_message_array_size + sizeof(uint32_t)> buffer{};
+    if (msg.size > max_radio_message_array_size)
+    {
+        return;
+    }
 
-    // fill buffer
-    // pack id into first 4 bytes
-    buffer[0] = msg.id & 0xFF;
-    buffer[1] = (msg.id >> 8) & 0xFF;
-    buffer[2] = (msg.id >> 16) & 0xFF;
-    buffer[3] = (msg.id >> 24) & 0xFF;
+    // first construct raw bytes of data (no start/stop/escape)
+    std::array<uint8_t, RAW_BODY_MAX_SIZE> raw{};
+    size_t raw_len = 0;
+
+    // Body format: [size (1)] [id (4, little-endian)] [payload (size)]
+    raw[raw_len++] = static_cast<uint8_t>(msg.size);
+    raw[raw_len++] = static_cast<uint8_t>(msg.id & 0xFF);
+    raw[raw_len++] = static_cast<uint8_t>((msg.id >> 8) & 0xFF);
+    raw[raw_len++] = static_cast<uint8_t>((msg.id >> 16) & 0xFF);
+    raw[raw_len++] = static_cast<uint8_t>((msg.id >> 24) & 0xFF);
 
     for (size_t i = 0; i < msg.size; i++)
     {
-        buffer[4 + i] = msg.data[i];
+        raw[raw_len++] = msg.data[i];
     }
 
-    radio.sendData(buffer.data(), msg.size + sizeof(uint32_t));
+    // now construct escape
+    std::array<uint8_t, ESCAPED_FRAME_MAX_SIZE> framed{};
+    size_t framed_len = 0;
+
+    framed[framed_len++] = FRAME_START;
+
+    for (size_t i = 0; i < raw_len; i++)
+    {
+        uint8_t byte = raw[i];
+        if (byte == FRAME_START || byte == FRAME_END || byte == FRAME_ESCAPE)
+        {
+            framed[framed_len++] = FRAME_ESCAPE;
+        }
+        framed[framed_len++] = byte;
+    }
+
+    framed[framed_len++] = FRAME_END;
+
+    radio.sendData(framed.data(), framed_len);
 }
