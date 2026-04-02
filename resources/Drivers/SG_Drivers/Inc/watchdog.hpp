@@ -13,14 +13,11 @@ namespace sg
         static void Error_Handler(void);
 
         // Initialize the watchdog
-        // called once during board init
+        // called once during thread init
         HAL_StatusTypeDef MX_IWDG_Init(void);
         void Kick(void);
 
-        // may need to call this is not automatically enabled
-        // static void EnableLSI();
-
-        // other options for expansion, would need to write
+        // TODO: other options for expansion, would need to write
         // bool IsReset(); // check if last reset was caused by IWDG
         // void ClearResetFlag(); // clear the reset flag
 

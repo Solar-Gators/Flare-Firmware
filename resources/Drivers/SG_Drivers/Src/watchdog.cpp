@@ -49,7 +49,7 @@ namespace sg
         return HAL_OK;
     }
 
-    void Watchdog::Kick()
+    void Watchdog::Kick(void)
     {
         // Reload counter
         // hiwdg.Instance.Reload = 4095;
@@ -57,19 +57,19 @@ namespace sg
     }
 
     /*
-    void Watchdog::EnableLSI()
+     isreset
+     // more info here https://github.com/STMicroelectronics/STM32CubeU5/blob/main/Projects/NUCLEO-U575ZI-Q/Examples/IWDG/IWDG_Reset/Src/main.c
+    -1- Check if the system has resumed from IWDG reset // (pulled from stm repo)
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST) != 0x00u)
     {
-        // Enable LSI clock if not already enabled
-        if ((RCC->BDCR & RCC_BDCR_LSION) == 0)
-        {
-            RCC->BDCR |= RCC_BDCR_LSION;
+        /* IWDGRST flag set: Turn LED1 on and set IwdgStatus
+        IwdgStatus = 1;
 
-            // Wait until LSI is ready
-            while ((RCC->BDCR & RCC_BDCR_LSIRDY) == 0)
-            {
-                // spin
-            }
-        }
-    }*/
+        /* Insert 4s delay
+        HAL_Delay(4000);
+
+    }
+     */
+
 
 } // namespace sg
