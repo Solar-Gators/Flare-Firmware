@@ -84,9 +84,9 @@ void processLightsOutputs()
     if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
     {
         led_toggle_period_ms = 250;
-        HAL_GPIO_TogglePin(STROBE_CTRL_GPIO_Port, STROBE_CTRL_Pin);
-        HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
-        HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
+        HAL_GPIO_TogglePin(STROBE_LIGHT_CTRL_GPIO_Port, STROBE_LIGHT_CTRL_Pin);
+        HAL_GPIO_TogglePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin);
+        HAL_GPIO_TogglePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin);
     }
     else
     {
@@ -95,8 +95,10 @@ void processLightsOutputs()
                 turn_signals_status.load(std::memory_order_relaxed);
             new_turn_signals != turn_signals)
         {
-            HAL_GPIO_WritePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(
+                REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(
+                REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
             // TODO: turn off middle one here when we get it
             turn_signals = new_turn_signals;
         }
@@ -104,14 +106,14 @@ void processLightsOutputs()
         switch (turn_signals)
         {
             case flare_can::TurnSignals::LEFT:
-                HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
+                HAL_GPIO_TogglePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin);
                 break;
             case flare_can::TurnSignals::RIGHT:
-                HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
+                HAL_GPIO_TogglePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin);
                 break;
             case flare_can::TurnSignals::HAZARDS:
-                HAL_GPIO_TogglePin(RL_CTRL_GPIO_Port, RL_CTRL_Pin);
-                HAL_GPIO_TogglePin(RR_CTRL_GPIO_Port, RR_CTRL_Pin);
+                HAL_GPIO_TogglePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin);
+                HAL_GPIO_TogglePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin);
                 break;
             case flare_can::TurnSignals::OFF:
                 break;
