@@ -27,12 +27,20 @@ namespace sg
     */
     HAL_StatusTypeDef Watchdog::MX_IWDG_Init(void)
     {
-
         hiwdg.Instance = IWDG;
         hiwdg.Init.Prescaler = (IWDG_PR_PR_1 | IWDG_PR_PR_0);
         hiwdg.Init.Window = 4095;
         hiwdg.Init.Reload = 4095;
         hiwdg.Init.EWI = 0;
+
+        if (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET)
+        {
+            __HAL_RCC_LSI_ENABLE();
+            HAL_Delay(1);
+            //delay
+            //while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET){} // This line breaks the code (infinite loop)
+        }
+
         if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
         {
             Error_Handler();

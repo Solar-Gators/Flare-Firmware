@@ -23,17 +23,17 @@ void init_user()
 
     // start can
     steering::can_init();
-
-    // start watchdog
-    sg::Watchdog wdog;
-    wdog.MX_IWDG_Init();
 }
 
 void startHeartbeatTask_user(void* argument)
 {
+    // start watchdog
+    sg::Watchdog wdog;
+    wdog.MX_IWDG_Init();
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
+        wdog.Kick();
         osDelay(500);
     }
 }
