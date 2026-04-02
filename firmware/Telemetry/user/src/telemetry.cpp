@@ -71,14 +71,28 @@ void processLightsOutputs()
 {
     static flare_can::TurnSignals turn_signals{};
     static uint32_t last_toggle_tick{};
+    static bool
+        blink_phase_on{};  // at some point when we wanna synchronize between boards, this should be received via a can message ?
 
+    // update the blink phase variable (this will be updated at some point via a can message right?)
     uint32_t current_tick = HAL_GetTick();
-    if (current_tick - last_toggle_tick < led_toggle_period_ms)
+    if (current_tick - last_toggle_tick > led_toggle_period_ms)
     {
-        return;  // rest of code toggles
+        blink_phase_on = !blink_phase_on;
+        last_toggle_tick = current_tick;
     }
 
-    last_toggle_tick = current_tick;
+    // if killed then stay here and do this
+    if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
+    {
+        led_toggle_period_ms = 250;
+        GPIO_PinState state = (blink_phase_on) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+        HAL_GPIO_WritePin(STROBE_LIGHT_CTRL_GPIO_Port, STROBE_LIGHT_CTRL_Pin, state);
+        HAL_GPIO_WritePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin, state);
+        HAL_GPIO_WritePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin, state);
+
+        return;
+    }
 
     // kill switch led logic
     if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
@@ -102,6 +116,7 @@ void processLightsOutputs()
             // TODO: turn off middle one here when we get it
             turn_signals = new_turn_signals;
         }
+
         // toggle correct led's
         switch (turn_signals)
         {

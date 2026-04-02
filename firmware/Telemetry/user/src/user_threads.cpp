@@ -16,7 +16,7 @@ void init_user()
     HAL_GPIO_WritePin(STROBE_LIGHT_CTRL_GPIO_Port, STROBE_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
-    // TODO: turn off middle one here when we get it
+    HAL_GPIO_WritePin(BRAKE_LIGHT_CTRL_GPIO_Port, BRAKE_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
 
     telem::init();
 }
@@ -69,11 +69,20 @@ void startKillSwitchMessageTask_user(void* argument)
         osDelay(50);
     }
 }
+
 void startLightsOutputsTask_user(void* argument)
 {
     for (;;)
     {
         telem::processLightsOutputs();
         osDelay(30);  // tracks time internally
+    }
+}
+void startSpeedMessageTask_user(void* argument)
+{
+    for (;;)
+    {
+        telem::sendSpeedFrame();
+        osDelay(250);
     }
 }

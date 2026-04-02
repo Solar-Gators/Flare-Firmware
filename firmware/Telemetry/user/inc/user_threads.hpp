@@ -19,6 +19,7 @@ extern "C"
     [[noreturn]] void startTXRadioTask_user(void* argument);
     [[noreturn]] void startKillSwitchMessageTask_user(void* argument);
     [[noreturn]] void startLightsOutputsTask_user(void* argument);
+    [[noreturn]] void startSpeedMessageTask_user(void* argument);
 
 #ifdef __cplusplus
 }
