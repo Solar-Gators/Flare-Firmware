@@ -220,7 +220,7 @@ void StartGPSReadBufferTask(void *argument)
 void StartGPSParseNMEATask(void *argument)
 {
   /* USER CODE BEGIN GPSParseNMEATask */
-    startGPSParseNMEATask_user(argument);
+    startGPSProcessTask_user(argument);
   /* USER CODE END GPSParseNMEATask */
 }
 

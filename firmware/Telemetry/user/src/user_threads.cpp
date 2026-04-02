@@ -10,8 +10,6 @@
 #include "telem_state.h"
 #include "telemetry.h"
 
-QueueHandle_t radioTXQueue;
-
 void init_user()
 {
     // turn lights off
@@ -21,14 +19,6 @@ void init_user()
     // TODO: turn off middle one here when we get it
 
     telem::init();
-    gps().init();
-
-    // Can hold ten standard can frames (2 bytes for ID + 8 data bytes)
-    radioTXQueue = xQueueCreate(10, 10);
-    if (!radioTXQueue)
-    {
-        Error_Handler();
-    }
 }
 
 void startHeartbeatTask_user(void* argument)
@@ -38,10 +28,7 @@ void startHeartbeatTask_user(void* argument)
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
         HAL_GPIO_TogglePin(GPS_LED_GPIO_Port, GPS_LED_Pin);
         HAL_GPIO_TogglePin(RADIO_LED_GPIO_Port, RADIO_LED_Pin);
-
-        telem::processLightsOutputs();
-
-        osDelay(telem::led_toggle_period_ms);
+        osDelay(500);
     }
 }
 
@@ -49,61 +36,28 @@ void startGPSReadBufferTask_user(void* argument)
 {
     for (;;)
     {
-        gps().readOutputBuffer();
-        telem::queueGPSData();
+        telem::readGpsData();
 
-        osDelay(500);
+        osDelay(100);
     }
 }
 
-void startGPSParseNMEATask_user(void* argument)
+void startGPSProcessTask_user(void* argument)
 {
     for (;;)
     {
-        gps().parseNMEA();
+        telem::queueGpsData();
 
-        osDelay(200);
+        osDelay(1000);
     }
 }
 
-extern UART_HandleTypeDef huart2;
 void startTXRadioTask_user(void* argument)
 {
-    // TODO: clean up this initialization
-    rfd900SetUartHandle(&huart2);
-    rfd900EnterLocalATCommandMode();
-
     for (;;)
     {
-        uint8_t long_frame[10];
-
-        // block on queue
-        if (xQueueReceive(radioTXQueue, long_frame, 100) != pdTRUE)
-        {
-            continue;
-        }
-
-        uint8_t frame_packet[30];
-
-        frame_packet[0] = 0x02;  // START
-
-        uint8_t pos = 1;
-
-        for (uint8_t i = 0; i < 10; i++)
-        {
-            uint8_t byte = long_frame[i];
-
-            if (byte == 0x02 || byte == 0x03 || byte == 0x1B)
-            {
-                frame_packet[pos++] = 0x1B;  // escape
-            }
-
-            frame_packet[pos++] = byte;
-        }
-
-        frame_packet[pos++] = 0x03;  // END
-
-        rfd900SendData(frame_packet, pos);
+        telem::waitAndSendRadioData();
+        // no os delay needed internally calls wait forever on an os queue
     }
 }
 
@@ -120,6 +74,6 @@ void startLightsOutputsTask_user(void* argument)
     for (;;)
     {
         telem::processLightsOutputs();
-        osDelay(30);
+        osDelay(30);  // tracks time internally
     }
 }

@@ -9,6 +9,7 @@
 #include "can_protocol.h"
 #include "main.h"
 #include "maxm10s.hpp"
+#include "radio.h"
 #include "telem_state.h"
 #include "user_threads.hpp"
 
@@ -18,7 +19,6 @@ extern "C" I2C_HandleTypeDef hi2c1;
 
 namespace
 {
-
 sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin, 50, GPIO_PIN_SET);
 void killSwitchButtonInit()
 {
@@ -28,6 +28,7 @@ void killSwitchButtonInit()
     sg::Button::InitButtons();
 }
 
+MaxM10S gps(&hi2c1);
 }  // namespace
 
 namespace telem
@@ -37,6 +38,8 @@ void init()
 {
     canInit();
     killSwitchButtonInit();
+    gps.init();
+    radioInit();
 }
 
 void sendKillFrame()
@@ -118,32 +121,25 @@ void processLightsOutputs()
     }
 }
 
-void queueGPSData()
+void queueGpsData()
 {
     MaxM10S::Position coords = gps.getPosition();
-    float speed_kmh = gps.getSpeed();
+    float speed = gps.getSpeed();
     uint8_t num_sats = gps.getNumSatellites();
 
-    uint8_t frame[10];
+    addGpsDataToRadioQueue(coords.latitude_deg, coords.longitude_deg, speed, num_sats);
+}
 
-    frame[0] = 0x20;
-    frame[1] = 0x00;
-    memcpy(frame + 2, &coords.latitude_deg, 8);
-    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
+void readGpsData()
+{
+    gps.readOutputBuffer();
+    gps.parseNMEA();
+}
 
-    frame[0] = 0x20;
-    frame[1] = 0x01;
-    memcpy(frame + 2, &coords.longitude_deg, 8);
-    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
-
-    frame[0] = 0x20;
-    frame[1] = 0x02;
-    memcpy(frame + 2, &speed_kmh, 4);
-    frame[6] = num_sats;
-    frame[7] = 0;
-    frame[8] = 0;
-    frame[9] = 0;
-    xQueueSend(radioTXQueue, &frame, pdMS_TO_TICKS(100));
+void waitAndSendRadioData()
+{
+    RadioMessage msg = waitForRadioMessageData();
+    radioSend(msg);
 }
 
 }  // namespace telem

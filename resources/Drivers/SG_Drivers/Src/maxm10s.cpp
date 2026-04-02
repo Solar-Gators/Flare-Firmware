@@ -157,8 +157,6 @@ void MaxM10S::parseNMEA()
     {
         parseGNGGA(sentence);  // Call parsing function for GNGGA
     }
-
-    return;
 }
 
 uint16_t MaxM10S::getDataLength()
@@ -234,7 +232,9 @@ void MaxM10S::parseGNRMC(char* sentence)
 
             case 7:
                 // Field 7: Speed over ground in knots
+                osMutexAcquire(fix_data_mutex, osWaitForever);
                 this->ground_speed_knots = atof(token);
+                osMutexRelease(fix_data_mutex);
                 break;
         }
 
@@ -295,12 +295,16 @@ void MaxM10S::parseGNGGA(char* sentence)
 
             case 6:
                 // Field 6: Fix quality (0 = invalid, 1 = GPS, 2 = DGPS)
+                osMutexAcquire(fix_data_mutex, osWaitForever);
                 this->quality = atoi(token);
+                osMutexRelease(fix_data_mutex);
                 break;
 
             case 7:
                 // Field 7: Number of satellites in use
+                osMutexAcquire(fix_data_mutex, osWaitForever);
                 this->num_satellites = atoi(token);
+                osMutexRelease(fix_data_mutex);
                 break;
         }
 

@@ -17,6 +17,7 @@ set(CPU_PARAMETERS
     -mfloat-abi=hard)
 
 set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s
+        user/inc/radio.h
 )
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32U575xx_FLASH.ld)
 # ##############################################################################
@@ -60,7 +61,7 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp
     ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/maxm10s.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/rfd900x.c)
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/rfd900x.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}

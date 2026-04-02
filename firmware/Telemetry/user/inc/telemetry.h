@@ -16,7 +16,9 @@ inline uint32_t led_toggle_period_ms = 500;
 void init();
 void sendKillFrame();
 void processLightsOutputs();
-void queueGPSData();
+void queueGpsData();
+void readGpsData();
+void waitAndSendRadioData();
 
 }  // namespace telem
 
