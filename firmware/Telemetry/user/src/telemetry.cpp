@@ -29,6 +29,33 @@ void killSwitchButtonInit()
 }
 
 MaxM10S gps(&hi2c1);
+
+// light helpers?
+void writeLeft(bool on)
+{
+    HAL_GPIO_WritePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port,
+                      REAR_LEFT_LIGHT_CTRL_Pin,
+                      on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void writeRight(bool on)
+{
+    HAL_GPIO_WritePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port,
+                      REAR_RIGHT_LIGHT_CTRL_Pin,
+                      on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void writeBrake(bool on)
+{
+    HAL_GPIO_WritePin(
+        BRAKE_LIGHT_CTRL_GPIO_Port, BRAKE_LIGHT_CTRL_Pin, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void writeStrobe(bool on)
+{
+    HAL_GPIO_WritePin(
+        STROBE_LIGHT_CTRL_GPIO_Port, STROBE_LIGHT_CTRL_Pin, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
 }  // namespace
 
 namespace telem
@@ -69,73 +96,75 @@ void sendSpeedFrame()
 
 void processLightsOutputs()
 {
-    static flare_can::TurnSignals turn_signals{};
     static uint32_t last_toggle_tick{};
-    static bool
-        blink_phase_on{};  // at some point when we wanna synchronize between boards, this should be received via a can message ?
+    static bool blink_phase_on{};  // should come from can at some point to synchrnoize
+    static bool kill_latched{};
 
-    // update the blink phase variable (this will be updated at some point via a can message right?)
+    if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
+    {
+        kill_latched = true;
+    }
+
+    // Hold kill forever after first assertion.
+    if (kill_latched)
+    {
+        killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
+    }
+
+    const bool brake = brake_state.load(std::memory_order_relaxed);
+    const auto turn_signals = turn_signals_status.load(std::memory_order_relaxed);
+    const uint32_t toggle_period_ms = kill_latched ? 250U : led_toggle_period_ms;
+
+    // updated by can at some point
     uint32_t current_tick = HAL_GetTick();
-    if (current_tick - last_toggle_tick > led_toggle_period_ms)
+    if (current_tick - last_toggle_tick > toggle_period_ms)
     {
         blink_phase_on = !blink_phase_on;
         last_toggle_tick = current_tick;
     }
 
-    // if killed then stay here and do this
-    if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
-    {
-        led_toggle_period_ms = 250;
-        GPIO_PinState state = (blink_phase_on) ? GPIO_PIN_SET : GPIO_PIN_RESET;
-        HAL_GPIO_WritePin(STROBE_LIGHT_CTRL_GPIO_Port, STROBE_LIGHT_CTRL_Pin, state);
-        HAL_GPIO_WritePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin, state);
-        HAL_GPIO_WritePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin, state);
+    bool left_on = false;
+    bool right_on = false;
+    bool brake_on = brake;
+    bool strobe_on = false;
 
-        return;
-    }
-
-    // kill switch led logic
-    if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
+    // calculate states then write at the end
+    if (kill_latched)
     {
-        led_toggle_period_ms = 250;
-        HAL_GPIO_TogglePin(STROBE_LIGHT_CTRL_GPIO_Port, STROBE_LIGHT_CTRL_Pin);
-        HAL_GPIO_TogglePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin);
-        HAL_GPIO_TogglePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin);
+        left_on = blink_phase_on;
+        right_on = blink_phase_on;
+        strobe_on = blink_phase_on;
     }
     else
     {
-        // if status changed, turn the lights off
-        if (flare_can::TurnSignals new_turn_signals =
-                turn_signals_status.load(std::memory_order_relaxed);
-            new_turn_signals != turn_signals)
-        {
-            HAL_GPIO_WritePin(
-                REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(
-                REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin, GPIO_PIN_RESET);
-            // TODO: turn off middle one here when we get it
-            turn_signals = new_turn_signals;
-        }
-
-        // toggle correct led's
         switch (turn_signals)
         {
             case flare_can::TurnSignals::LEFT:
-                HAL_GPIO_TogglePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin);
+                left_on = blink_phase_on;
+                right_on = brake;
+                // brake_on written to at beginning directly by brake status
                 break;
             case flare_can::TurnSignals::RIGHT:
-                HAL_GPIO_TogglePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin);
+                right_on = blink_phase_on;
+                left_on = brake;
                 break;
             case flare_can::TurnSignals::HAZARDS:
-                HAL_GPIO_TogglePin(REAR_LEFT_LIGHT_CTRL_GPIO_Port, REAR_LEFT_LIGHT_CTRL_Pin);
-                HAL_GPIO_TogglePin(REAR_RIGHT_LIGHT_CTRL_GPIO_Port, REAR_RIGHT_LIGHT_CTRL_Pin);
+                left_on = blink_phase_on;
+                right_on = blink_phase_on;
                 break;
             case flare_can::TurnSignals::OFF:
+                left_on = brake;
+                right_on = brake;
                 break;
             default:
                 Error_Handler();
         }
     }
+
+    writeLeft(left_on);
+    writeRight(right_on);
+    writeBrake(brake_on);
+    writeStrobe(strobe_on);
 }
 
 void queueGpsData()

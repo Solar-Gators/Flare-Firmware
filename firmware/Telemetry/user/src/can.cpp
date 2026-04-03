@@ -18,6 +18,13 @@ void canInit()
 {
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
+HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& frame, void* ctx)
+{
+    // byte 7 is brakes
+    brake_state.store(frame.data[7], std::memory_order_relaxed);
+
+    return HAL_OK;
+}
 
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
 {
