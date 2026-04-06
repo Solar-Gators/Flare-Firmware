@@ -37,8 +37,6 @@ namespace sg
         {
             __HAL_RCC_LSI_ENABLE();
             HAL_Delay(1);
-            //delay
-            //while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET){} // This line breaks the code (infinite loop)
         }
 
         if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
@@ -55,21 +53,6 @@ namespace sg
         // hiwdg.Instance.Reload = 4095;
         HAL_IWDG_Refresh(&hiwdg);
     }
-
-    /*
-     isreset
-     // more info here https://github.com/STMicroelectronics/STM32CubeU5/blob/main/Projects/NUCLEO-U575ZI-Q/Examples/IWDG/IWDG_Reset/Src/main.c
-    -1- Check if the system has resumed from IWDG reset // (pulled from stm repo)
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST) != 0x00u)
-    {
-        /* IWDGRST flag set: Turn LED1 on and set IwdgStatus
-        IwdgStatus = 1;
-
-        /* Insert 4s delay
-        HAL_Delay(4000);
-
-    }
-     */
 
 
 } // namespace sg
