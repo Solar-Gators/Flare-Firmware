@@ -88,7 +88,7 @@ void processRegenThrottleOutputs()
     uint16_t regen_vol = state.regen_requested.load(std::memory_order_relaxed);
 
     // if physical brake is pressed, set throttle to 0 and regen to max
-    if (bool brake_pressed = state.brake_pressed.load(std::memory_order_relaxed))
+    if (state.brake_pressed.load(std::memory_order_relaxed))
     {
         HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
         HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, 0xFFF);
