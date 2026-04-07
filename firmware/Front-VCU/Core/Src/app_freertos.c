@@ -51,13 +51,6 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
-/* Definitions for ThrottleBrakeRead */
-osThreadId_t ThrottleBrakeReadHandle;
-const osThreadAttr_t ThrottleBrakeRead_attributes = {
-  .name = "ThrottleBrakeRead",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 128 * 4
-};
 /* Definitions for LoadsControl */
 osThreadId_t LoadsControlHandle;
 const osThreadAttr_t LoadsControl_attributes = {
@@ -112,9 +105,6 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of ThrottleBrakeRead */
-  ThrottleBrakeReadHandle = osThreadNew(StartThrottleBrakeRead, NULL, &ThrottleBrakeRead_attributes);
-
   /* creation of LoadsControl */
   LoadsControlHandle = osThreadNew(StartLightsControl, NULL, &LoadsControl_attributes);
 
@@ -149,26 +139,6 @@ void StartDefaultTask(void *argument)
         osDelay(1);
     }
   /* USER CODE END defaultTask */
-}
-
-/* USER CODE BEGIN Header_StartThrottleBrakeRead */
-/**
-* @brief Function implementing the ThrottleBrakeRead thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartThrottleBrakeRead */
-void StartThrottleBrakeRead(void *argument)
-{
-  /* USER CODE BEGIN ThrottleBrakeRead */
-  /* Infinite loop */
-
-    StartThrottleBrakeRead_user(argument);
-    for(;;)
-    {
-        osDelay(1);
-    }
-  /* USER CODE END ThrottleBrakeRead */
 }
 
 /* USER CODE BEGIN Header_StartLightsControl */

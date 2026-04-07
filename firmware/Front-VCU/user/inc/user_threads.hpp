@@ -7,12 +7,10 @@ extern "C"
 {
 #endif
 
-    void StartHeartbeat_user(void *argument);
-    void StartThrottleBrakeRead_user(void *argument);
-    void StartDefaultTask_user(void* argument);
-    void StartCANMessagesTX_user(void* argument);
-    void StartLoadsControl_user(void* argument);
-    void StartCurrentSense_user(void* argument);
+    [[noreturn]] void StartHeartbeat_user(void* argument);
+    [[noreturn]] void StartCANMessagesTX_user(void* argument);
+    [[noreturn]] void StartLoadsControl_user(void* argument);
+    [[noreturn]] void StartCurrentSense_user(void* argument);
     void init_user();
 
 #ifdef __cplusplus

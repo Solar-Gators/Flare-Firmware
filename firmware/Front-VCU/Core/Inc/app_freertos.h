@@ -55,7 +55,6 @@ extern "C" {
 
 /* USER CODE END EM */
 extern osThreadId_t defaultTaskHandle;
-extern osThreadId_t ThrottleBrakeReadHandle;
 extern osThreadId_t LoadsControlHandle;
 extern osThreadId_t CANMessagesTXHandle;
 extern osThreadId_t CurrentSenseHandle;
@@ -66,7 +65,6 @@ extern osThreadId_t CurrentSenseHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
-void StartThrottleBrakeRead(void *argument);
 void StartLightsControl(void *argument);
 void StartCANMessagesTX(void *argument);
 void StartCurrentSense(void *argument);
