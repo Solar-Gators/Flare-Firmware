@@ -99,8 +99,8 @@ void processRegenThrottleOutputs()
     if (throttle_vol <
         10)  // less than 10 here in case of transcience or something in front vcus adc?
     {
-        HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, regen_vol);
         HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+        HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, regen_vol);
         return;
     }
 
