@@ -6,8 +6,6 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-extern QueueHandle_t radioTXQueue;
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -17,10 +15,11 @@ extern "C"
 
     [[noreturn]] void startHeartbeatTask_user(void* argument);
     [[noreturn]] void startGPSReadBufferTask_user(void* argument);
-    [[noreturn]] void startGPSParseNMEATask_user(void* argument);
+    [[noreturn]] void startGPSProcessTask_user(void* argument);
     [[noreturn]] void startTXRadioTask_user(void* argument);
     [[noreturn]] void startKillSwitchMessageTask_user(void* argument);
     [[noreturn]] void startLightsOutputsTask_user(void* argument);
+    [[noreturn]] void startSpeedMessageTask_user(void* argument);
 
 #ifdef __cplusplus
 }

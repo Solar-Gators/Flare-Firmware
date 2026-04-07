@@ -54,20 +54,27 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
-extern osThreadId_t defaultTaskHandle;
-extern osThreadId_t GPSReadBufferHandle;
-extern osThreadId_t GPSParseNMEAHandle;
-extern osThreadId_t TXRadioHandle;
+extern osThreadId_t HeartbeatTaskHandle;
+extern osThreadId_t GPSReadBufferTaskHandle;
+extern osThreadId_t GPSParseNMEATaskHandle;
+extern osThreadId_t TXRadioTaskHandle;
+extern osThreadId_t KillSwitchMessageTaskHandle;
+extern osThreadId_t lightsOutputsTaskHandle;
+extern osThreadId_t SpeedMessageTaskHandle;
+extern osMessageQueueId_t CANFramesTXHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void *argument);
-void StartGPSReadBuffer(void *argument);
-void StartGPSParseNMEA(void *argument);
-void StartTXRadio(void *argument);
+void StartHeartbeatTask(void *argument);
+void StartGPSReadBufferTask(void *argument);
+void StartGPSParseNMEATask(void *argument);
+void StartTXRadioTask(void *argument);
+void StartKillSwitchMessageTask(void *argument);
+void startLightsOutputsTask(void *argument);
+void StartSpeedMessageTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
