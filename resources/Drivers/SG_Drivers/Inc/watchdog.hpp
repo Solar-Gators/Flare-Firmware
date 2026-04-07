@@ -3,6 +3,20 @@
 #include "stm32u5xx.h"
 #include "stm32u5xx_hal.h"
 
+// How to use
+/*
+
+Put this in the thread OUTSIDE of the for(;;) loop
+sg::Watchdog wdog;
+wdog.MX_IWDG_Init();
+
+Put this INSIDE the for loop
+
+wdog.Kick();
+
+*/
+
+
 namespace sg
 {
     // IWDG driver

@@ -21,12 +21,13 @@ namespace sg
     }
 
     /**
-    * @brief IWDG Initialization Function
+    * @brief STM32U575xx IWDG Initialization Function
     * @param None
     * @retval None
     */
     HAL_StatusTypeDef Watchdog::MX_IWDG_Init(void)
     {
+        // This watchdog is meant for the STM32U575xx MCU
         hiwdg.Instance = IWDG;
         hiwdg.Init.Prescaler = (IWDG_PR_PR_1 | IWDG_PR_PR_0);
         hiwdg.Init.Window = 4095;
