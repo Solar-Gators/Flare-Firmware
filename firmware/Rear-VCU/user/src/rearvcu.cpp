@@ -9,16 +9,17 @@
 
 #include <atomic>
 
-extern DAC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc1;  // supp batt
+extern DAC_HandleTypeDef hdac1;
 
 namespace
 {
 constexpr uint32_t array_precharge_hold_time_ms = 500;
 
 // dacs
-DAC_HandleTypeDef& dac = hadc1;
-constexpr uint32_t dac_channel_regen = DAC_CHANNEL_1;
-constexpr uint32_t dac_channel_throttle = DAC_CHANNEL_2;
+DAC_HandleTypeDef& dac = hdac1;
+constexpr uint32_t dac_channel_throttle = DAC_CHANNEL_1;
+constexpr uint32_t dac_channel_regen = DAC_CHANNEL_2;
 }  // namespace
 
 namespace rearvcu
@@ -37,9 +38,6 @@ void init()
 
     // turn on mc
     HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin, GPIO_PIN_SET);
-
-    // select regen and throttle from our mcu's dac pins by writing high
-    HAL_GPIO_WritePin(THROTTLE_SRC_SEL_GPIO_Port, THROTTLE_SRC_SEL_Pin, GPIO_PIN_SET);
 
     // init the regen and throttle dacs
     HAL_DAC_Start(&dac, dac_channel_regen);
@@ -105,7 +103,7 @@ void processRegenThrottleOutputs()
     }
 
     // otherwise actually use the throttle requested by driver
-    HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+    HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, 0);
     HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, throttle_vol);
 }
 

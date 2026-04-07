@@ -59,12 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SUPP_BATT_V_Pin GPIO_PIN_2
 #define SUPP_BATT_V_GPIO_Port GPIOC
-#define THROTTLE_SRC_SEL_Pin GPIO_PIN_3
-#define THROTTLE_SRC_SEL_GPIO_Port GPIOA
-#define REGEN_OUT_Pin GPIO_PIN_4
-#define REGEN_OUT_GPIO_Port GPIOA
-#define THROTTLE_OUT_Pin GPIO_PIN_5
+#define THROTTLE_OUT_Pin GPIO_PIN_4
 #define THROTTLE_OUT_GPIO_Port GPIOA
+#define REGEN_OUT_Pin GPIO_PIN_5
+#define REGEN_OUT_GPIO_Port GPIOA
 #define MC_MAIN_CTRL_Pin GPIO_PIN_6
 #define MC_MAIN_CTRL_GPIO_Port GPIOA
 #define THROTTLE_V_Pin GPIO_PIN_4

@@ -349,7 +349,7 @@ static void MX_DAC1_Init(void)
   sConfig.DAC_SignedFormat = DISABLE;
   sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
   sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
-  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
   sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_EXTERNAL;
   sConfig.DAC_UserTrimming = DAC_TRIMMING_FACTORY;
   if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
@@ -367,6 +367,7 @@ static void MX_DAC1_Init(void)
 
   /** DAC channel OUT2 config
   */
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
   if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
@@ -619,7 +620,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, THROTTLE_SRC_SEL_Pin|MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, PRE_ARRAY_CTRL_Pin|MAIN_ARRAY_CTRL_Pin|WATCHDOG_SET1_Pin|OK_LED_Pin
@@ -628,8 +629,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(WATCHDOG_ENABLE_GPIO_Port, WATCHDOG_ENABLE_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : THROTTLE_SRC_SEL_Pin MC_MAIN_CTRL_Pin EEPROM_SPI_SS_Pin */
-  GPIO_InitStruct.Pin = THROTTLE_SRC_SEL_Pin|MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin;
+  /*Configure GPIO pins : MC_MAIN_CTRL_Pin EEPROM_SPI_SS_Pin */
+  GPIO_InitStruct.Pin = MC_MAIN_CTRL_Pin|EEPROM_SPI_SS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
