@@ -73,9 +73,7 @@ void Error_Handler(void);
 #define FAN_CTRL_GPIO_Port GPIOA
 #define HORN_CTRL_Pin GPIO_PIN_3
 #define HORN_CTRL_GPIO_Port GPIOA
-#define THROTTLE_Pin GPIO_PIN_6
-#define THROTTLE_GPIO_Port GPIOA
-#define BRAKE_Pin GPIO_PIN_7
+#define BRAKE_Pin GPIO_PIN_6
 #define BRAKE_GPIO_Port GPIOA
 #define OK_LED_Pin GPIO_PIN_15
 #define OK_LED_GPIO_Port GPIOB
