@@ -6,11 +6,14 @@
 
 // button layout
 // 1(lt)      5(rt) (both for hazards)
-// 2(pwr,eco)    6(fwrd/rev) // prev. 2 was headlights
+// 2(headlights)    6(fwrd/rev)
 // 3(array)   7(horn)
-// 4(cc down)     8(cc inc) || to en/dis cc press both
+// 4(MODE)     8(pwr/eco might change later to something like cc enable)
 
 // paddles do cc or regen strengths depending on mode maybe
+
+namespace steering
+{
 
 void button1PressedCallback();
 void button2PressedCallback();
@@ -24,3 +27,5 @@ void button8PressedCallback();
 void initButtons();
 
 void recalculateTurnSignals();
+
+}  // namespace steering

@@ -55,6 +55,10 @@ extern "C" {
 
 /* USER CODE END EM */
 extern osThreadId_t defaultTaskHandle;
+extern osThreadId_t ThrottleBrakeReadHandle;
+extern osThreadId_t LoadsControlHandle;
+extern osThreadId_t CANMessagesTXHandle;
+extern osThreadId_t CurrentSenseHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -62,6 +66,10 @@ extern osThreadId_t defaultTaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void StartThrottleBrakeRead(void *argument);
+void StartLightsControl(void *argument);
+void StartCANMessagesTX(void *argument);
+void StartCurrentSense(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 

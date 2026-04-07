@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
@@ -116,6 +117,37 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(THROTTLE_GPIO_Port, &GPIO_InitStruct);
 
+    /* ADC1 DMA Init */
+    /* GPDMA1_REQUEST_ADC1 Init */
+    handle_GPDMA1_Channel0.Instance = GPDMA1_Channel0;
+    handle_GPDMA1_Channel0.Init.Request = GPDMA1_REQUEST_ADC1;
+    handle_GPDMA1_Channel0.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
+    handle_GPDMA1_Channel0.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    handle_GPDMA1_Channel0.Init.SrcInc = DMA_SINC_FIXED;
+    handle_GPDMA1_Channel0.Init.DestInc = DMA_DINC_INCREMENTED;
+    handle_GPDMA1_Channel0.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_HALFWORD;
+    handle_GPDMA1_Channel0.Init.DestDataWidth = DMA_DEST_DATAWIDTH_HALFWORD;
+    handle_GPDMA1_Channel0.Init.Priority = DMA_LOW_PRIORITY_MID_WEIGHT;
+    handle_GPDMA1_Channel0.Init.SrcBurstLength = 1;
+    handle_GPDMA1_Channel0.Init.DestBurstLength = 1;
+    handle_GPDMA1_Channel0.Init.TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0|DMA_DEST_ALLOCATED_PORT0;
+    handle_GPDMA1_Channel0.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
+    handle_GPDMA1_Channel0.Init.Mode = DMA_NORMAL;
+    if (HAL_DMA_Init(&handle_GPDMA1_Channel0) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(hadc, DMA_Handle, handle_GPDMA1_Channel0);
+
+    if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel0, DMA_CHANNEL_NPRIV) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* ADC1 interrupt Init */
+    HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ADC1_IRQn);
     /* USER CODE BEGIN ADC1_MspInit 1 */
 
     /* USER CODE END ADC1_MspInit 1 */
@@ -145,6 +177,11 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     */
     HAL_GPIO_DeInit(THROTTLE_GPIO_Port, THROTTLE_Pin);
 
+    /* ADC1 DMA DeInit */
+    HAL_DMA_DeInit(hadc->DMA_Handle);
+
+    /* ADC1 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(ADC1_IRQn);
     /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
     /* USER CODE END ADC1_MspDeInit 1 */

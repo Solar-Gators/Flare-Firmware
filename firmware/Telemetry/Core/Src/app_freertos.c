@@ -26,7 +26,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -45,82 +44,33 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for HeartbeatTask */
-osThreadId_t HeartbeatTaskHandle;
-uint32_t HeartbeatTaskBuffer[ 128 ];
-osStaticThreadDef_t HeartbeatTaskCB;
-const osThreadAttr_t HeartbeatTask_attributes = {
-  .name = "HeartbeatTask",
-  .stack_mem = &HeartbeatTaskBuffer[0],
-  .stack_size = sizeof(HeartbeatTaskBuffer),
-  .cb_mem = &HeartbeatTaskCB,
-  .cb_size = sizeof(HeartbeatTaskCB),
-  .priority = (osPriority_t) osPriorityNormal1,
-};
-/* Definitions for GPSReadBufferTask */
-osThreadId_t GPSReadBufferTaskHandle;
-uint32_t GPSReadBufferBuffer[ 512 ];
-osStaticThreadDef_t GPSReadBufferCB;
-const osThreadAttr_t GPSReadBufferTask_attributes = {
-  .name = "GPSReadBufferTask",
-  .stack_mem = &GPSReadBufferBuffer[0],
-  .stack_size = sizeof(GPSReadBufferBuffer),
-  .cb_mem = &GPSReadBufferCB,
-  .cb_size = sizeof(GPSReadBufferCB),
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
 };
-/* Definitions for GPSParseNMEATask */
-osThreadId_t GPSParseNMEATaskHandle;
-uint32_t GPSParseNMEABuffer[ 256 ];
-osStaticThreadDef_t GPSParseNMEACB;
-const osThreadAttr_t GPSParseNMEATask_attributes = {
-  .name = "GPSParseNMEATask",
-  .stack_mem = &GPSParseNMEABuffer[0],
-  .stack_size = sizeof(GPSParseNMEABuffer),
-  .cb_mem = &GPSParseNMEACB,
-  .cb_size = sizeof(GPSParseNMEACB),
+/* Definitions for GPSReadBuffer */
+osThreadId_t GPSReadBufferHandle;
+const osThreadAttr_t GPSReadBuffer_attributes = {
+  .name = "GPSReadBuffer",
   .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 512 * 4
 };
-/* Definitions for TXRadioTask */
-osThreadId_t TXRadioTaskHandle;
-uint32_t TXRadioBuffer[ 256 ];
-osStaticThreadDef_t TXRadioCB;
-const osThreadAttr_t TXRadioTask_attributes = {
-  .name = "TXRadioTask",
-  .stack_mem = &TXRadioBuffer[0],
-  .stack_size = sizeof(TXRadioBuffer),
-  .cb_mem = &TXRadioCB,
-  .cb_size = sizeof(TXRadioCB),
+/* Definitions for GPSParseNMEA */
+osThreadId_t GPSParseNMEAHandle;
+const osThreadAttr_t GPSParseNMEA_attributes = {
+  .name = "GPSParseNMEA",
   .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 256 * 4
 };
-/* Definitions for KillSwitchMessageTask */
-osThreadId_t KillSwitchMessageTaskHandle;
-uint32_t KillSwitchMessageTaskBuffer[ 128 ];
-osStaticThreadDef_t KillSwitchMessageTaskCB;
-const osThreadAttr_t KillSwitchMessageTask_attributes = {
-  .name = "KillSwitchMessageTask",
-  .stack_mem = &KillSwitchMessageTaskBuffer[0],
-  .stack_size = sizeof(KillSwitchMessageTaskBuffer),
-  .cb_mem = &KillSwitchMessageTaskCB,
-  .cb_size = sizeof(KillSwitchMessageTaskCB),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
-/* Definitions for lightsOutputsTask */
-osThreadId_t lightsOutputsTaskHandle;
-uint32_t lightsOutputsTaskBuffer[ 256 ];
-osStaticThreadDef_t lightsOutputsTaskCB;
-const osThreadAttr_t lightsOutputsTask_attributes = {
-  .name = "lightsOutputsTask",
-  .stack_mem = &lightsOutputsTaskBuffer[0],
-  .stack_size = sizeof(lightsOutputsTaskBuffer),
-  .cb_mem = &lightsOutputsTaskCB,
-  .cb_size = sizeof(lightsOutputsTaskCB),
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for CANFramesTX */
-osMessageQueueId_t CANFramesTXHandle;
-const osMessageQueueAttr_t CANFramesTX_attributes = {
-  .name = "CANFramesTX"
+/* Definitions for TXRadio */
+osThreadId_t TXRadioHandle;
+const osThreadAttr_t TXRadio_attributes = {
+  .name = "TXRadio",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -149,29 +99,21 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
-  /* creation of CANFramesTX */
-  CANFramesTXHandle = osMessageQueueNew (16, sizeof(uint16_t), &CANFramesTX_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of HeartbeatTask */
-  HeartbeatTaskHandle = osThreadNew(StartHeartbeatTask, NULL, &HeartbeatTask_attributes);
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of GPSReadBufferTask */
-  GPSReadBufferTaskHandle = osThreadNew(StartGPSReadBufferTask, NULL, &GPSReadBufferTask_attributes);
+  /* creation of GPSReadBuffer */
+  GPSReadBufferHandle = osThreadNew(StartGPSReadBuffer, NULL, &GPSReadBuffer_attributes);
 
-  /* creation of GPSParseNMEATask */
-  GPSParseNMEATaskHandle = osThreadNew(StartGPSParseNMEATask, NULL, &GPSParseNMEATask_attributes);
+  /* creation of GPSParseNMEA */
+  GPSParseNMEAHandle = osThreadNew(StartGPSParseNMEA, NULL, &GPSParseNMEA_attributes);
 
-  /* creation of TXRadioTask */
-  TXRadioTaskHandle = osThreadNew(StartTXRadioTask, NULL, &TXRadioTask_attributes);
-
-  /* creation of KillSwitchMessageTask */
-  KillSwitchMessageTaskHandle = osThreadNew(StartKillSwitchMessageTask, NULL, &KillSwitchMessageTask_attributes);
-
-  /* creation of lightsOutputsTask */
-  lightsOutputsTaskHandle = osThreadNew(startLightsOutputsTask, NULL, &lightsOutputsTask_attributes);
+  /* creation of TXRadio */
+  TXRadioHandle = osThreadNew(StartTXRadio, NULL, &TXRadio_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -182,88 +124,60 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartHeartbeatTask */
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
-* @brief Function implementing the HeartbeatTask thread.
+* @brief Function implementing the defaultTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartHeartbeatTask */
-void StartHeartbeatTask(void *argument)
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN HeartbeatTask */
-    startHeartbeatTask_user(argument);
-  /* USER CODE END HeartbeatTask */
+  /* USER CODE BEGIN defaultTask */
+  startDefaultTask_user(argument);
+  /* USER CODE END defaultTask */
 }
 
-/* USER CODE BEGIN Header_StartGPSReadBufferTask */
+/* USER CODE BEGIN Header_StartGPSReadBuffer */
 /**
-* @brief Function implementing the GPSReadBufferTask thread.
+* @brief Function implementing the GPSReadBuffer thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartGPSReadBufferTask */
-void StartGPSReadBufferTask(void *argument)
+/* USER CODE END Header_StartGPSReadBuffer */
+void StartGPSReadBuffer(void *argument)
 {
-  /* USER CODE BEGIN GPSReadBufferTask */
-    startGPSReadBufferTask_user(argument);
-  /* USER CODE END GPSReadBufferTask */
+  /* USER CODE BEGIN GPSReadBuffer */
+    startGPSReadBuffer_user(argument);
+  /* USER CODE END GPSReadBuffer */
 }
 
-/* USER CODE BEGIN Header_StartGPSParseNMEATask */
+/* USER CODE BEGIN Header_StartGPSParseNMEA */
 /**
-* @brief Function implementing the GPSParseNMEATask thread.
+* @brief Function implementing the GPSParseNMEA thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartGPSParseNMEATask */
-void StartGPSParseNMEATask(void *argument)
+/* USER CODE END Header_StartGPSParseNMEA */
+void StartGPSParseNMEA(void *argument)
 {
-  /* USER CODE BEGIN GPSParseNMEATask */
-    startGPSParseNMEATask_user(argument);
-  /* USER CODE END GPSParseNMEATask */
+  /* USER CODE BEGIN GPSParseNMEA */
+    startGPSParseNMEA_user(argument);
+  /* USER CODE END GPSParseNMEA */
 }
 
-/* USER CODE BEGIN Header_StartTXRadioTask */
+/* USER CODE BEGIN Header_StartTXRadio */
 /**
-* @brief Function implementing the TXRadioTask thread.
+* @brief Function implementing the TXRadio thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartTXRadioTask */
-void StartTXRadioTask(void *argument)
+/* USER CODE END Header_StartTXRadio */
+void StartTXRadio(void *argument)
 {
-  /* USER CODE BEGIN TXRadioTask */
-    startTXRadioTask_user(argument);
-  /* USER CODE END TXRadioTask */
-}
-
-/* USER CODE BEGIN Header_StartKillSwitchMessageTask */
-/**
-* @brief Function implementing the KillSwitchMessageTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartKillSwitchMessageTask */
-void StartKillSwitchMessageTask(void *argument)
-{
-  /* USER CODE BEGIN KillSwitchMessageTask */
-    startKillSwitchMessageTask_user(argument);
-  /* USER CODE END KillSwitchMessageTask */
-}
-
-/* USER CODE BEGIN Header_startLightsOutputsTask */
-/**
-* @brief Function implementing the lightsOutputsTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startLightsOutputsTask */
-void startLightsOutputsTask(void *argument)
-{
-  /* USER CODE BEGIN lightsOutputsTask */
-    startLightsOutputsTask_user(argument);
-  /* USER CODE END lightsOutputsTask */
+  /* USER CODE BEGIN TXRadio */
+    startTXRadio_user(argument);
+  /* USER CODE END TXRadio */
 }
 
 /* Private application code --------------------------------------------------*/

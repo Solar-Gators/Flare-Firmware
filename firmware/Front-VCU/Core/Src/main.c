@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "user_threads.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 FDCAN_HandleTypeDef hfdcan1;
 
@@ -56,11 +57,12 @@ I2C_HandleTypeDef hi2c4;
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 static void MX_GPIO_Init(void);
+static void MX_GPDMA1_Init(void);
 static void MX_ICACHE_Init(void);
 static void MX_FDCAN1_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_I2C2_Init(void);
 static void MX_I2C4_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -99,13 +101,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_GPDMA1_Init();
   MX_ICACHE_Init();
   MX_FDCAN1_Init();
   MX_ADC1_Init();
-  MX_I2C2_Init();
   MX_I2C4_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-
+    init_user();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -122,6 +125,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -273,6 +277,34 @@ static void MX_FDCAN1_Init(void)
 }
 
 /**
+  * @brief GPDMA1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPDMA1_Init(void)
+{
+
+  /* USER CODE BEGIN GPDMA1_Init 0 */
+
+  /* USER CODE END GPDMA1_Init 0 */
+
+  /* Peripheral clock enable */
+  __HAL_RCC_GPDMA1_CLK_ENABLE();
+
+  /* GPDMA1 interrupt Init */
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
+
+  /* USER CODE BEGIN GPDMA1_Init 1 */
+
+  /* USER CODE END GPDMA1_Init 1 */
+  /* USER CODE BEGIN GPDMA1_Init 2 */
+
+  /* USER CODE END GPDMA1_Init 2 */
+
+}
+
+/**
   * @brief I2C2 Initialization Function
   * @param None
   * @retval None
@@ -414,20 +446,26 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EEPROM_WRITE_CTRL_GPIO_Port, EEPROM_WRITE_CTRL_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, FR_LIGHT_CTRL_Pin|R_HEADLIGHT_CTRL_Pin|L_HEADLIGHT_CTRL_Pin|FL_LIGHT_CTRL_Pin
+                          |STROBE_LED_Pin|ERROR_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, OK_LED_Pin|ERROR_LED_Pin|STROBE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, EXTRA1_CTRL_Pin|EXTRA2_CTRL_Pin|FAN_CTRL_Pin|HORN_CTRL_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : EEPROM_WRITE_CTRL_Pin */
-  GPIO_InitStruct.Pin = EEPROM_WRITE_CTRL_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OK_LED_GPIO_Port, OK_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : FR_LIGHT_CTRL_Pin R_HEADLIGHT_CTRL_Pin L_HEADLIGHT_CTRL_Pin FL_LIGHT_CTRL_Pin
+                           STROBE_LED_Pin ERROR_LED_Pin */
+  GPIO_InitStruct.Pin = FR_LIGHT_CTRL_Pin|R_HEADLIGHT_CTRL_Pin|L_HEADLIGHT_CTRL_Pin|FL_LIGHT_CTRL_Pin
+                          |STROBE_LED_Pin|ERROR_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EEPROM_WRITE_CTRL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OK_LED_Pin ERROR_LED_Pin STROBE_Pin */
-  GPIO_InitStruct.Pin = OK_LED_Pin|ERROR_LED_Pin|STROBE_Pin;
+  /*Configure GPIO pins : EXTRA1_CTRL_Pin EXTRA2_CTRL_Pin FAN_CTRL_Pin HORN_CTRL_Pin */
+  GPIO_InitStruct.Pin = EXTRA1_CTRL_Pin|EXTRA2_CTRL_Pin|FAN_CTRL_Pin|HORN_CTRL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -436,8 +474,15 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : BRAKE_Pin */
   GPIO_InitStruct.Pin = BRAKE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BRAKE_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : OK_LED_Pin */
+  GPIO_InitStruct.Pin = OK_LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(OK_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
