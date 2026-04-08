@@ -105,3 +105,19 @@ HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
 
     return HAL_OK;
 }
+
+HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& msg, void* ctx)
+{
+    uint8_t throttle_low = msg.data[0];
+    uint8_t throttle_high = msg.data[1];
+    volatile uint16_t throttle_value =
+        (static_cast<uint16_t>(throttle_high) << 8) | static_cast<uint16_t>(throttle_low);
+
+    auto percent =
+        static_cast<uint16_t>((static_cast<uint32_t>(throttle_value) * 100 + 2047) / 4095);
+
+    state.throttle_percent_debug.store(percent,
+                                       std::memory_order_relaxed);  // store as percent 0 - 100
+
+    return HAL_OK;
+}

@@ -47,6 +47,7 @@ void initScreen()
     drawKillStatus(state.killed_status.load(std::memory_order_relaxed));
     drawHeadlightsStatus(state.headlights_requested_on.load(std::memory_order_relaxed));
     drawHornStatus(state.horn_requested_on.load(std::memory_order_relaxed));
+    drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
 }
 
 // startup for turning everything on, yk like in car where when u start the car all the icons turn on
@@ -402,6 +403,21 @@ void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
     prev_left_active = left_active;
     prev_right_active = right_active;
     prev_blink_state = blink_state;
+}
+void drawThrottlePercent(uint16_t percent)
+{
+    display.SetTextSize(2);
+    if (percent > 100)
+    {
+        snprintf(text_buffer.data(), text_buffer.size(), "ER");
+    }
+    else
+    {
+        snprintf(
+            text_buffer.data(), sizeof(text_buffer), "%3lu%%", static_cast<unsigned long>(percent));
+    }
+    display.FillRect(110, 0, 80, 16, background_color);
+    display.DrawText(110, 0, text_buffer.data(), RGB565_BLACK);
 }
 
 constexpr uint8_t car[]{
