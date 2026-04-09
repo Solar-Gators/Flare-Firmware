@@ -11,6 +11,39 @@
 //DEFINES
 #define UART_TIMEOUT 10
 
+static UART_HandleTypeDef* uart = NULL;
+
+// setter/init
+void rfd900SetUartHandle(UART_HandleTypeDef* user_uart)
+{
+    uart = user_uart;
+}
+
+#define RFD_RX_MAX 256
+HAL_StatusTypeDef rfd900Read(uint8_t* buf, uint16_t maxLen, uint16_t* outLen, uint32_t timeout_ms)
+{
+    if (!uart || !buf || !outLen)
+        return HAL_ERROR;
+
+    uint16_t n = 0;
+    uint32_t start = HAL_GetTick();
+
+    while ((HAL_GetTick() - start) < timeout_ms && n < maxLen)
+    {
+        uint8_t ch;
+        if (HAL_UART_Receive(uart, &ch, 1, 5) == HAL_OK)
+        {
+            buf[n++] = ch;
+            // optional: stop early if newline seen
+            if (ch == '\n')
+                break;
+        }
+    }
+
+    *outLen = n;
+    return (n > 0) ? HAL_OK : HAL_TIMEOUT;
+}
+
 /**
  * THE FUNCTIONS ARE WRITTEN IN THE ORDER THEY APPEAR IN THE RFD900x DATASHEET AT COMMANDS PAGE.
  */
@@ -25,13 +58,11 @@
  * @return -> HAL status of whether the transmission sent
  */
 
-HAL_StatusTypeDef sendData(uint8_t* databuffer, uint16_t sizeData)
+HAL_StatusTypeDef rfd900SendData(uint8_t* databuffer, uint16_t sizeData)
 {
-    HAL_StatusTypeDef status;
-
-    status = HAL_UART_Transmit(&huart1, databuffer, sizeData, HAL_MAX_DELAY);
-    HAL_Delay(1000);
-
+    if (uart == NULL)
+        return HAL_ERROR;
+    HAL_StatusTypeDef status = HAL_UART_Transmit(uart, databuffer, sizeData, HAL_MAX_DELAY);
     return status;
 }
 
@@ -43,18 +74,9 @@ HAL_StatusTypeDef sendData(uint8_t* databuffer, uint16_t sizeData)
  * @return -> HAL status of whether the transmission sent
  */
 //standard config whatever we decide, test if RIGHT
-HAL_StatusTypeDef defaultConfig()
+HAL_StatusTypeDef rfd900DefaultConfig()
 {
-    uint8_t errors = 0;
-
-    if (errors != 0)
-    {
-        return HAL_ERROR;
-    }
-    else
-    {
-        return HAL_OK;
-    }
+    return HAL_OK;
 }
 
 /**
@@ -64,29 +86,17 @@ HAL_StatusTypeDef defaultConfig()
  *
  * @return -> HAL status of whether the transmission sent
  */
-
-HAL_StatusTypeDef enterLocalATCommandMode()
+HAL_StatusTypeDef rfd900EnterLocalATCommandMode()
 {
-    uint8_t errors = 0;
+    // send "+++" to enterATCommandMode, no quotes
     uint8_t data[] = {'+', '+', '+'};
-
-    //Figure out how to use putty to send and receive data
-
-    //send "+++" to enterATCommandMode, no quotes
-    if (sendData(data, sizeof(data)) != HAL_OK)
+    HAL_Delay(1000);
+    HAL_StatusTypeDef stat = rfd900SendData(data, sizeof(data));
+    if (stat != HAL_OK)
     {
-        errors++;
+        return stat;
     }
-
-    if (defaultConfig != HAL_OK)
-    {
-        errors++;
-    }
-
-    if (errors != 0)
-    {
-        return HAL_ERROR;
-    }
+    HAL_Delay(1000);
     return HAL_OK;
 }
 
@@ -100,21 +110,23 @@ HAL_StatusTypeDef enterLocalATCommandMode()
  * @return -> HAL status of whether the transmission sent
  */
 
-HAL_StatusTypeDef getLocalFirmwareData(uint8_t ATI_val)
+HAL_StatusTypeDef rfd900GetLocalFirmwareData(uint8_t ATI_val)
 {
-    //check if ATI_val is within the correct parameters
-    if (1 < ATI_val > 9)
-    {
-        return HAL_ERROR;
-    }
-
     int index = 0;
-    uint8_t data[4];
+    uint8_t data[5];
     data[index++] = 'A';
     data[index++] = 'T';
     data[index++] = 'I';
-    data[index++] = ATI_val + '0';
-    return sendData(data, sizeof(data));
+
+    // check if ATI_val is within the correct parameters
+    // if not then send default ati
+    if (ATI_val >= 2 && ATI_val <= 9)
+    {
+        data[index++] = ATI_val + '0';
+    }
+
+    data[index] = '\r';
+    return rfd900SendData(data, sizeof(data));
 }
 
 /**ATO
@@ -125,11 +137,10 @@ HAL_StatusTypeDef getLocalFirmwareData(uint8_t ATI_val)
  *
  * @return -> HAL status of whether the transmission sent
  */
-
-HAL_StatusTypeDef exitLocalATCommandMode()
+HAL_StatusTypeDef rfd900ExitLocalATCommandMode()
 {
-    uint8_t data[] = {'A', 'T', 'O'};
-    return sendData(data, sizeof(data));
+    uint8_t data[] = {'A', 'T', 'O', '\r'};
+    return rfd900SendData(data, sizeof(data));
 }
 
 /**ATSn?
@@ -137,7 +148,7 @@ HAL_StatusTypeDef exitLocalATCommandMode()
  * getLocalRegisterValue - Get the value of a parameter(register) from the local RF module.
  */
 
-HAL_StatusTypeDef getLocalRegisterValue(uint8_t reg_num)
+HAL_StatusTypeDef rfd900GetLocalRegisterValue(uint8_t reg_num)
 {
     //Check if register number is valid
     if (reg_num >= 29)
@@ -164,8 +175,9 @@ HAL_StatusTypeDef getLocalRegisterValue(uint8_t reg_num)
     }
 
     data[index++] = '?';
+    data[index++] = '\r';
 
-    return sendData(data, index);
+    return rfd900SendData(data, index);
 }
 
 /**ATSn=X
@@ -180,7 +192,7 @@ HAL_StatusTypeDef getLocalRegisterValue(uint8_t reg_num)
  * @return -> HAL status of whether the transmission sent
  */
 
-HAL_StatusTypeDef setLocalParameter(uint8_t reg_num, uint16_t reg_val)
+HAL_StatusTypeDef rfd900SetLocalParameter(uint8_t reg_num, uint16_t reg_val)
 {
     //Check if the register number is valid
     if (reg_num >= 29)
@@ -210,9 +222,9 @@ HAL_StatusTypeDef setLocalParameter(uint8_t reg_num, uint16_t reg_val)
     data[index++] = '=';
 
     //Value that you will set the "register" to
-    sprintf(val_buffer, "%d", reg_val);
+    sprintf((char*) val_buffer, "%d", reg_val);
 
-    for (int i = 0; i < sizeof(val_buffer); i++)
+    for (size_t i = 0; i < sizeof(val_buffer); i++)
     {
         //check if end of buffer, NULL
         if (val_buffer[i] == 0)
@@ -222,7 +234,7 @@ HAL_StatusTypeDef setLocalParameter(uint8_t reg_num, uint16_t reg_val)
         data[index++] = val_buffer[i];
     }
 
-    return sendData(data, index);
+    return rfd900SendData(data, index);
 }
 
 //TODO: ATRn?
@@ -239,10 +251,10 @@ HAL_StatusTypeDef setLocalParameter(uint8_t reg_num, uint16_t reg_val)
  *@return -> HAL status of whether the transmission sent
  */
 
-HAL_StatusTypeDef rebootLocalRadio()
+HAL_StatusTypeDef rfd900RebootLocalRadio()
 {
     uint8_t data[] = {'A', 'T', 'Z'};
-    return sendData(data, sizeof(data));
+    return rfd900SendData(data, sizeof(data));
 }
 
 /**AT&F
@@ -254,10 +266,10 @@ HAL_StatusTypeDef rebootLocalRadio()
  * @return -> HAL status of whether the transmission sent
  */
 
-HAL_StatusTypeDef resetLocalParameters()
+HAL_StatusTypeDef rfd900ResetLocalParameters()
 {
     uint8_t data[] = {'A', 'T', '&', 'F'};
-    return sendData(data, sizeof(data));
+    return rfd900SendData(data, sizeof(data));
 }
 
 /**
@@ -267,10 +279,10 @@ HAL_StatusTypeDef resetLocalParameters()
  *
  * @return -> HAL status of whether the transmission sent
  */
-HAL_StatusTypeDef saveLocalRegisterValues()
+HAL_StatusTypeDef rfd900SaveLocalRegisterValues()
 {
     uint8_t data[] = {'A', 'T', '&', 'W'};
-    return sendData(data, sizeof(data));
+    return rfd900SendData(data, sizeof(data));
 }
 
 /**
@@ -280,8 +292,8 @@ HAL_StatusTypeDef saveLocalRegisterValues()
  *
  *  @return -> HAL status of whether the transmission sent
  */
-HAL_StatusTypeDef resetBootMode()
+HAL_StatusTypeDef rfd900ResetBootMode()
 {
     uint8_t data[] = {'A', 'T', '&', 'U', 'P', 'D', 'A', 'T', 'E'};
-    return sendData(data, sizeof(data));
+    return rfd900SendData(data, sizeof(data));
 }

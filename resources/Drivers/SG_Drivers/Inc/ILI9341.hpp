@@ -11,7 +11,7 @@
 #include "main.h"
 #include "string.h"
 
-#define UI_USE_HAL 1
+#define UI_USE_HAL 0
 
 #define ILI9341_SUCCESS 1
 #define ILI9341_ERROR 0
