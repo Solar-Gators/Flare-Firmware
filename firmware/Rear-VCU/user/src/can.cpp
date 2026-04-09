@@ -34,7 +34,7 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     state.direction_requested.store(static_cast<flare_can::Direction>(msg.data[1]));
     state.array_contactors_requested_closed.store(static_cast<bool>(msg.data[2]));
-    state.regen_requested.store(msg.data[5]);
+    state.regen_percent_requested.store(msg.data[5]);
     state.mc_power_mode_requested.store(static_cast<flare_can::MCPowerMode>(msg.data[6]));
 
     return HAL_OK;

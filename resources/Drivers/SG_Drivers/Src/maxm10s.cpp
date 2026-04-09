@@ -177,7 +177,7 @@ uint16_t MaxM10S::getDataLength()
         return 0;
     }
 
-    return ((uint16_t) rx[0] << 8) | rx[1];
+    return (static_cast<uint16_t>(rx[0]) << 8) | rx[1];
 }
 
 // Parses a GNRMC sentence to extract time, latitude, and longitude
@@ -235,6 +235,9 @@ void MaxM10S::parseGNRMC(char* sentence)
                 osMutexAcquire(fix_data_mutex, osWaitForever);
                 this->ground_speed_knots = atof(token);
                 osMutexRelease(fix_data_mutex);
+                break;
+
+            default:
                 break;
         }
 
@@ -306,6 +309,9 @@ void MaxM10S::parseGNGGA(char* sentence)
                 this->num_satellites = atoi(token);
                 osMutexRelease(fix_data_mutex);
                 break;
+
+            default:
+                break;
         }
 
         // Next token
@@ -345,7 +351,7 @@ bool MaxM10S::NMEAchecksumValid(const char* sentence)
     // XOR all chars until '*'
     while (*p && *p != '*')
     {
-        checksum ^= (uint8_t) (*p);
+        checksum ^= static_cast<uint8_t>(*p);
         p++;
     }
 
@@ -353,7 +359,7 @@ bool MaxM10S::NMEAchecksumValid(const char* sentence)
         return false;  // '*' not found
 
     // Parse the checksum after '*'
-    uint8_t received_checksum = (uint8_t) strtol(p + 1, NULL, 16);
+    auto received_checksum = static_cast<uint8_t>(strtol(p + 1, NULL, 16));
 
     return (checksum == received_checksum);
 }

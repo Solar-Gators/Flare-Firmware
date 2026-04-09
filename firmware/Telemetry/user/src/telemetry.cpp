@@ -63,10 +63,10 @@ namespace telem
 
 void init()
 {
-    canInit();
     killSwitchButtonInit();
     gps.init();
     radioInit();
+    canInit();
 }
 
 void sendKillFrame()

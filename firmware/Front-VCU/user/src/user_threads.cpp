@@ -66,7 +66,7 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 }
 
 // half transfer
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
+extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
     if (hadc->Instance == ADC1)
     {

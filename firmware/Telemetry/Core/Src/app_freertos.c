@@ -291,11 +291,7 @@ void startLightsOutputsTask(void *argument)
 void StartSpeedMessageTask(void *argument)
 {
   /* USER CODE BEGIN SpeedMessageTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    startSpeedMessageTask_user(argument);
   /* USER CODE END SpeedMessageTask */
 }
 

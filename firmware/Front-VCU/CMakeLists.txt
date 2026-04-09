@@ -17,10 +17,7 @@ set(CPU_PARAMETERS
     -mfloat-abi=hard)
 
 set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s
-        user/src/frontvcu_state.cpp
-        user/src/frontvcu_state.cpp
-        user/src/can.cpp
-        user/src/ina226.cpp)
+)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32U575xx_FLASH.ld)
 # ##############################################################################
 set(EXECUTABLE ${SOURCE_DIR_NAME})

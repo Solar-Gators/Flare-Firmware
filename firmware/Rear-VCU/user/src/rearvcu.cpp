@@ -71,19 +71,13 @@ void sendSuppBattFrame()
 
 void processRegenThrottleOutputs()
 {
-    // TODO: This whole thing once we get a dac
-
-    // write to regen and throttle dacs here constantly
-    // maybe get george's pid loop haha
-
-    // consistently update throttle and regen here based on..
-    // throttle value over can
-    // regen value over can
-    // cruise control stuff
-    // pid loop prolly
+    // TODO: Use PID loop and add cruise control after verifying this works on car
 
     uint16_t throttle_vol = state.throttle_requested.load(std::memory_order_relaxed);
-    uint16_t regen_vol = state.regen_requested.load(std::memory_order_relaxed);
+
+    uint8_t regen_percent = state.regen_percent_requested.load(std::memory_order_relaxed);
+    auto regen_vol =
+        static_cast<uint16_t>((static_cast<float>(regen_percent) / 100.0f) * 0xFFF);  // 12 bit dac
 
     // if physical brake is pressed, set throttle to 0 and regen to max
     if (state.brake_pressed.load(std::memory_order_relaxed))

@@ -46,10 +46,15 @@ void radioInit()
 
 bool addCanMessageToRadioQueue(uint32_t id, const uint8_t* data, uint8_t len)
 {
+    if (len > max_radio_message_array_size)
+    {
+        return false;
+    }
+
     RadioMessage msg{};
     msg.size = len;
     msg.id = id;
-    std::copy(data, data + len, msg.data.data());
+    std::copy_n(data, len, msg.data.data());
 
     if (osMessageQueuePut(queue, &msg, 0, 100) != osOK)
     {
