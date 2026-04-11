@@ -22,9 +22,14 @@ void init_user()
 void startHeartbeatTask_user(void* argument)
 {
 
+    sg::Watchdog wdog;
+    wdog.MX_IWDG_Init();
+
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
+
+        wdog.Kick();
 
         steering::sendMitsubaRequestMessage();
 
@@ -35,6 +40,10 @@ void startHeartbeatTask_user(void* argument)
 
 void startScreenTask_user(void* argument)
 {
+
+    sg::Watchdog wdog;
+    wdog.MX_IWDG_Init();
+
     for (;;)
     {
         // speed draw
@@ -49,6 +58,9 @@ void startScreenTask_user(void* argument)
         //     if (demo_speed == 0) demo_up = true;
         // }
         // uint8_t speed = demo_speed;
+
+        wdog.Kick();
+
         steering::processScreen();
         osDelay(20);  // screen refresh rate
         // TODO: optimize the refresh rate
@@ -57,14 +69,21 @@ void startScreenTask_user(void* argument)
 
 void startPollButtons_user(void* argument)
 {
+
+    sg::Watchdog wdog;
+    wdog.MX_IWDG_Init();
+
     for (;;)
     {
         // TODO: could consolidate these below functions into smt like processButtonLEDs
         steering::processHornButton();
         steering::processTurnAndKill();
         steering::processCC();
+        //steering::processRegen();
 
         steering::sendRequestsMessage();
+
+        wdog.Kick();
 
         osDelay(20);
     }

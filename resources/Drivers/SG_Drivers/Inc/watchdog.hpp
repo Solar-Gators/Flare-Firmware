@@ -5,15 +5,12 @@
 
 // How to use
 /*
-
-Put this in the thread OUTSIDE of the for(;;) loop
+Put this inside the thread outside of the for(;;) loop
 sg::Watchdog wdog;
 wdog.MX_IWDG_Init();
 
-Put this INSIDE the for loop
-
+Put this inside the for loop
 wdog.Kick();
-
 */
 
 
@@ -27,16 +24,18 @@ namespace sg
         static void Error_Handler(void);
 
         // Initialize the watchdog
-        // called once during thread init
         HAL_StatusTypeDef MX_IWDG_Init(void);
+
+        // Kick the watchdog
         void Kick(void);
 
-        // TODO: other options for expansion, would need to write
-        // bool IsReset(); // check if last reset was caused by IWDG
-        // void ClearResetFlag(); // clear the reset flag
-
     private:
-        IWDG_HandleTypeDef hiwdg;
+        // watchdog instance
+        static IWDG_HandleTypeDef hiwdg;
+
+        static bool threadReady[16]; // Supports up to 16 threads
+        static uint8_t totalThreads; // How many threads have registered
+        uint8_t id = 0; // This specific instance's index
     };
 
 } // namespace sg
