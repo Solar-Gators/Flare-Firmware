@@ -47,7 +47,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE END Variables */
 /* Definitions for heartbeatTask */
 osThreadId_t heartbeatTaskHandle;
-uint32_t heartbeatTaskBuffer[ 128 ];
+uint32_t heartbeatTaskBuffer[ 512 ];
 osStaticThreadDef_t heartbeatTaskCB;
 const osThreadAttr_t heartbeatTask_attributes = {
   .name = "heartbeatTask",
@@ -59,7 +59,7 @@ const osThreadAttr_t heartbeatTask_attributes = {
 };
 /* Definitions for screenTask */
 osThreadId_t screenTaskHandle;
-uint32_t screenTaskBuffer[ 128 ];
+uint32_t screenTaskBuffer[ 512 ];
 osStaticThreadDef_t screenTaskCB;
 const osThreadAttr_t screenTask_attributes = {
   .name = "screenTask",
@@ -67,14 +67,14 @@ const osThreadAttr_t screenTask_attributes = {
   .stack_size = sizeof(screenTaskBuffer),
   .cb_mem = &screenTaskCB,
   .cb_size = sizeof(screenTaskCB),
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for PollButtons */
 osThreadId_t PollButtonsHandle;
 const osThreadAttr_t PollButtons_attributes = {
   .name = "PollButtons",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 512 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
