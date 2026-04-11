@@ -37,7 +37,9 @@ class MaxM10S : public I2CDevice
           quality{},
           date{},
           time{},
-          gps_buffer{} {};
+          gps_buffer{}
+    {
+    }
     void init();
     void readOutputBuffer();
     void parseNMEA();

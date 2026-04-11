@@ -90,8 +90,9 @@ void StartCANMessagesTX_user(void* argument)
 
     for (;;)
     {
-        tb_frame.data[0] = static_cast<uint8_t>(frontvcu::state.throttle_data.load());
-        tb_frame.data[1] = static_cast<uint8_t>(frontvcu::state.throttle_data.load() >> 8);
+        uint16_t throttle_data = frontvcu::state.throttle_data.load(std::memory_order_relaxed);
+        tb_frame.data[0] = static_cast<uint8_t>(throttle_data);
+        tb_frame.data[1] = static_cast<uint8_t>(throttle_data >> 8);
         tb_frame.data[2] = frontvcu::state.fh_power_lsb.load();
         tb_frame.data[3] = frontvcu::state.fh_power_msb.load();
         tb_frame.data[4] = frontvcu::state.lights_power_lsb.load();

@@ -7,8 +7,6 @@
 #include "frontvcu_state.hpp"
 #include "main.h"
 
-extern sg::CANDevice can_device;
-
 #define ASSERT_TRUE(statement) \
     if (!statement)            \
         Error_Handler();
