@@ -43,3 +43,14 @@ void startSendStatusTask_user(void* argument)
         osDelay(50);
     }
 }
+
+
+void startSupBatMonitoring_user (void *argument)
+{
+   while (true) {
+
+
+       return;
+   }
+
+}

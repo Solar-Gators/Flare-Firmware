@@ -57,6 +57,7 @@ extern "C" {
 extern osThreadId_t hearbeatTaskHandle;
 extern osThreadId_t sendStatusTaskHandle;
 extern osThreadId_t outputsTaskHandle;
+extern osThreadId_t SupBatMonitoringHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -66,6 +67,7 @@ extern osThreadId_t outputsTaskHandle;
 void startHeartbeatTask(void *argument);
 void startSendStatusTask(void *argument);
 void startOutputsTask(void *argument);
+void startSupBatMonitoring (void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 

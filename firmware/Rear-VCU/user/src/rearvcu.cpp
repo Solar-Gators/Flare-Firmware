@@ -60,7 +60,7 @@ void sendSuppBattFrame()
                                  0,
                                  {}};
 
-    // supp batt voltage can be read and sent in this thread as its not as urgent/important
+    // supp batt voltage can be read and sent in this thread as it's not as urgent/important
     uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
     uint16_t supp_batt_current = 0xFFFF;     // TODO: could get current draw of supp batt here
 
