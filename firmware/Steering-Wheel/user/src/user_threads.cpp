@@ -22,14 +22,14 @@ void init_user()
 void startHeartbeatTask_user(void* argument)
 {
 
-    sg::Watchdog wdog;
-    wdog.MX_IWDG_Init();
+    sg::Watchdog wdog1;
+    wdog1.MX_IWDG_Init();
 
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
 
-        wdog.Kick();
+        wdog1.Kick();
 
         steering::sendMitsubaRequestMessage();
 
@@ -41,8 +41,8 @@ void startHeartbeatTask_user(void* argument)
 void startScreenTask_user(void* argument)
 {
 
-    sg::Watchdog wdog;
-    wdog.MX_IWDG_Init();
+    sg::Watchdog wdog2;
+    wdog2.MX_IWDG_Init();
 
     for (;;)
     {
@@ -59,7 +59,7 @@ void startScreenTask_user(void* argument)
         // }
         // uint8_t speed = demo_speed;
 
-        wdog.Kick();
+        wdog2.Kick();
 
         steering::processScreen();
         osDelay(20);  // screen refresh rate
@@ -69,9 +69,8 @@ void startScreenTask_user(void* argument)
 
 void startPollButtons_user(void* argument)
 {
-
-    sg::Watchdog wdog;
-    wdog.MX_IWDG_Init();
+    sg::Watchdog wdog3;
+    wdog3.MX_IWDG_Init();
 
     for (;;)
     {
@@ -83,7 +82,7 @@ void startPollButtons_user(void* argument)
 
         steering::sendRequestsMessage();
 
-        wdog.Kick();
+        wdog3.Kick();
 
         osDelay(20);
     }

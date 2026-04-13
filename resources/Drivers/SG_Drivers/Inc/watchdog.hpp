@@ -4,6 +4,10 @@
 #include "stm32u5xx_hal.h"
 
 // How to use
+// watchdog instance name can be repeats because it is technically a local var
+// but for debug, use different names (ex: wdog1, wdog_2) for different threads
+// supports up to 16 threads, can be increased with id count
+
 /*
 Put this inside the thread outside of the for(;;) loop
 sg::Watchdog wdog;

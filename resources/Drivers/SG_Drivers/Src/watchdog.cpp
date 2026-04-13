@@ -2,6 +2,8 @@
 
 //#include "stm32u5xx.h"   // CMSIS device header
 
+// Look at hpp file for use case
+
 namespace sg
 {
 
@@ -37,22 +39,18 @@ namespace sg
             id = totalThreads++;
         }
 
-
         // only run watchdog init once
         if (id == 0) {
             hiwdg.Instance = IWDG;
-            hiwdg.Init.Prescaler = (IWDG_PR_PR_1 | IWDG_PR_PR_2); // TODO: change this to IWDG_PR_PR_3
+            // IWDG_PR_PR_1 ~ 2 sec for all threads to kick
+            // IWDG_PR_PR_2 ~ 8 sec for all threads to kick
+            // (IWDG_PR_PR_1 | IWDG_PR_PR_2) ~ 35 sec for all threads to kick
+            hiwdg.Init.Prescaler = (IWDG_PR_PR_2);
             hiwdg.Init.Window = 4095;
             hiwdg.Init.Reload = 4095;
             hiwdg.Init.EWI = 0;
-            HAL_IWDG_Init(&hiwdg);
+            HAL_IWDG_Init(&hiwdg); // Initialize the external watchdog clock plus other things
         }
-
-        /*if (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET)
-        {
-            __HAL_RCC_LSI_ENABLE();
-            HAL_Delay(1);
-        }*/
 
         if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
         {
