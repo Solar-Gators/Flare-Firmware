@@ -5,6 +5,7 @@
 #include "steering.h"
 
 #include <sys/signal.h>
+#include <limits>
 
 #include "buttons.h"
 #include "can.h"
@@ -66,7 +67,8 @@ void sendRequestsMessage()
         static_cast<uint8_t>(state.headlights_requested_on.load(std::memory_order_relaxed));
 
     // regen breaking strength
-    steering_requests_frame.data[5] = 0;
+    steering_requests_frame.data[5] =
+        static_cast<uint8_t>(state.regen_requested.load(std::memory_order_relaxed));
 
     // pwr/eco request
     steering_requests_frame.data[6] =
@@ -260,6 +262,21 @@ void processCC()
     // logic here for turning off CC
     // TODO: turn off CC if brake pressed
     // TODO: turn off CC if car is KILLED
+}
+
+    void processRegen()
+{
+    uint8_t curr_regen = state.regen_requested.load();
+    const bool regen_plus_pressed = (HAL_GPIO_ReadPin(REGEN_PLUS_PORT, REGEN_PLUS_PIN) == GPIO_PIN_RESET);
+    const bool regen_minus_pressed = (HAL_GPIO_ReadPin(REGEN_MINUS_PORT, REGEN_MINUS_PIN) == GPIO_PIN_RESET);
+
+    // linear increment
+    constexpr std::uint8_t regen_delta = 13; // ~ 5%
+    if (regen_plus_pressed && regen_minus_pressed) return; // ignore
+    if (regen_plus_pressed) curr_regen += std::min(regen_delta, static_cast<std::uint8_t>(std::numeric_limits<std::uint8_t>::max()-curr_regen));
+    if (regen_minus_pressed) curr_regen -= std::min<std::uint8_t>(regen_delta, curr_regen);
+
+    state.regen_requested.store(curr_regen, std::memory_order_relaxed);
 }
 
 }  // namespace steering

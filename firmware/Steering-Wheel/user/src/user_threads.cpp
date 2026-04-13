@@ -61,6 +61,7 @@ void startPollButtons_user(void* argument)
         steering::processHornButton();
         steering::processTurnAndKill();
         steering::processCC();
+        steering::processRegen();
 
         steering::sendRequestsMessage();
 

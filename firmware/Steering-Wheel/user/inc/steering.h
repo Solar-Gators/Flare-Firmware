@@ -11,6 +11,7 @@ void sendRequestsMessage();
 void sendMitsubaRequestMessage();
 void processScreen();
 void processHornButton();
+void processRegen();
 void processTurnAndKill();
 void processCC();
 
