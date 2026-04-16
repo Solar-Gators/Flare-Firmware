@@ -195,15 +195,15 @@ void drawDirection(flare_can::Direction direction)
 
     if (direction == flare_can::Direction::REVERSE)
     {
-        display.DrawText(10, 40, "R", RGB565_ORANGE);
+        display.DrawText(10, 40, "R", RGB565_GREEN);
     }
     else if (direction == flare_can::Direction::FORWARD)
     {
-        display.DrawText(82, 40, "F", RGB565_ORANGE);
+        display.DrawText(82, 40, "F", RGB565_GREEN);
     }
     else
     {
-        display.DrawText(46, 40, "N", RGB565_ORANGE);
+        display.DrawText(46, 40, "N", RGB565_GREEN);
     }
 }
 
@@ -299,11 +299,11 @@ void drawPowerMode(flare_can::MCPowerMode mode)
 
     if (mode == flare_can::MCPowerMode::ECO)
     {
-        display.DrawText(10, 70, "EC", RGB565_ORANGE);
+        display.DrawText(10, 70, "EC", RGB565_GREEN);
     }
     else
     {
-        display.DrawText(64, 70, "PW", RGB565_ORANGE);
+        display.DrawText(64, 70, "PW", RGB565_GREEN);
     }
 }
 void drawCC(uint8_t mph)
