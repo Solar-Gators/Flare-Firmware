@@ -41,5 +41,4 @@ namespace sg
         static uint8_t totalThreads; // How many threads have registered
         uint8_t id = 0; // This specific instance's index
     };
-
 } // namespace sg

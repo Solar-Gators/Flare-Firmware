@@ -6,7 +6,6 @@
 
 namespace sg
 {
-
     IWDG_HandleTypeDef Watchdog::hiwdg = {0};
     bool Watchdog::threadReady[16] = {false};
     uint8_t Watchdog::totalThreads = 0;
@@ -35,12 +34,14 @@ namespace sg
         // This watchdog is meant for the STM32U575xx MCU
 
         // give each thread an id
-        if (totalThreads < 16) {
+        if (totalThreads < 16)
+        {
             id = totalThreads++;
         }
 
         // only run watchdog init once
-        if (id == 0) {
+        if (id == 0)
+        {
             hiwdg.Instance = IWDG;
             // IWDG_PR_PR_1 ~ 2 sec for all threads to kick
             // IWDG_PR_PR_2 ~ 8 sec for all threads to kick
@@ -72,21 +73,23 @@ namespace sg
 
         // check if all threads have been run, if so, set all_ready flag to true
         bool all_ready = true;
-        for (uint8_t i = 0; i < totalThreads; i++) {
-            if (threadReady[i] == false) {
+        for (uint8_t i = 0; i < totalThreads; i++)
+        {
+            if (threadReady[i] == false)
+            {
                 all_ready = false;
                 break;
             }
         }
 
         // When all threads are ready (have been run), kick the watchdog
-        if (all_ready) {
+        if (all_ready)
+        {
             HAL_IWDG_Refresh(&hiwdg);
-            for (uint8_t i = 0; i < totalThreads; i++) {
+            for (uint8_t i = 0; i < totalThreads; i++)
+            {
                 threadReady[i] = false;
             }
         }
     }
-
-
 } // namespace sg

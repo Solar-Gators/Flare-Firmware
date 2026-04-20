@@ -21,7 +21,6 @@ void init_user()
 
 void startHeartbeatTask_user(void* argument)
 {
-
     sg::Watchdog wdog1;
     wdog1.MX_IWDG_Init();
 
@@ -40,7 +39,6 @@ void startHeartbeatTask_user(void* argument)
 
 void startScreenTask_user(void* argument)
 {
-
     sg::Watchdog wdog2;
     wdog2.MX_IWDG_Init();
 
@@ -62,7 +60,7 @@ void startScreenTask_user(void* argument)
         wdog2.Kick();
 
         steering::processScreen();
-        osDelay(20);  // screen refresh rate
+        osDelay(20); // screen refresh rate
         // TODO: optimize the refresh rate
     }
 }
