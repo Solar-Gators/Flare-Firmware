@@ -60,7 +60,7 @@ void startScreenTask_user(void* argument)
         wdog2.Kick();
 
         steering::processScreen();
-        osDelay(20); // screen refresh rate
+        osDelay(20);  // screen refresh rate
         // TODO: optimize the refresh rate
     }
 }
@@ -77,7 +77,6 @@ void startPollButtons_user(void* argument)
         steering::processTurnAndKill();
         steering::processCC();
         //steering::processRegen();
-
         steering::sendRequestsMessage();
 
         wdog3.Kick();
