@@ -12,5 +12,6 @@
 // internal globals
 inline std::atomic killed_status{flare_can::CarKilledStatus::ALIVE};
 inline std::atomic turn_signals_status{flare_can::TurnSignals::OFF};
+inline std::atomic<bool> brake_state{};
 
 #endif  //FLAREFIRMWARE_TELEM_STATE_H

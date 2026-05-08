@@ -117,6 +117,18 @@ const osThreadAttr_t lightsOutputsTask_attributes = {
   .cb_size = sizeof(lightsOutputsTaskCB),
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for SpeedMessageTask */
+osThreadId_t SpeedMessageTaskHandle;
+uint32_t speedMessageTaskBuffer[ 128 ];
+osStaticThreadDef_t speedMessageTaskCB;
+const osThreadAttr_t SpeedMessageTask_attributes = {
+  .name = "SpeedMessageTask",
+  .stack_mem = &speedMessageTaskBuffer[0],
+  .stack_size = sizeof(speedMessageTaskBuffer),
+  .cb_mem = &speedMessageTaskCB,
+  .cb_size = sizeof(speedMessageTaskCB),
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for CANFramesTX */
 osMessageQueueId_t CANFramesTXHandle;
 const osMessageQueueAttr_t CANFramesTX_attributes = {
@@ -173,6 +185,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of lightsOutputsTask */
   lightsOutputsTaskHandle = osThreadNew(startLightsOutputsTask, NULL, &lightsOutputsTask_attributes);
 
+  /* creation of SpeedMessageTask */
+  SpeedMessageTaskHandle = osThreadNew(StartSpeedMessageTask, NULL, &SpeedMessageTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -220,7 +235,7 @@ void StartGPSReadBufferTask(void *argument)
 void StartGPSParseNMEATask(void *argument)
 {
   /* USER CODE BEGIN GPSParseNMEATask */
-    startGPSParseNMEATask_user(argument);
+    startGPSProcessTask_user(argument);
   /* USER CODE END GPSParseNMEATask */
 }
 
@@ -264,6 +279,20 @@ void startLightsOutputsTask(void *argument)
   /* USER CODE BEGIN lightsOutputsTask */
     startLightsOutputsTask_user(argument);
   /* USER CODE END lightsOutputsTask */
+}
+
+/* USER CODE BEGIN Header_StartSpeedMessageTask */
+/**
+* @brief Function implementing the SpeedMessageTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSpeedMessageTask */
+void StartSpeedMessageTask(void *argument)
+{
+  /* USER CODE BEGIN SpeedMessageTask */
+    startSpeedMessageTask_user(argument);
+  /* USER CODE END SpeedMessageTask */
 }
 
 /* Private application code --------------------------------------------------*/

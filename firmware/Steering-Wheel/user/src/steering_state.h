@@ -13,7 +13,8 @@
 struct SteeringState
 {
     // sending
-    std::atomic<uint8_t> regen_requested{};   // 0 - 255 as percent so 255 = 100% regen strength
+    std::atomic<uint8_t>
+        regen_percent_requested{};            // 0 - 100 as percent so 100 = 100% regen strength
     std::atomic<bool> is_cc_on{};             // determines if cc is active
     std::atomic<uint8_t> cc_mph_requested{};  // in mph
     std::atomic<bool> array_contactors_requested_closed{};
@@ -32,6 +33,9 @@ struct SteeringState
     std::atomic<uint16_t> supp_batt_voltage_mv{};
     std::atomic<uint16_t> main_batt_voltage_cv{};  // V * 100
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
+
+    // debug receive
+    std::atomic<uint16_t> throttle_percent_debug{};
 };
 
 inline SteeringState state;

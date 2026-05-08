@@ -6,6 +6,7 @@
 extern FDCAN_HandleTypeDef hfdcan1;
 
 void canInit();
+HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& frame, void* ctx);
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx);
 HAL_StatusTypeDef rearVCUStatusCallback(const sg::CANFrame& frame, void* ctx);
 HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx);
@@ -13,6 +14,7 @@ HAL_StatusTypeDef radioTXCallback(const sg::CANFrame& frame, void* ctx);
 
 inline sg::CANDevice can_device(&hfdcan1,
                                 {
+                                    {0x080, {&frontVCUThrottleMessageCallback, &radioTXCallback}},
                                     {0x064, {&steeringRequestsCallback, &radioTXCallback}},
                                     {0x020, {&rearVCUStatusCallback, &radioTXCallback}},
                                     {0x040, {&bmsFaultsMessageCallback, &radioTXCallback}},

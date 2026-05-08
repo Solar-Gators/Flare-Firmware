@@ -11,6 +11,7 @@ Ublox MAX M10S Driver
 
 #include <stdlib.h>
 
+#include "i2c_api.hpp"
 #include "main.h"
 
 #include <string>
@@ -22,14 +23,23 @@ Ublox MAX M10S Driver
 #include "semphr.h"
 #endif
 
-extern I2C_HandleTypeDef hi2c1;
-
-#define GPS_BUFFER_SIZE 1024
-
-class MaxM10S
+class MaxM10S : public I2CDevice
 {
    public:
-    MaxM10S(I2C_HandleTypeDef* hi2c);
+    explicit MaxM10S(I2C_HandleTypeDef* hi2c)
+        : I2CDevice(hi2c, I2C_ADDRESS),
+          position{},
+          ground_speed_knots{},
+          course_deg{},
+          fix_valid{},
+          fix_mode{},
+          num_satellites{},
+          quality{},
+          date{},
+          time{},
+          gps_buffer{}
+    {
+    }
     void init();
     void readOutputBuffer();
     void parseNMEA();
@@ -40,17 +50,41 @@ class MaxM10S
         double longitude_deg;
     };
 
-    Position getPosition()
+    Position getPosition() const
     {
         osMutexAcquire(long_lat_read_mutex, osWaitForever);
         Position temp = position;
         osMutexRelease(long_lat_read_mutex);
         return temp;
     }
-    float getSpeed() { return ground_speed_knots; }
-    uint8_t getNumSatellites() { return num_satellites; }
-    uint8_t getQuality() { return quality; }
-    uint16_t getDate() { return date; }
+    float getSpeed() const
+    {
+        osMutexAcquire(fix_data_mutex, osWaitForever);
+        float temp = ground_speed_knots;
+        osMutexRelease(fix_data_mutex);
+        return temp;
+    }
+    uint8_t getNumSatellites() const
+    {
+        osMutexAcquire(fix_data_mutex, osWaitForever);
+        uint8_t temp = num_satellites;
+        osMutexRelease(fix_data_mutex);
+        return temp;
+    }
+    uint8_t getQuality() const
+    {
+        osMutexAcquire(fix_data_mutex, osWaitForever);
+        uint8_t temp = quality;
+        osMutexRelease(fix_data_mutex);
+        return temp;
+    }
+    uint16_t getDate() const
+    {
+        osMutexAcquire(fix_data_mutex, osWaitForever);
+        uint16_t temp = date;
+        osMutexRelease(fix_data_mutex);
+        return temp;
+    }
 
    private:
     uint16_t getDataLength();
@@ -75,18 +109,12 @@ class MaxM10S
     SemaphoreHandle_t long_lat_read_mutex = nullptr;
 #endif
 
+    static constexpr size_t GPS_BUFFER_SIZE = 1024;
     volatile uint8_t gps_buffer[GPS_BUFFER_SIZE];
     volatile uint16_t gps_head = 0;
     volatile uint16_t gps_tail = 0;
 
-    I2C_HandleTypeDef* i2c_handle;
     static constexpr uint8_t I2C_ADDRESS = 0x42;
     static constexpr uint8_t LEN_REG_HIGH = 0xFD;
     static constexpr uint8_t DATA_REG = 0xFF;
 };
-
-inline MaxM10S& gps()
-{
-    static MaxM10S gps(&hi2c1);
-    return gps;
-}
