@@ -8,16 +8,16 @@ set(BOARD_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/")  # Where we want the a
 set(USER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/user)
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../resources)
 
-set(MCU_FAMILY STM32U5xx)
-set(MCU_MODEL STM32U575xx)
+set(MCU_FAMILY STM32L4xx)
+set(MCU_MODEL STM32L433xx)
 set(CPU_PARAMETERS
-    -mcpu=cortex-m33
+    -mcpu=cortex-m4
     -mthumb
-    -mfpu=fpv5-sp-d16
+    -mfpu=fpv4-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32u575xx.s)
-set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32U575xx_FLASH.ld)
+set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32l433xx.s)
+set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/STM32L433XX_FLASH.ld)
 # ##############################################################################
 set(EXECUTABLE ${SOURCE_DIR_NAME})
 enable_language(C CXX ASM)
@@ -34,11 +34,7 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
     ${RESOURCES_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
-    ${RESOURCES_DIR}/Drivers/CMSIS/Include
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/CMSIS/RTOS2/Include
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/include
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure)
+    ${RESOURCES_DIR}/Drivers/CMSIS/Include)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${USER_DIR}/inc
@@ -48,18 +44,10 @@ set(PROJECT_INCLUDE_DIRECTORIES
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
-    ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/*.c
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
-    ${RESOURCES_DIR}/Middlewares_v2/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure/*.c)
+    ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
-    ${USER_DIR}/src/*.c
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/Steering_wheel_buttons.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/ILI9341.cpp
-    ${RESOURCES_DIR}/Drivers/SG_Drivers/Src/watchdog.cpp)
+    ${USER_DIR}/src/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
