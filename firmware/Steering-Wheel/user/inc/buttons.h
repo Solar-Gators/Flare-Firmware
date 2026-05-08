@@ -16,6 +16,10 @@ enum class ButtonIndex : uint8_t
 
 #define HORN_PORT BUTTON7_GPIO_Port
 #define HORN_PIN BUTTON7_Pin
+#define REGEN_PLUS_PORT REGEN_INCREASE_GPIO_Port
+#define REGEN_PLUS_PIN REGEN_INCREASE_Pin
+#define REGEN_MINUS_PORT REGEN_DECREASE_GPIO_Port
+#define REGEN_MINUS_PIN REGEN_DECREASE_Pin
 
 // button layout
 // 1(lt)      5(rt) (both for hazards)

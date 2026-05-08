@@ -76,7 +76,8 @@ void startPollButtons_user(void* argument)
         steering::processHornButton();
         steering::processTurnAndKill();
         steering::processCC();
-        //steering::processRegen();
+        steering::processRegen();
+
         steering::sendRequestsMessage();
 
         wdog3.Kick();

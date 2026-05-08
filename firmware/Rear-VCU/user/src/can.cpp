@@ -1,6 +1,7 @@
 #include "can.hpp"
 
 #include <cmath>
+#include <cstdio>
 
 #include "main.h"
 #include "rearvcu_state.h"
