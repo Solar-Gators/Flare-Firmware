@@ -188,6 +188,17 @@ void processScreen()
 
     auto direction = state.actual_direction.load(std::memory_order_relaxed);
     drawCar(direction);
+
+    // draw percent for debugging
+    static uint16_t old_throttle_percent =
+        state.throttle_percent_debug.load(std::memory_order_relaxed);
+    if (auto throttle_percent = state.throttle_percent_debug.load(std::memory_order_relaxed);
+        old_throttle_percent != throttle_percent)
+    {
+        // top middle
+        drawThrottlePercent(throttle_percent);
+        old_throttle_percent = throttle_percent;
+    }
 }
 
 void processHornButton()

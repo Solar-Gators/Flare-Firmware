@@ -2,11 +2,16 @@
 #define USER_THREADS_HPP
 
 #ifdef __cplusplus
+#include "ina226.hpp"
 extern "C"
 {
 #endif
 
-    void StartDefaultTask_user(void* argument);
+    [[noreturn]] void StartHeartbeat_user(void* argument);
+    [[noreturn]] void StartCANMessagesTX_user(void* argument);
+    [[noreturn]] void StartLoadsControl_user(void* argument);
+    [[noreturn]] void StartCurrentSense_user(void* argument);
+    void init_user();
 
 #ifdef __cplusplus
 }
