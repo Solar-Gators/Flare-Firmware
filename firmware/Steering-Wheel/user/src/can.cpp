@@ -1,9 +1,9 @@
 #include "can.h"
 
+#include "../inc/steering_state.h"
 #include "CanDriver.hpp"
 #include "can_protocol.h"
 #include "main.h"
-#include "steering_state.h"
 
 // from old dashboard defines
 #define MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX 35  // 1rpm/lsb

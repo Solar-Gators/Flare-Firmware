@@ -6,11 +6,11 @@
 
 #include <sys/signal.h>
 
+#include "../inc/steering_state.h"
 #include "buttons.h"
 #include "can.h"
 #include "can_protocol.h"
 #include "screen.h"
-#include "steering_state.h"
 
 #include <limits>
 
@@ -69,7 +69,7 @@ void sendRequestsMessage()
 
     // regen breaking strength
     steering_requests_frame.data[5] =
-        static_cast<uint8_t>(state.regen_requested.load(std::memory_order_relaxed));
+        static_cast<uint8_t>(state.regen_percent_requested.load(std::memory_order_relaxed));
 
     // pwr/eco request
     steering_requests_frame.data[6] =
@@ -279,14 +279,14 @@ void processRegen()
 
     // linear increment
     constexpr std::uint8_t regen_delta = 13;
-    uint8_t curr_regen = state.regen_requested.load();
+    uint8_t curr_regen = state.regen_percent_requested.load();
     if (regen_plus_pressed)
         curr_regen += std::min(
             regen_delta,
             static_cast<std::uint8_t>(std::numeric_limits<std::uint8_t>::max() - curr_regen));
     if (regen_minus_pressed)
         curr_regen -= std::min<std::uint8_t>(regen_delta, curr_regen);
-    state.regen_requested.store(curr_regen, std::memory_order_relaxed);
+    state.regen_percent_requested.store(curr_regen, std::memory_order_relaxed);
 
     while (HAL_GPIO_ReadPin(REGEN_PLUS_PORT, REGEN_PLUS_PIN) == GPIO_PIN_RESET ||
            HAL_GPIO_ReadPin(REGEN_MINUS_PORT, REGEN_MINUS_PIN) == GPIO_PIN_RESET)

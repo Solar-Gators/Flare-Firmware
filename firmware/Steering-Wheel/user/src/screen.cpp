@@ -4,8 +4,8 @@
 
 #include "screen.h"
 
+#include "../inc/steering_state.h"
 #include "ILI9341.hpp"
-#include "steering_state.h"
 
 #include <array>
 #include <string>
