@@ -3,11 +3,12 @@
 //
 #include "buttons.h"
 
+#include <cstddef>
+
 #include "../inc/steering_state.h"
 #include "Steering_wheel_buttons.hpp"
 #include "main.h"
 
-#include <cstddef>
 #include <array>
 
 namespace
