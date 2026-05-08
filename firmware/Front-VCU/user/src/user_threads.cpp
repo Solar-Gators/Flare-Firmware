@@ -3,11 +3,11 @@
 #include <cstdint>
 
 #include <cmsis_os2.h>
-#include <main.h>
 #include <stm32u5xx_hal.h>
 
 #include "can.hpp"
 #include "frontvcu_state.hpp"
+#include "main.h"
 
 extern ADC_HandleTypeDef hadc1;
 uint16_t adc_buffer[frontvcu::FrontVCUState::ADC_BUF_LEN];

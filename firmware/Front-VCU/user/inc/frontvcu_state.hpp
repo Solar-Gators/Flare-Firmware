@@ -26,16 +26,16 @@ struct FrontVCUState
     std::atomic<uint16_t> throttle_data{};
     std::atomic<uint8_t> brake_state{};
     // lights
-    std::atomic<LIGHTS_STATES> lights_req[2];
-    std::atomic<LIGHTS_STATES> lights[2];
+    std::atomic<LIGHTS_STATES> lights_req[2]{LIGHTS_STATES::OFF, LIGHTS_STATES::OFF};
+    std::atomic<LIGHTS_STATES> lights[2]{LIGHTS_STATES::OFF, LIGHTS_STATES::OFF};
     // horn and fan
     std::atomic<uint8_t> horn_state{};
     std::atomic<uint8_t> fan_state{};
     // fh and lights power
-    std::atomic<uint8_t> fh_power_lsb;
-    std::atomic<uint8_t> fh_power_msb;
-    std::atomic<uint8_t> lights_power_lsb;
-    std::atomic<uint8_t> lights_power_msb;
+    std::atomic<uint8_t> fh_power_lsb{};
+    std::atomic<uint8_t> fh_power_msb{};
+    std::atomic<uint8_t> lights_power_lsb{};
+    std::atomic<uint8_t> lights_power_msb{};
 };
 
 inline FrontVCUState state;

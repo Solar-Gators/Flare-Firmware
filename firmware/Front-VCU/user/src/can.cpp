@@ -1,7 +1,3 @@
-//
-// Created by vigne on 3/13/2026.
-//
-
 #include "can.hpp"
 
 #include "frontvcu_state.hpp"
