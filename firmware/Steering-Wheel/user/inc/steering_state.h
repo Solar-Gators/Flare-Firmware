@@ -14,7 +14,7 @@ struct SteeringState
 {
     // sending
     std::atomic<uint8_t>
-        regen_percent_requested{};            // 0 - 255 as percent so 255 = 100% regen strength// 0 - 100 as percent so 100 = 100% regen strength
+        regen_percent_requested{};  // 0 - 255 as percent so 255 = 100% regen strength// 0 - 100 as percent so 100 = 100% regen strength
     std::atomic<bool> is_cc_on{};             // determines if cc is active
     std::atomic<uint8_t> cc_mph_requested{};  // in mph
     std::atomic<bool> array_contactors_requested_closed{};
