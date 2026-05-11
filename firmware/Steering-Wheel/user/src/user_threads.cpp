@@ -6,6 +6,7 @@
 #include "CanDriver.hpp"
 #include "ILI9341.hpp"
 #include "Steering_wheel_buttons.hpp"
+#include "app_freertos.h"
 #include "main.h"
 #include "steering.h"
 #include "watchdog.hpp"
@@ -59,7 +60,10 @@ void startScreenTask_user(void* argument)
 
         wdog2.Kick();
 
+        osMutexAcquire(screenMutexHandle, osWaitForever);
         steering::processScreen();
+        osMutexRelease(screenMutexHandle);
+
         osDelay(20);  // screen refresh rate
         // TODO: optimize the refresh rate
     }
@@ -83,5 +87,21 @@ void startPollButtons_user(void* argument)
         wdog3.Kick();
 
         osDelay(20);
+    }
+}
+
+void startDancingFlareScreenTask_user(void* argument)
+{
+    sg::Watchdog wdog4;
+    wdog4.MX_IWDG_Init();
+
+    for (;;)
+    {
+        osMutexAcquire(screenMutexHandle, osWaitForever);
+        steering::flareDance();
+        osMutexRelease(screenMutexHandle);
+
+        wdog4.Kick();
+        osDelay(30);
     }
 }

@@ -36,6 +36,11 @@ struct SteeringState
 
     // debug receive
     std::atomic<uint16_t> throttle_percent_debug{};
+
+    // for screen indicator blinking logic
+    std::atomic<bool> left_blink_active{false};
+    std::atomic<bool> right_blink_active{false};
+    std::atomic<bool> blink_state{false};
 };
 
 inline SteeringState state;
