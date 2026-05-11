@@ -186,8 +186,8 @@ void processScreen()
         old_killed_status = killed_status;
     }
 
-    auto direction = state.actual_direction.load(std::memory_order_relaxed);
-    drawCar(direction);
+    //auto direction = state.actual_direction.load(std::memory_order_relaxed);
+    //drawCar(direction);
 
     // draw percent for debugging
     static uint16_t old_throttle_percent =
@@ -199,6 +199,16 @@ void processScreen()
         drawThrottlePercent(throttle_percent);
         old_throttle_percent = throttle_percent;
     }
+
+    drawTurnIndicator(state.left_blink_active.load(std::memory_order_relaxed),
+                      state.right_blink_active.load(std::memory_order_relaxed),
+                      state.blink_state.load(std::memory_order_relaxed));
+}
+
+void flareDance()
+{
+    auto direction = state.actual_direction.load(std::memory_order_relaxed);
+    drawCar(direction);
 }
 
 void processHornButton()
@@ -252,8 +262,10 @@ void processTurnAndKill()
         right_active = true;
     }
 
-    // draw on screen
-    drawTurnIndicator(left_active, right_active, blinker_on);
+    // update variables for screen blinking effect
+    state.left_blink_active.store(left_active, std::memory_order_relaxed);
+    state.right_blink_active.store(right_active, std::memory_order_relaxed);
+    state.blink_state.store(blinker_on, std::memory_order_relaxed);
 }
 
 void processCC()

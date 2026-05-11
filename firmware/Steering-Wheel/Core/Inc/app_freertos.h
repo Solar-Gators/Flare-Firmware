@@ -57,6 +57,8 @@ extern "C" {
 extern osThreadId_t heartbeatTaskHandle;
 extern osThreadId_t screenTaskHandle;
 extern osThreadId_t PollButtonsHandle;
+extern osThreadId_t dancingFlareScreenTaskHandle;
+extern osMutexId_t screenMutexHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -66,6 +68,7 @@ extern osThreadId_t PollButtonsHandle;
 void startHeartbeatTask(void *argument);
 void startScreenTask(void *argument);
 void StartPollButtons(void *argument);
+void StartDancingScreenFlareTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
