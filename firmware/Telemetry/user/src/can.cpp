@@ -2,6 +2,7 @@
 
 #include "CanDriver.hpp"
 #include "queue.h"
+#include "radio.h"
 #include "telem_state.h"
 #include "user_threads.hpp"
 
@@ -16,6 +17,13 @@
 void canInit()
 {
     ASSERT_HAL_OK(can_device.startCANDevice());
+}
+HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& frame, void* ctx)
+{
+    // byte 7 is brakes
+    brake_state.store(frame.data[7], std::memory_order_relaxed);
+
+    return HAL_OK;
 }
 
 HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
@@ -48,6 +56,10 @@ HAL_StatusTypeDef radioTXCallback(const sg::CANFrame& frame, void* ctx)
     packed_frame[1] = frame.can_id >> 8;
     memcpy(packed_frame + 2, frame.data.data(), 8);
 
-    xQueueSend(radioTXQueue, &packed_frame, pdMS_TO_TICKS(100));
-    return HAL_OK;
+    if (addCanMessageToRadioQueue(frame.can_id, frame.data.data(), static_cast<uint8_t>(frame.len)))
+    {
+        return HAL_OK;  // like stuff like this too atp we are mixing hal return with os return
+    }
+
+    return HAL_ERROR;
 }

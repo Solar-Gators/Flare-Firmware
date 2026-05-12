@@ -6,8 +6,10 @@
 #include "CanDriver.hpp"
 #include "ILI9341.hpp"
 #include "Steering_wheel_buttons.hpp"
+#include "app_freertos.h"
 #include "main.h"
 #include "steering.h"
+#include "watchdog.hpp"
 
 #include <array>
 #include <string>
@@ -20,9 +22,14 @@ void init_user()
 
 void startHeartbeatTask_user(void* argument)
 {
+    sg::Watchdog wdog1;
+    wdog1.IWDG_Init();
+
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
+
+        wdog1.Kick();
 
         steering::sendMitsubaRequestMessage();
 
@@ -33,6 +40,9 @@ void startHeartbeatTask_user(void* argument)
 
 void startScreenTask_user(void* argument)
 {
+    sg::Watchdog wdog2;
+    wdog2.IWDG_Init();
+
     for (;;)
     {
         // speed draw
@@ -47,7 +57,13 @@ void startScreenTask_user(void* argument)
         //     if (demo_speed == 0) demo_up = true;
         // }
         // uint8_t speed = demo_speed;
+
+        wdog2.Kick();
+
+        osMutexAcquire(screenMutexHandle, osWaitForever);
         steering::processScreen();
+        osMutexRelease(screenMutexHandle);
+
         osDelay(20);  // screen refresh rate
         // TODO: optimize the refresh rate
     }
@@ -55,15 +71,37 @@ void startScreenTask_user(void* argument)
 
 void startPollButtons_user(void* argument)
 {
+    sg::Watchdog wdog3;
+    wdog3.IWDG_Init();
+
     for (;;)
     {
         // TODO: could consolidate these below functions into smt like processButtonLEDs
         steering::processHornButton();
         steering::processTurnAndKill();
         steering::processCC();
+        steering::processRegen();
 
         steering::sendRequestsMessage();
 
+        wdog3.Kick();
+
         osDelay(20);
+    }
+}
+
+void startDancingFlareScreenTask_user(void* argument)
+{
+    sg::Watchdog wdog4;
+    wdog4.IWDG_Init();
+
+    for (;;)
+    {
+        osMutexAcquire(screenMutexHandle, osWaitForever);
+        steering::flareDance();
+        osMutexRelease(screenMutexHandle);
+
+        wdog4.Kick();
+        osDelay(30);
     }
 }

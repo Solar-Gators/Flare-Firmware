@@ -10,7 +10,9 @@ HAL_StatusTypeDef init();
 void sendRequestsMessage();
 void sendMitsubaRequestMessage();
 void processScreen();
+void flareDance();
 void processHornButton();
+void processRegen();
 void processTurnAndKill();
 void processCC();
 

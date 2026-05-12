@@ -27,6 +27,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticSemaphore_t osStaticMutexDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -76,6 +77,21 @@ const osThreadAttr_t PollButtons_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 512 * 4
 };
+/* Definitions for dancingFlareScreenTask */
+osThreadId_t dancingFlareScreenTaskHandle;
+const osThreadAttr_t dancingFlareScreenTask_attributes = {
+  .name = "dancingFlareScreenTask",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 512 * 4
+};
+/* Definitions for screenMutex */
+osMutexId_t screenMutexHandle;
+osStaticMutexDef_t myMutexControlBlock01;
+const osMutexAttr_t screenMutex_attributes = {
+  .name = "screenMutex",
+  .cb_mem = &myMutexControlBlock01,
+  .cb_size = sizeof(myMutexControlBlock01),
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -91,6 +107,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
+  /* creation of screenMutex */
+  screenMutexHandle = osMutexNew(&screenMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -115,6 +133,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of PollButtons */
   PollButtonsHandle = osThreadNew(StartPollButtons, NULL, &PollButtons_attributes);
+
+  /* creation of dancingFlareScreenTask */
+  dancingFlareScreenTaskHandle = osThreadNew(StartDancingScreenFlareTask, NULL, &dancingFlareScreenTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -165,6 +186,20 @@ void StartPollButtons(void *argument)
   /* USER CODE BEGIN PollButtons */
     startPollButtons_user(argument);
   /* USER CODE END PollButtons */
+}
+
+/* USER CODE BEGIN Header_StartDancingScreenFlareTask */
+/**
+* @brief Function implementing the dancingFlareScreenTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartDancingScreenFlareTask */
+void StartDancingScreenFlareTask(void *argument)
+{
+  /* USER CODE BEGIN dancingFlareScreenTask */
+  startDancingFlareScreenTask_user(argument);
+  /* USER CODE END dancingFlareScreenTask */
 }
 
 /* Private application code --------------------------------------------------*/

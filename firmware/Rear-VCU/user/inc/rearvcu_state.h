@@ -9,9 +9,10 @@
 
 struct RearVCUState
 {
-    std::atomic<uint16_t> throttle_requested{};  // 0 - 65535 from front vcu
-    std::atomic<uint8_t> regen_requested{};      // 0 - 255
+    std::atomic<uint16_t> throttle_requested{};      // 12 bit value from front vcu
+    std::atomic<uint8_t> regen_percent_requested{};  // 0 - 100 percent number
     std::atomic<uint8_t> cc_mph_requested{};
+    std::atomic<bool> brake_pressed{};  // from front vcu, 1 when brake is pressed
 
     std::atomic<uint8_t> car_speed{std::numeric_limits<uint8_t>::max()};
 

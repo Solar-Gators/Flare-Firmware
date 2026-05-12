@@ -1,7 +1,9 @@
 //Header file for the RDF900x RF Module for Telemetry Board
 
+#pragma once
+
 //includes
-#include <stdint.h>
+#include <cstdint>
 
 #include "main.h"
 
@@ -27,33 +29,34 @@ RTS/CTS flow control OFF
 
 */
 
-#ifdef __cplusplus
-extern "C"
+namespace sg
 {
-#endif
 
-    // important init
-    void rfd900SetUartHandle(UART_HandleTypeDef* user_uart);
-    HAL_StatusTypeDef rfd900Read(uint8_t* buf,
-                                 uint16_t maxLen,
-                                 uint16_t* outLen,
-                                 uint32_t timeout_ms);
+class Rfd900
+{
+   public:
+    // Constructor binds this radio object to a specific UART instance.
+    explicit Rfd900(UART_HandleTypeDef* uart);
+
+    HAL_StatusTypeDef read(uint8_t* buf, uint16_t maxLen, uint16_t* outLen, uint32_t timeout_ms);
 
     //General Functions
-    HAL_StatusTypeDef rfd900EnterLocalATCommandMode();
-    HAL_StatusTypeDef rfd900ExitLocalATCommandMode();
-    HAL_StatusTypeDef rfd900SendData(uint8_t* databuffer, uint16_t sizeData);
-    HAL_StatusTypeDef rfd900SaveLocalRegisterValues();
-    HAL_StatusTypeDef rfd900ResetBootMode();
+    HAL_StatusTypeDef enterLocalATCommandMode();
+    HAL_StatusTypeDef exitLocalATCommandMode();
+    HAL_StatusTypeDef sendData(uint8_t* databuffer, uint16_t sizeData);
+    HAL_StatusTypeDef saveLocalRegisterValues();
+    HAL_StatusTypeDef resetBootMode();
 
     //Configuration Functions
-    HAL_StatusTypeDef rfd900DefaultConfig();
-    HAL_StatusTypeDef rfd900ResetLocalParameters();
-    HAL_StatusTypeDef rfd900RebootLocalRadio();
-    HAL_StatusTypeDef rfd900GetLocalFirmwareData(uint8_t ATI_val);
-    HAL_StatusTypeDef rfd900SetLocalParameter(uint8_t reg_num, uint16_t reg_val);
-    HAL_StatusTypeDef rfd900GetLocalRegisterValue(uint8_t reg_num);
+    HAL_StatusTypeDef defaultConfig() const;
+    HAL_StatusTypeDef resetLocalParameters();
+    HAL_StatusTypeDef rebootLocalRadio();
+    HAL_StatusTypeDef getLocalFirmwareData(uint8_t ATI_val);
+    HAL_StatusTypeDef setLocalParameter(uint8_t reg_num, uint16_t reg_val);
+    HAL_StatusTypeDef getLocalRegisterValue(uint8_t reg_num);
 
-#ifdef __cplusplus
-}
-#endif
+   private:
+    UART_HandleTypeDef* uart_;
+};
+
+}  // namespace sg

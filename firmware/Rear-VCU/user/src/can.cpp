@@ -1,6 +1,7 @@
 #include "can.hpp"
 
 #include <cmath>
+#include <cstdio>
 
 #include "main.h"
 #include "rearvcu_state.h"
@@ -24,6 +25,9 @@ HAL_StatusTypeDef throttleMessageCallback(const sg::CANFrame& msg, void* ctx)
         (static_cast<uint16_t>(throttle_high) << 8) | static_cast<uint16_t>(throttle_low);
     state.throttle_requested.store(throttle_value);
 
+    bool brake_pressed = msg.data[7];
+    state.brake_pressed.store(brake_pressed);
+
     return HAL_OK;
 }
 
@@ -31,7 +35,7 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     state.direction_requested.store(static_cast<flare_can::Direction>(msg.data[1]));
     state.array_contactors_requested_closed.store(static_cast<bool>(msg.data[2]));
-    state.regen_requested.store(msg.data[5]);
+    state.regen_percent_requested.store(msg.data[5]);
     state.mc_power_mode_requested.store(static_cast<flare_can::MCPowerMode>(msg.data[6]));
 
     return HAL_OK;

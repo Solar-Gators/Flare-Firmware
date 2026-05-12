@@ -11,7 +11,7 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx);
 
 inline sg::CANDevice can_device(&hfdcan1,
                                 {
-                                    {0x040, {&throttleMessageCallback}},
+                                    {0x080, {&throttleMessageCallback}},
                                     {0x064, {&driverMessageCallback}},
                                 },
                                 {});  // inline on variable declared in header file like this allows

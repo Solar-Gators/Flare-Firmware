@@ -6,11 +6,13 @@
 
 #include <sys/signal.h>
 
+#include "../inc/steering_state.h"
 #include "buttons.h"
 #include "can.h"
 #include "can_protocol.h"
 #include "screen.h"
-#include "steering_state.h"
+
+#include <limits>
 
 // private variables
 namespace
@@ -66,7 +68,8 @@ void sendRequestsMessage()
         static_cast<uint8_t>(state.headlights_requested_on.load(std::memory_order_relaxed));
 
     // regen breaking strength
-    steering_requests_frame.data[5] = 0;
+    steering_requests_frame.data[5] =
+        static_cast<uint8_t>(state.regen_percent_requested.load(std::memory_order_relaxed));
 
     // pwr/eco request
     steering_requests_frame.data[6] =
@@ -183,6 +186,27 @@ void processScreen()
         old_killed_status = killed_status;
     }
 
+    //auto direction = state.actual_direction.load(std::memory_order_relaxed);
+    //drawCar(direction);
+
+    // draw percent for debugging
+    static uint16_t old_throttle_percent =
+        state.throttle_percent_debug.load(std::memory_order_relaxed);
+    if (auto throttle_percent = state.throttle_percent_debug.load(std::memory_order_relaxed);
+        old_throttle_percent != throttle_percent)
+    {
+        // top middle
+        drawThrottlePercent(throttle_percent);
+        old_throttle_percent = throttle_percent;
+    }
+
+    drawTurnIndicator(state.left_blink_active.load(std::memory_order_relaxed),
+                      state.right_blink_active.load(std::memory_order_relaxed),
+                      state.blink_state.load(std::memory_order_relaxed));
+}
+
+void flareDance()
+{
     auto direction = state.actual_direction.load(std::memory_order_relaxed);
     drawCar(direction);
 }
@@ -238,8 +262,10 @@ void processTurnAndKill()
         right_active = true;
     }
 
-    // draw on screen
-    drawTurnIndicator(left_active, right_active, blinker_on);
+    // update variables for screen blinking effect
+    state.left_blink_active.store(left_active, std::memory_order_relaxed);
+    state.right_blink_active.store(right_active, std::memory_order_relaxed);
+    state.blink_state.store(blinker_on, std::memory_order_relaxed);
 }
 
 void processCC()
@@ -260,6 +286,34 @@ void processCC()
     // logic here for turning off CC
     // TODO: turn off CC if brake pressed
     // TODO: turn off CC if car is KILLED
+}
+
+void processRegen()
+{
+    const bool regen_plus_pressed =
+        (HAL_GPIO_ReadPin(REGEN_PLUS_PORT, REGEN_PLUS_PIN) == GPIO_PIN_RESET);
+    const bool regen_minus_pressed =
+        (HAL_GPIO_ReadPin(REGEN_MINUS_PORT, REGEN_MINUS_PIN) == GPIO_PIN_RESET);
+
+    if (!regen_plus_pressed && !regen_minus_pressed)
+        return;  // nothing pressed
+    if (regen_plus_pressed && regen_minus_pressed)
+        return;  // both pressed, ignore
+
+    // linear increment
+    constexpr std::uint8_t regen_delta = 13;
+    uint8_t curr_regen = state.regen_percent_requested.load();
+    if (regen_plus_pressed)
+        curr_regen += std::min(
+            regen_delta,
+            static_cast<std::uint8_t>(std::numeric_limits<std::uint8_t>::max() - curr_regen));
+    if (regen_minus_pressed)
+        curr_regen -= std::min<std::uint8_t>(regen_delta, curr_regen);
+    state.regen_percent_requested.store(curr_regen, std::memory_order_relaxed);
+
+    while (HAL_GPIO_ReadPin(REGEN_PLUS_PORT, REGEN_PLUS_PIN) == GPIO_PIN_RESET ||
+           HAL_GPIO_ReadPin(REGEN_MINUS_PORT, REGEN_MINUS_PIN) == GPIO_PIN_RESET)
+        ;
 }
 
 }  // namespace steering

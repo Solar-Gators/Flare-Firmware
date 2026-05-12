@@ -9,31 +9,28 @@
 
 #include <atomic>
 
+extern ADC_HandleTypeDef hadc1;  // supp batt
+extern DAC_HandleTypeDef hdac1;
+
 namespace
 {
 constexpr uint32_t array_precharge_hold_time_ms = 500;
-}
+
+// dacs
+DAC_HandleTypeDef& dac = hdac1;
+constexpr uint32_t dac_channel_throttle = DAC_CHANNEL_1;
+constexpr uint32_t dac_channel_regen = DAC_CHANNEL_2;
+}  // namespace
 
 namespace rearvcu
 {
+
 void init()
 {
     // assert atomics work
     static_assert(std::atomic<uint32_t>::is_always_lock_free);
     static_assert(std::atomic<uint16_t>::is_always_lock_free);
     static_assert(std::atomic<uint8_t>::is_always_lock_free);
-
-    // watchdog init
-    HAL_GPIO_WritePin(WATCHDOG_SET1_GPIO_Port,
-                      WATCHDOG_SET1_Pin,
-                      GPIO_PIN_SET);  // set to 0b10 mode to use ratio of 8
-    HAL_GPIO_WritePin(WATCHDOG_SET0_GPIO_Port,
-                      WATCHDOG_SET0_Pin,
-                      GPIO_PIN_RESET);  // 8 * 5 = 40ms timeout and needs to be kicked before
-    HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_SET);
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(
-        WATCHDOG_ENABLE_GPIO_Port, WATCHDOG_ENABLE_Pin, GPIO_PIN_SET);  // enable watchdog
 
     // array contactors should start open
     HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
@@ -42,8 +39,9 @@ void init()
     // turn on mc
     HAL_GPIO_WritePin(MC_MAIN_CTRL_GPIO_Port, MC_MAIN_CTRL_Pin, GPIO_PIN_SET);
 
-    // select analog throttle
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+    // init the regen and throttle dacs
+    HAL_DAC_Start(&dac, dac_channel_regen);
+    HAL_DAC_Start(&dac, dac_channel_throttle);
 
     // TODO: initialize ina chip here
 
@@ -73,18 +71,34 @@ void sendSuppBattFrame()
 
 void processRegenThrottleOutputs()
 {
-    // TODO: This whole thing once we get a dac
+    // TODO: Use PID loop and add cruise control after verifying this works on car
 
-    // kick watchdog by sending a falling edge
-    HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_RESET);
-    osDelay(1);
-    HAL_GPIO_WritePin(WATCHDOG_INPUT_GPIO_Port, WATCHDOG_INPUT_Pin, GPIO_PIN_SET);
+    uint16_t throttle_vol = state.throttle_requested.load(std::memory_order_relaxed);
 
-    // consistently update throttle and regen here based on..
-    // throttle value over can
-    // regen value over can
-    // cruise control stuff
-    // pid loop prolly
+    uint8_t regen_percent = state.regen_percent_requested.load(std::memory_order_relaxed);
+    auto regen_vol =
+        static_cast<uint16_t>((static_cast<float>(regen_percent) / 100.0f) * 0xFFF);  // 12 bit dac
+
+    // if physical brake is pressed, set throttle to 0 and regen to max
+    if (state.brake_pressed.load(std::memory_order_relaxed))
+    {
+        HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+        HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, 0xFFF);
+        return;
+    }
+
+    // if throttle is 0, turn on regen at driver's requested strength
+    if (throttle_vol <
+        10)  // less than 10 here in case of transcience or something in front vcus adc?
+    {
+        HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, 0);
+        HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, regen_vol);
+        return;
+    }
+
+    // otherwise actually use the throttle requested by driver
+    HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, 0);
+    HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, throttle_vol);
 }
 
 void processMCOutputs()

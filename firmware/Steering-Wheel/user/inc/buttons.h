@@ -1,8 +1,25 @@
-#include "Steering_wheel_buttons.hpp"
+#pragma once
+
 #include "main.h"
+
+enum class ButtonIndex : uint8_t
+{
+    LEFT_TURN = 0,
+    POWER_MODE = 1,
+    ARRAY = 2,
+    CC_DEC = 3,
+    RIGHT_TURN = 4,
+    DIRECTION = 5,
+    HORN = 6,  // be careful changing this one cause its light is messed up
+    CC_INC
+};
 
 #define HORN_PORT BUTTON7_GPIO_Port
 #define HORN_PIN BUTTON7_Pin
+#define REGEN_PLUS_PORT REGEN_INCREASE_GPIO_Port
+#define REGEN_PLUS_PIN REGEN_INCREASE_Pin
+#define REGEN_MINUS_PORT REGEN_DECREASE_GPIO_Port
+#define REGEN_MINUS_PIN REGEN_DECREASE_Pin
 
 // button layout
 // 1(lt)      5(rt) (both for hazards)
@@ -12,14 +29,14 @@
 
 // paddles do cc or regen strengths depending on mode maybe
 
-void button1PressedCallback();
-void button2PressedCallback();
-void button3PressedCallback();
-void button4PressedCallback();
-void button5PressedCallback();
-void button6PressedCallback();
-void button7PressedCallback();
-void button8PressedCallback();
+void leftTurnPressedCallback();
+void powerModePressedCallback();
+void arrayPressedCallback();
+void ccDecPressedCallback();
+void rightTurnPressedCallback();
+void directionPressedCallback();
+void hornPressedCallback();
+void ccIncPressedCallback();
 
 void initButtons();
 
