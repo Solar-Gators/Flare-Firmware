@@ -9,7 +9,7 @@
 
 struct RearVCUState
 {
-    std::atomic<uint16_t> throttle_requested{};      // 12 bit value from front vcu
+    std::atomic<uint16_t> throttle_requested{};  // 12 bit value from front vcu
     std::atomic<uint16_t> supp_batt_voltage_mv{};
     std::atomic<uint16_t> supp_batt_current{};
     std::atomic<uint8_t> regen_percent_requested{};  // 0 - 100 percent number
