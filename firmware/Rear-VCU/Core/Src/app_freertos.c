@@ -81,13 +81,6 @@ const osThreadAttr_t outputsTask_attributes = {
   .cb_size = sizeof(outputsTaskCB),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for SupBatMonitoring */
-osThreadId_t SupBatMonitoringHandle;
-const osThreadAttr_t SupBatMonitoring_attributes = {
-  .name = "SupBatMonitoring",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -127,9 +120,6 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of outputsTask */
   outputsTaskHandle = osThreadNew(startOutputsTask, NULL, &outputsTask_attributes);
-
-  /* creation of SupBatMonitoring */
-  SupBatMonitoringHandle = osThreadNew(startSupBatMonitoring , NULL, &SupBatMonitoring_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -180,24 +170,6 @@ void startOutputsTask(void *argument)
   /* USER CODE BEGIN outputsTask */
     startOutputsTask_user(argument);
   /* USER CODE END outputsTask */
-}
-
-/* USER CODE BEGIN Header_startSupBatMonitoring */
-/**
-* @brief Function implementing the SupBatMonitoring thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startSupBatMonitoring */
-void startSupBatMonitoring (void *argument)
-{
-  /* USER CODE BEGIN SupBatMonitoring */
-  /* Infinite loop */
-  for(;;)
-  {
-      startSupBatMonitoring_user(argument);
-  }
-  /* USER CODE END SupBatMonitoring */
 }
 
 /* Private application code --------------------------------------------------*/

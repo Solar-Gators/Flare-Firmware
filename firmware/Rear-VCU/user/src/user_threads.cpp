@@ -36,6 +36,7 @@ void init_user()
         rearvcu::processArrayContactors();
         rearvcu::processMCOutputs();
         rearvcu::processRegenThrottleOutputs();
+        rearvcu::sendSuppBattFrame();
     }
 }
 
@@ -46,15 +47,4 @@ void startSendStatusTask_user(void* argument)
         rearvcu::sendStatusMessage();
         osDelay(50);
     }
-}
-
-
-void startSupBatMonitoring_user (void *argument)
-{
-   while (true) {
-
-
-       return;
-   }
-
 }

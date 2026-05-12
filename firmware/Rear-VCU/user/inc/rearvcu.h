@@ -17,7 +17,7 @@ void processRegenThrottleOutputs();
 void processMCOutputs();
 void processArrayContactors();
 void sendStatusMessage();
-void startSupBatMonitoring ();
+void startSupBatMonitoring();
 
 }  // namespace rearvcu
 

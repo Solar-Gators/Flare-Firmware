@@ -59,11 +59,26 @@ void sendSuppBattFrame()
                                  {}};
 
     // supp batt voltage can be read and sent in this thread as it's not as urgent/important
-    uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
+    // SUPP_BATT_V_Pin
+    // SUPP_BATT_V_GPIO_Port
+    constexpr int N = 16;
+    uint32_t sum = 0;
+
+    for (int i = 0; i < N; i++)
+    {
+        HAL_ADC_Start(&hadc1);
+        HAL_ADC_PollForConversion(&hadc1, 10);
+        sum += HAL_ADC_GetValue(&hadc1);
+        HAL_ADC_Stop(&hadc1);
+    }
+
+    state.supp_batt_voltage_mv.store(static_cast<uint16_t>(sum / N));
+
+    //uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
     uint16_t supp_batt_current = 0xFFFF;     // TODO: could get current draw of supp batt here
 
-    supp_batt_frame.data[0] = static_cast<uint8_t>(supp_batt_voltage_mv);       // lsb
-    supp_batt_frame.data[1] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
+    supp_batt_frame.data[0] = static_cast<uint8_t>(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));       // lsb
+    supp_batt_frame.data[1] = static_cast<uint8_t>(state.supp_batt_voltage_mv.load(std::memory_order_relaxed) >> 8);  // msb
     supp_batt_frame.data[2] = static_cast<uint8_t>(supp_batt_current);          // lsb
     supp_batt_frame.data[3] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
     can_device.send(supp_batt_frame);
