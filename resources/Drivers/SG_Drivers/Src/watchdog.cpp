@@ -7,7 +7,6 @@ namespace sg
 bool Watchdog::threadReady[16] = {false};
 uint8_t Watchdog::totalThreads = 0;
 
-
 /**
     * @brief STM32U575xx IWDG Initialization Function
     * @param None

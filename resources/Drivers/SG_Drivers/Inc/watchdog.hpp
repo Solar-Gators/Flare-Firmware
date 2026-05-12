@@ -1,9 +1,9 @@
 #pragma once
 
+#include "stm32u5xx_hal.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
-
-#include "stm32u5xx_hal.h"
 
 // How to use
 // watchdog instance name can be repeats because it is technically a local var
