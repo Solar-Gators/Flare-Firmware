@@ -1,63 +1,25 @@
 #include "watchdog.hpp"
 
-//#include "stm32u5xx.h"   // CMSIS device header
-
 // Look at hpp file for use case
 
 namespace sg
 {
-IWDG_HandleTypeDef Watchdog::hiwdg = {0};
 bool Watchdog::threadReady[16] = {false};
 uint8_t Watchdog::totalThreads = 0;
-
-/**
-    * @brief  This function is executed in case of error occurrence.
-    * @retval None
-    */
-void Watchdog::Error_Handler(void)
-{
-    /* USER CODE BEGIN Error_Handler_Debug */
-    __disable_irq();
-    while (1)
-    {
-        // User can add his own implementation to report the HAL error return state
-    }
-    /* USER CODE END Error_Handler_Debug */
-}
 
 /**
     * @brief STM32U575xx IWDG Initialization Function
     * @param None
     */
-HAL_StatusTypeDef Watchdog::MX_IWDG_Init(void)
+HAL_StatusTypeDef Watchdog::IWDG_Init(void)
 {
-    // This watchdog is meant for the STM32U575xx MCU
-
+    taskENTER_CRITICAL();
     // give each thread an id
     if (totalThreads < 16)
     {
         id = totalThreads++;
     }
-
-    // only run watchdog init once
-    if (id == 0)
-    {
-        hiwdg.Instance = IWDG;
-        // IWDG_PR_PR_1 ~ 2 sec for all threads to kick
-        // IWDG_PR_PR_2 ~ 8 sec for all threads to kick
-        // (IWDG_PR_PR_1 | IWDG_PR_PR_2) ~ 35 sec for all threads to kick
-        hiwdg.Init.Prescaler = (IWDG_PR_PR_2);
-        hiwdg.Init.Window = 4095;
-        hiwdg.Init.Reload = 4095;
-        hiwdg.Init.EWI = 0;
-        HAL_IWDG_Init(&hiwdg);  // Initialize the external watchdog clock plus other things
-    }
-
-    if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-    {
-        Error_Handler();
-    }
-
+    taskEXIT_CRITICAL();
     return HAL_OK;
 }
 
@@ -68,10 +30,10 @@ HAL_StatusTypeDef Watchdog::MX_IWDG_Init(void)
     */
 void Watchdog::Kick(void)
 {
-    // set id connect to specific thread to true/ran
+    taskENTER_CRITICAL();
+
     threadReady[id] = true;
 
-    // check if all threads have been run, if so, set all_ready flag to true
     bool all_ready = true;
     for (uint8_t i = 0; i < totalThreads; i++)
     {
@@ -82,14 +44,16 @@ void Watchdog::Kick(void)
         }
     }
 
-    // When all threads are ready (have been run), kick the watchdog
     if (all_ready)
     {
         HAL_IWDG_Refresh(&hiwdg);
+
         for (uint8_t i = 0; i < totalThreads; i++)
         {
             threadReady[i] = false;
         }
     }
+
+    taskEXIT_CRITICAL();
 }
 }  // namespace sg
