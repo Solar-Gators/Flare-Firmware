@@ -20,6 +20,7 @@ constexpr uint32_t array_precharge_hold_time_ms = 500;
 DAC_HandleTypeDef& dac = hdac1;
 constexpr uint32_t dac_channel_throttle = DAC_CHANNEL_1;
 constexpr uint32_t dac_channel_regen = DAC_CHANNEL_2;
+
 }  // namespace
 
 namespace rearvcu
