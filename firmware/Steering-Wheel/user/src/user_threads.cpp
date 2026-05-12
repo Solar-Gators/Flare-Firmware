@@ -23,7 +23,7 @@ void init_user()
 void startHeartbeatTask_user(void* argument)
 {
     sg::Watchdog wdog1;
-    wdog1.MX_IWDG_Init();
+    wdog1.IWDG_Init();
 
     for (;;)
     {
@@ -41,7 +41,7 @@ void startHeartbeatTask_user(void* argument)
 void startScreenTask_user(void* argument)
 {
     sg::Watchdog wdog2;
-    wdog2.MX_IWDG_Init();
+    wdog2.IWDG_Init();
 
     for (;;)
     {
@@ -72,7 +72,7 @@ void startScreenTask_user(void* argument)
 void startPollButtons_user(void* argument)
 {
     sg::Watchdog wdog3;
-    wdog3.MX_IWDG_Init();
+    wdog3.IWDG_Init();
 
     for (;;)
     {
@@ -93,7 +93,7 @@ void startPollButtons_user(void* argument)
 void startDancingFlareScreenTask_user(void* argument)
 {
     sg::Watchdog wdog4;
-    wdog4.MX_IWDG_Init();
+    wdog4.IWDG_Init();
 
     for (;;)
     {

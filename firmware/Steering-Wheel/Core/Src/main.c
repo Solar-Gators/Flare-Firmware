@@ -274,7 +274,10 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  // IWDG_PRESCALER_16 ~ 2 sec for all threads to kick
+  // IWDG_PRESCALER_64 ~ 8 sec for all threads to kick
+  // IWDG_PRESCALER_256 ~ 35 sec for all threads to kick
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
   hiwdg.Init.Window = 4095;
   hiwdg.Init.Reload = 4095;
   hiwdg.Init.EWI = 0;
