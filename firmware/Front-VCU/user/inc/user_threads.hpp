@@ -2,7 +2,6 @@
 #define USER_THREADS_HPP
 
 #ifdef __cplusplus
-#include "ina226.hpp"
 extern "C"
 {
 #endif

@@ -7,6 +7,7 @@
 
 #include "can.hpp"
 #include "frontvcu_state.hpp"
+#include "ina226.hpp"
 #include "main.h"
 
 extern ADC_HandleTypeDef hadc1;
