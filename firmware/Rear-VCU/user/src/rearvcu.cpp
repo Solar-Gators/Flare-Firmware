@@ -4,13 +4,16 @@
 
 #include "can.hpp"
 #include "can_protocol.h"
+#include "ina226.hpp"
 #include "main.h"
 #include "rearvcu_state.h"
 
 #include <atomic>
 
-extern ADC_HandleTypeDef hadc1;  // supp batt
+extern I2C_HandleTypeDef hi2c3;
 extern DAC_HandleTypeDef hdac1;
+
+INA226 sup_batt_volt(&hi2c3, 0x40);
 
 namespace
 {
@@ -44,7 +47,8 @@ void init()
     HAL_DAC_Start(&dac, dac_channel_regen);
     HAL_DAC_Start(&dac, dac_channel_throttle);
 
-    // TODO: initialize ina chip here
+    // ina chip init for reading sup batt
+    sup_batt_volt.init(0.002, 2, 0x4123);
 
     // can
     can_init();
@@ -59,14 +63,25 @@ void sendSuppBattFrame()
                                  0,
                                  {}};
 
-    // supp batt voltage can be read and sent in this thread as its not as urgent/important
-    uint16_t supp_batt_voltage_mv = 0xFFFF;  // TODO: could get voltage of supp batt here
-    uint16_t supp_batt_current = 0xFFFF;     // TODO: could get current draw of supp batt here
+    // supp batt voltage can be read and sent in this thread as it's not as urgent/important
+    sup_batt_volt.writeConfig(0x4123);
+    osDelay(5);
 
-    supp_batt_frame.data[0] = static_cast<uint8_t>(supp_batt_voltage_mv);       // lsb
-    supp_batt_frame.data[1] = static_cast<uint8_t>(supp_batt_voltage_mv >> 8);  // msb
-    supp_batt_frame.data[2] = static_cast<uint8_t>(supp_batt_current);          // lsb
-    supp_batt_frame.data[3] = static_cast<uint8_t>(supp_batt_current >> 8);     // msb
+    // measurement gives floating point values
+    INA226::Measurement sup_batt_volt_m{};
+    sup_batt_volt.readMeasurement(sup_batt_volt_m);
+
+    state.supp_batt_voltage_mv.store(static_cast<uint16_t>(sup_batt_volt_m.bus_V * 1000.0f));
+    state.supp_batt_current.store(static_cast<uint16_t>(sup_batt_volt_m.current_A * 1000.0f));
+
+    supp_batt_frame.data[0] =
+        static_cast<uint8_t>(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));  // lsb
+    supp_batt_frame.data[1] = static_cast<uint8_t>(
+        state.supp_batt_voltage_mv.load(std::memory_order_relaxed) >> 8);  // msb
+    supp_batt_frame.data[2] =
+        static_cast<uint8_t>(state.supp_batt_current.load(std::memory_order_relaxed));  // lsb
+    supp_batt_frame.data[3] =
+        static_cast<uint8_t>(state.supp_batt_current.load(std::memory_order_relaxed) >> 8);  // msb
     can_device.send(supp_batt_frame);
 }
 

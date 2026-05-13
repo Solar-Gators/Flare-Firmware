@@ -36,6 +36,7 @@ void init_user()
         rearvcu::processArrayContactors();
         rearvcu::processMCOutputs();
         rearvcu::processRegenThrottleOutputs();
+        rearvcu::sendSuppBattFrame();
     }
 }
 
