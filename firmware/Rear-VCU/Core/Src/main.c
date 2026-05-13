@@ -121,9 +121,9 @@ int main(void)
   MX_UART4_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-
-    init_user();
-
+    // Init user now called in MX_FREERTOS_Init
+    // (after kernel initialization) for safer
+    // RTOS primitive creation
   /* USER CODE END 2 */
 
   /* Init scheduler */
