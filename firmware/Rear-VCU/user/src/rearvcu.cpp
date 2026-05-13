@@ -10,7 +10,6 @@
 
 #include <atomic>
 
-//extern ADC_HandleTypeDef hadc1;  // supp batt, could take out cuz not using anymore maybe, ask richard/nate
 extern I2C_HandleTypeDef hi2c3;
 extern DAC_HandleTypeDef hdac1;
 
@@ -73,19 +72,6 @@ void sendSuppBattFrame()
 
     state.supp_batt_voltage_mv.store(static_cast<uint16_t>(sup_batt_volt_m.bus_V * 1000.0f));
     state.supp_batt_current.store(static_cast<uint16_t>(sup_batt_volt_m.current_A * 1000.0f));
-
-    // TODO: could prob delete this entire comment because we are using ina226 instead for sup batt volt reading
-    /*constexpr int N = 16;
-    uint32_t sum = 0;
-
-    for (int i = 0; i < N; i++)
-    {
-        HAL_ADC_Start(&hadc1);
-        HAL_ADC_PollForConversion(&hadc1, 10);
-        sum += HAL_ADC_GetValue(&hadc1);
-        HAL_ADC_Stop(&hadc1);
-    }*/
-    //state.supp_batt_voltage_mv.store(static_cast<uint16_t>(sum / N));
 
     supp_batt_frame.data[0] =
         static_cast<uint8_t>(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));  // lsb
