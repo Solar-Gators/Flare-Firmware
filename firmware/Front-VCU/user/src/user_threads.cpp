@@ -137,20 +137,22 @@ void StartLoadsControl_user(void* argument)
         bool left_on = false;
         bool right_on = false;
 
+        bool new_phase = frontvcu::state.turn_signals_phase.load(std::memory_order_relaxed);
+
         switch (turn_signals)
         {
             case flare_can::TurnSignals::LEFT:
-                left_on = blink_phase_on;
+                left_on = new_phase;
                 right_on = false;
                 // brake_on written to at beginning directly by brake status
                 break;
             case flare_can::TurnSignals::RIGHT:
-                right_on = blink_phase_on;
+                right_on = new_phase;
                 left_on = false;
                 break;
             case flare_can::TurnSignals::HAZARDS:
-                left_on = blink_phase_on;
-                right_on = blink_phase_on;
+                left_on = new_phase;
+                right_on = new_phase;
                 break;
             case flare_can::TurnSignals::OFF:
                 left_on = false;

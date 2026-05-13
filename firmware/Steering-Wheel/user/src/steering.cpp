@@ -48,8 +48,8 @@ void sendRequestsMessage()
                                                 0,
                                                 {}};
     // turn signals
-    steering_requests_frame.data[0] =
-        static_cast<uint8_t>(state.turn_signals_requested.load(std::memory_order_relaxed));
+    const auto turn_signals = state.turn_signals_requested.load(std::memory_order_relaxed);
+    steering_requests_frame.data[0] = static_cast<uint8_t>(turn_signals);
 
     // frwrd / reverse
     steering_requests_frame.data[1] =
@@ -63,9 +63,10 @@ void sendRequestsMessage()
     steering_requests_frame.data[3] =
         static_cast<uint8_t>(state.horn_requested_on.load(std::memory_order_relaxed));
 
-    // headlights
-    steering_requests_frame.data[4] =
-        static_cast<uint8_t>(state.headlights_requested_on.load(std::memory_order_relaxed));
+    // turn signals phase
+    const bool blink_phase = (HAL_GetTick() / 500) % 2 == 0;
+
+    steering_requests_frame.data[4] = static_cast<uint8_t>(blink_phase);
 
     // regen breaking strength
     steering_requests_frame.data[5] =

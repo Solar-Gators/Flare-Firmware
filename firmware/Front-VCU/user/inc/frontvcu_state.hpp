@@ -27,6 +27,7 @@ struct FrontVCUState
     std::atomic<uint8_t> brake_state{};
     // lights
     std::atomic<flare_can::TurnSignals> turn_signals_status{flare_can::TurnSignals::OFF};
+    std::atomic<bool> turn_signals_phase{};
     // horn and fan
     std::atomic<uint8_t> horn_state{};
     std::atomic<uint8_t> fan_state{};
