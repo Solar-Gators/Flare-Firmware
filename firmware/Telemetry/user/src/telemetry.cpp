@@ -123,6 +123,8 @@ void processLightsOutputs()
         last_toggle_tick = current_tick;
     }
 
+    bool new_phase = turn_signals_phase.load(std::memory_order_relaxed);
+
     bool left_on = false;
     bool right_on = false;
     bool brake_on = brake;
@@ -131,26 +133,26 @@ void processLightsOutputs()
     // calculate states then write at the end
     if (kill_latched)
     {
-        left_on = blink_phase_on;
-        right_on = blink_phase_on;
-        strobe_on = blink_phase_on;
+        left_on = new_phase;
+        right_on = new_phase;
+        strobe_on = new_phase;
     }
     else
     {
         switch (turn_signals)
         {
             case flare_can::TurnSignals::LEFT:
-                left_on = blink_phase_on;
+                left_on = new_phase;
                 right_on = brake;
                 // brake_on written to at beginning directly by brake status
                 break;
             case flare_can::TurnSignals::RIGHT:
-                right_on = blink_phase_on;
+                right_on = new_phase;
                 left_on = brake;
                 break;
             case flare_can::TurnSignals::HAZARDS:
-                left_on = blink_phase_on;
-                right_on = blink_phase_on;
+                left_on = new_phase;
+                right_on = new_phase;
                 break;
             case flare_can::TurnSignals::OFF:
                 left_on = brake;

@@ -65,7 +65,6 @@ void startScreenTask_user(void* argument)
         osMutexRelease(screenMutexHandle);
 
         osDelay(20);  // screen refresh rate
-        // TODO: optimize the refresh rate
     }
 }
 
