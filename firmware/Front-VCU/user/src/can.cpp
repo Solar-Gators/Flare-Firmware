@@ -17,6 +17,8 @@ HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
 {
     frontvcu::state.turn_signals_status.store(static_cast<flare_can::TurnSignals>(frame.data[0]));
 
+    frontvcu::state.turn_signals_phase.store(static_cast<bool>(frame.data[4]));
+
     frontvcu::state.horn_state.store(frame.data[3]);
 
     return HAL_OK;

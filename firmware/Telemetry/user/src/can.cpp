@@ -32,6 +32,8 @@ HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
     turn_signals_status.store(static_cast<flare_can::TurnSignals>(frame.data[0]),
                               std::memory_order_relaxed);
 
+    turn_signals_phase.store(static_cast<bool>(frame.data[4]), std::memory_order_relaxed);
+
     return HAL_OK;
 }
 
