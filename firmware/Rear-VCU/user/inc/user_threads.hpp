@@ -11,6 +11,7 @@ extern "C"
     [[noreturn]] void startHeartbeatTask_user(void* argument);
     [[noreturn]] void startOutputsTask_user(void* argument);
     [[noreturn]] void startSendStatusTask_user(void* argument);
+    [[noreturn]] void startReadSupBat_user(void* argument);
 
 #ifdef __cplusplus
 }

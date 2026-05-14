@@ -54,14 +54,16 @@ void init()
     can_init();
 }
 
-void sendSuppBattFrame()
+void readSuppBatt()
 {
-    sg::CANFrame supp_batt_frame{0x021,
-                                 sg::CANFrameIDType::STANDARD,
-                                 sg::CANFrameRTRMode::DATA,
-                                 sg::CANFrameLen::BYTES_4,
-                                 0,
-                                 {}};
+    constexpr int N = 20;
+    constexpr int delay_per_sample_ms = 25;  // 20 * 25 = 500ms total
+
+    static uint32_t voltage_samples[N] = {};
+    static uint32_t current_samples[N] = {};
+    static int idx = 0;
+    static uint32_t voltage_sum = 0;
+    static uint32_t current_sum = 0;
 
     // supp batt voltage can be read and sent in this thread as it's not as urgent/important
     sup_batt_volt.writeConfig(0x4123);
@@ -71,8 +73,32 @@ void sendSuppBattFrame()
     INA226::Measurement sup_batt_volt_m{};
     sup_batt_volt.readMeasurement(sup_batt_volt_m);
 
-    state.supp_batt_voltage_mv.store(static_cast<uint16_t>(sup_batt_volt_m.bus_V * 1000.0f));
-    state.supp_batt_current.store(static_cast<uint16_t>(sup_batt_volt_m.current_A * 1000.0f));
+    // moving average over 20 samples
+    uint32_t new_voltage = static_cast<uint32_t>(sup_batt_volt_m.bus_V * 1000.0f);
+    uint32_t new_current = static_cast<uint32_t>(sup_batt_volt_m.current_A * 1000.0f);
+
+    voltage_sum -= voltage_samples[idx];
+    current_sum -= current_samples[idx];
+    voltage_samples[idx] = new_voltage;
+    current_samples[idx] = new_current;
+    voltage_sum += new_voltage;
+    current_sum += new_current;
+    idx = (idx + 1) % N;
+
+    state.supp_batt_voltage_mv.store(static_cast<uint16_t>(voltage_sum / N));
+    state.supp_batt_current.store(static_cast<uint16_t>(current_sum / N));
+
+    osDelay(delay_per_sample_ms);
+}
+
+void sendSuppBattFrame()
+{
+    sg::CANFrame supp_batt_frame{0x021,
+                                 sg::CANFrameIDType::STANDARD,
+                                 sg::CANFrameRTRMode::DATA,
+                                 sg::CANFrameLen::BYTES_4,
+                                 0,
+                                 {}};
 
     supp_batt_frame.data[0] =
         static_cast<uint8_t>(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));  // lsb

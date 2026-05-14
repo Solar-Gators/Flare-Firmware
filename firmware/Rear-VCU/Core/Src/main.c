@@ -50,8 +50,6 @@ FDCAN_HandleTypeDef hfdcan1;
 
 I2C_HandleTypeDef hi2c3;
 
-IWDG_HandleTypeDef hiwdg;
-
 SPI_HandleTypeDef hspi3;
 
 UART_HandleTypeDef huart4;
@@ -72,7 +70,6 @@ static void MX_I2C3_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_DAC1_Init(void);
 static void MX_UART4_Init(void);
-static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -119,7 +116,6 @@ int main(void)
   MX_SPI3_Init();
   MX_DAC1_Init();
   MX_UART4_Init();
-  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
     init_user();
@@ -498,36 +494,6 @@ static void MX_ICACHE_Init(void)
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
-
-}
-
-/**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IWDG_Init(void)
-{
-
-  /* USER CODE BEGIN IWDG_Init 0 */
-
-  /* USER CODE END IWDG_Init 0 */
-
-  /* USER CODE BEGIN IWDG_Init 1 */
-
-  /* USER CODE END IWDG_Init 1 */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
-  hiwdg.Init.Window = 4095;
-  hiwdg.Init.Reload = 4095;
-  hiwdg.Init.EWI = 0;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IWDG_Init 2 */
-
-  /* USER CODE END IWDG_Init 2 */
 
 }
 
