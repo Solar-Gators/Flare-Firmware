@@ -98,7 +98,7 @@ void StartCANMessagesTX_user(void* argument)
         tb_frame.data[3] = frontvcu::state.fh_power_msb.load();
         tb_frame.data[4] = frontvcu::state.lights_power_lsb.load();
         tb_frame.data[5] = frontvcu::state.lights_power_msb.load();
-        tb_frame.data[7] = static_cast<uint8_t>(HAL_GPIO_ReadPin(BRAKE_GPIO_Port, BRAKE_Pin));
+        tb_frame.data[7] = static_cast<uint8_t>(!HAL_GPIO_ReadPin(BRAKE_GPIO_Port, BRAKE_Pin));
         frontvcu::can_device.send(tb_frame);
         osDelay(20);
     }

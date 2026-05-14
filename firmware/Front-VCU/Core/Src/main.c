@@ -494,7 +494,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : BRAKE_Pin */
   GPIO_InitStruct.Pin = BRAKE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BRAKE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : OK_LED_Pin */
