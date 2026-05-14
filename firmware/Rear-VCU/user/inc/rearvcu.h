@@ -12,12 +12,12 @@ constexpr uint32_t throttle_output_loop_rate_ms =
     10;  // it should always be this so we don't have to pass in delta time for pid loop
 
 void init();
+void readSuppBatt();
 void sendSuppBattFrame();
 void processRegenThrottleOutputs();
 void processMCOutputs();
 void processArrayContactors();
 void sendStatusMessage();
-void startSupBatMonitoring();
 
 }  // namespace rearvcu
 
