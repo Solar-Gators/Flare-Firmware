@@ -19,7 +19,6 @@ void init_user()
     for (;;)
     {
         HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
-        rearvcu::sendSuppBattFrame();
         osDelay(500);
     }
 }
@@ -36,7 +35,6 @@ void init_user()
         rearvcu::processArrayContactors();
         rearvcu::processMCOutputs();
         rearvcu::processRegenThrottleOutputs();
-        rearvcu::sendSuppBattFrame();
     }
 }
 
@@ -46,5 +44,14 @@ void startSendStatusTask_user(void* argument)
     {
         rearvcu::sendStatusMessage();
         osDelay(50);
+    }
+}
+
+void startReadSupBat_user(void* argument)
+{
+    for (;;)
+    {
+        rearvcu::readSuppBatt();
+        rearvcu::sendSuppBattFrame();
     }
 }

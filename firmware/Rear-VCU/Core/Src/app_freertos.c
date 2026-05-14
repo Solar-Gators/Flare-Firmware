@@ -81,6 +81,13 @@ const osThreadAttr_t outputsTask_attributes = {
   .cb_size = sizeof(outputsTaskCB),
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for readSupBat */
+osThreadId_t readSupBatHandle;
+const osThreadAttr_t readSupBat_attributes = {
+  .name = "readSupBat",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -120,6 +127,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of outputsTask */
   outputsTaskHandle = osThreadNew(startOutputsTask, NULL, &outputsTask_attributes);
+
+  /* creation of readSupBat */
+  readSupBatHandle = osThreadNew(startReadSupBat, NULL, &readSupBat_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -171,6 +181,24 @@ void startOutputsTask(void *argument)
   /* USER CODE BEGIN outputsTask */
     startOutputsTask_user(argument);
   /* USER CODE END outputsTask */
+}
+
+/* USER CODE BEGIN Header_startReadSupBat */
+/**
+* @brief Function implementing the readSupBat thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_startReadSupBat */
+void startReadSupBat(void *argument)
+{
+  /* USER CODE BEGIN readSupBat */
+  /* Infinite loop */
+  for(;;)
+  {
+      startReadSupBat_user(argument);
+  }
+  /* USER CODE END readSupBat */
 }
 
 /* Private application code --------------------------------------------------*/
