@@ -119,11 +119,9 @@ int main(void)
   MX_SPI3_Init();
   MX_DAC1_Init();
   MX_UART4_Init();
-  MX_IWDG_Init();
+  //MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-
     init_user();
-
   /* USER CODE END 2 */
 
   /* Init scheduler */

@@ -109,7 +109,9 @@ int main(void)
   MX_I2C4_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-    init_user();
+  // Init user now called in MX_FREERTOS_Init
+  // (after kernel initialization) for safer
+  // RTOS primitive creation
   /* USER CODE END 2 */
 
   /* Init scheduler */
