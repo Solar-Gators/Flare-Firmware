@@ -28,8 +28,8 @@ enum class TurnSignals : uint8_t
 
 enum class Direction : uint8_t
 {
-    REVERSE = 0,
-    FORWARD = 1
+    REVERSE = 1,
+    FORWARD = 0
 };
 
 enum class MCPowerMode : uint8_t
