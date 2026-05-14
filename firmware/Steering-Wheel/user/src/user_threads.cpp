@@ -77,10 +77,9 @@ void startPollButtons_user(void* argument)
     {
         // TODO: could consolidate these below functions into smt like processButtonLEDs
         steering::processHornButton();
-        steering::processTurnAndKill();
+        steering::processTurnSignals();
         steering::processCC();
         steering::processRegen();
-
         steering::sendRequestsMessage();
 
         wdog3.Kick();
