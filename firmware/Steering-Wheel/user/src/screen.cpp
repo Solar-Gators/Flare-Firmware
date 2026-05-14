@@ -64,7 +64,7 @@ void drawStartup()
         drawHighTemp(i);
         drawArrayContactors(i > 50 ? flare_can::ArrayContactors::MAIN_CLOSED
                                    : flare_can::ArrayContactors::BOTH_OPEN);
-        drawKillStatus(flare_can::CarKilledStatus::DEAD);
+        //drawKillStatus(flare_can::CarKilledStatus::DEAD);
         drawHeadlightsStatus(true);
         drawHornStatus(true);
         drawTurnIndicator(true, true, true);
@@ -137,7 +137,7 @@ void drawSuppBatt(uint16_t millivolts)
     // supp batt v draw
     display.SetTextSize(2);
     uint32_t whole = millivolts / 1000;
-    uint32_t frac = (millivolts % 1000);
+    uint32_t frac = (millivolts % 1000) / 10;
     snprintf(text_buffer.data(),
              sizeof(text_buffer),
              "%lu.%02lu",
@@ -150,8 +150,8 @@ void drawSuppBatt(uint16_t millivolts)
     // battery 'bar' drawing
     // max is 150v
     // min is ~50v
-    const uint16_t MAX_VOLT = 12000;
-    const uint16_t MIN_VOLT = 1000;
+    const uint16_t MAX_VOLT = 12700;
+    const uint16_t MIN_VOLT = 10500;
     uint16_t level = 0;
     if (millivolts >= MAX_VOLT)
     {
@@ -328,11 +328,11 @@ void drawCC(uint8_t mph)
 void drawKillStatus(flare_can::CarKilledStatus killed)
 {
     // kill status draw
-    display.SetTextSize(2);
-    display.FillRect(240, 205, 75, 16, background_color);
     if (killed == flare_can::CarKilledStatus::DEAD)
     {
-        display.DrawText(240, 205, "KILLED", RGB565_RED);
+        display.SetTextSize(3);
+        display.FillRect(105, 5, 75, 16, background_color);
+        display.DrawText(105, 5, "KILLED", RGB565_RED);
     }
 }
 
@@ -416,8 +416,8 @@ void drawThrottlePercent(uint16_t percent)
         snprintf(
             text_buffer.data(), sizeof(text_buffer), "%3lu%%", static_cast<unsigned long>(percent));
     }
-    display.FillRect(110, 0, 80, 16, background_color);
-    display.DrawText(110, 0, text_buffer.data(), RGB565_BLACK);
+    display.FillRect(35, 10, 80, 16, background_color);
+    display.DrawText(35, 10, text_buffer.data(), RGB565_BLACK);
 }
 
 constexpr uint8_t car[]{

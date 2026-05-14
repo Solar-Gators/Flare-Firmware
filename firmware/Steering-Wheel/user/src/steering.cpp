@@ -178,7 +178,7 @@ void processScreen()
         old_headlights_status = headlights_status;
     }
 
-    static auto old_killed_status = state.killed_status.load(std::memory_order_relaxed);
+    flare_can::CarKilledStatus old_killed_status;
     if (auto killed_status = state.killed_status.load(std::memory_order_relaxed);
         old_killed_status != killed_status)
     {
