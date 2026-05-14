@@ -69,8 +69,7 @@ void sendRequestsMessage()
     steering_requests_frame.data[4] = static_cast<uint8_t>(blink_phase);
 
     // regen breaking strength
-    steering_requests_frame.data[5] =
-        static_cast<uint8_t>(state.regen_percent_requested.load(std::memory_order_relaxed));
+    steering_requests_frame.data[5] = state.regen_percent_requested.load(std::memory_order_relaxed);
 
     // pwr/eco request
     steering_requests_frame.data[6] =
@@ -179,16 +178,13 @@ void processScreen()
         old_headlights_status = headlights_status;
     }
 
-    static auto old_killed_status = state.killed_status.load(std::memory_order_relaxed);
+    flare_can::CarKilledStatus old_killed_status;
     if (auto killed_status = state.killed_status.load(std::memory_order_relaxed);
         old_killed_status != killed_status)
     {
         drawKillStatus(killed_status);
         old_killed_status = killed_status;
     }
-
-    //auto direction = state.actual_direction.load(std::memory_order_relaxed);
-    //drawCar(direction);
 
     // draw percent for debugging
     static uint16_t old_throttle_percent =
@@ -220,19 +216,11 @@ void processHornButton()
 }
 
 // Process the Turn Signals and the Kill Status for blinking the top LEDs
-void processTurnAndKill()
+void processTurnSignals()
 {
     static uint32_t blink_period_ms = 500;
     static uint32_t last_blink_tick{};
     static bool blinker_on = false;
-
-    bool killed =
-        state.killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD;
-
-    if (killed)
-    {
-        blink_period_ms = 250;
-    }
 
     uint32_t current_tick = HAL_GetTick();
     if (current_tick - last_blink_tick < blink_period_ms)
@@ -250,23 +238,20 @@ void processTurnAndKill()
     bool right_active = (current_signal == flare_can::TurnSignals::RIGHT ||
                          current_signal == flare_can::TurnSignals::HAZARDS);
 
-    if (killed)
-    {
-        // update the relative LEDs
-        HAL_GPIO_WritePin(
-            BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, (blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-
-        HAL_GPIO_WritePin(
-            BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, (blinker_on) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-
-        left_active = true;
-        right_active = true;
-    }
-
     // update variables for screen blinking effect
     state.left_blink_active.store(left_active, std::memory_order_relaxed);
     state.right_blink_active.store(right_active, std::memory_order_relaxed);
     state.blink_state.store(blinker_on, std::memory_order_relaxed);
+}
+
+void processKill()
+{
+    /*
+    if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD)
+    {
+        state.array_contactors_requested_closed.store(false, std::memory_order_relaxed);
+    }
+    */
 }
 
 void processCC()

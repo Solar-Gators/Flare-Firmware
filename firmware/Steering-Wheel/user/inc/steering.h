@@ -13,7 +13,8 @@ void processScreen();
 void flareDance();
 void processHornButton();
 void processRegen();
-void processTurnAndKill();
+void processTurnSignals();
+void processKill();
 void processCC();
 
 inline uint32_t mitsuba_request_message_send_period_ms = 500;

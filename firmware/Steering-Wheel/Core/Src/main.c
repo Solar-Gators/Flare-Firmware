@@ -110,6 +110,7 @@ int main(void)
     // Init user now called in MX_FREERTOS_Init
     // (after kernel initialization) for safer
     // RTOS primitive creation
+    init_user();
     /* USER CODE END 2 */
 
     /* Init scheduler */

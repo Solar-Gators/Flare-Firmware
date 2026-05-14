@@ -96,8 +96,6 @@ void sendSpeedFrame()
 
 void processLightsOutputs()
 {
-    static uint32_t last_toggle_tick{};
-    static bool blink_phase_on{};  // should come from can at some point to synchrnoize
     static bool kill_latched{};
 
     if (killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
@@ -113,17 +111,6 @@ void processLightsOutputs()
 
     const bool brake = brake_state.load(std::memory_order_relaxed);
     const auto turn_signals = turn_signals_status.load(std::memory_order_relaxed);
-    const uint32_t toggle_period_ms = kill_latched ? 250U : led_toggle_period_ms;
-
-    // updated by can at some point
-    uint32_t current_tick = HAL_GetTick();
-    if (current_tick - last_toggle_tick > toggle_period_ms)
-    {
-        blink_phase_on = !blink_phase_on;
-        last_toggle_tick = current_tick;
-    }
-
-    bool new_phase = turn_signals_phase.load(std::memory_order_relaxed);
 
     bool left_on = false;
     bool right_on = false;
@@ -133,34 +120,43 @@ void processLightsOutputs()
     // calculate states then write at the end
     if (kill_latched)
     {
-        left_on = new_phase;
-        right_on = new_phase;
-        strobe_on = new_phase;
-    }
-    else
-    {
-        switch (turn_signals)
+        // flashes at ~85 pulses per minute
+        // regulations between 60-120
+        static uint32_t last_toggle_tick{};
+        bool strobe_phase_on{};
+
+        uint32_t current_tick = HAL_GetTick();
+        if (current_tick - last_toggle_tick > 350)
         {
-            case flare_can::TurnSignals::LEFT:
-                left_on = new_phase;
-                right_on = brake;
-                // brake_on written to at beginning directly by brake status
-                break;
-            case flare_can::TurnSignals::RIGHT:
-                right_on = new_phase;
-                left_on = brake;
-                break;
-            case flare_can::TurnSignals::HAZARDS:
-                left_on = new_phase;
-                right_on = new_phase;
-                break;
-            case flare_can::TurnSignals::OFF:
-                left_on = brake;
-                right_on = brake;
-                break;
-            default:
-                Error_Handler();
+            strobe_phase_on = !strobe_phase_on;
+            last_toggle_tick = current_tick;
         }
+        strobe_on = strobe_phase_on;
+    }
+
+    bool turn_signals_phase_on = turn_signals_phase.load(std::memory_order_relaxed);
+
+    switch (turn_signals)
+    {
+        // brake_on written to at beginning directly by brake status
+        case flare_can::TurnSignals::LEFT:
+            left_on = turn_signals_phase_on;
+            right_on = brake;
+            break;
+        case flare_can::TurnSignals::RIGHT:
+            right_on = turn_signals_phase_on;
+            left_on = brake;
+            break;
+        case flare_can::TurnSignals::HAZARDS:
+            left_on = turn_signals_phase_on;
+            right_on = turn_signals_phase_on;
+            break;
+        case flare_can::TurnSignals::OFF:
+            left_on = brake;
+            right_on = brake;
+            break;
+        default:
+            Error_Handler();
     }
 
     writeLeft(left_on);

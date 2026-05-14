@@ -8,6 +8,7 @@
 #include "../inc/steering_state.h"
 #include "Steering_wheel_buttons.hpp"
 #include "main.h"
+#include "steering.h"
 
 #include <array>
 
@@ -138,6 +139,11 @@ void powerModePressedCallback()
 
 void arrayPressedCallback()
 {
+    if (state.killed_status.load(std::memory_order_relaxed) == flare_can::CarKilledStatus::DEAD)
+    {
+        return;
+    }
+
     if (getButton(ButtonIndex::ARRAY).GetToggleState())
     {
         setLedState(ButtonIndex::ARRAY, GPIO_PIN_SET);
