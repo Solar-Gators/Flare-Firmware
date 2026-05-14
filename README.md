@@ -12,22 +12,23 @@ TODO: note about needing to do make clean after messing with ioc
 You can also build and debug projects directly in **JetBrains CLion** using the official **ARM GNU Toolchain** from Arm Developer.
 
 1. **Install CLion and ARM GNU Toolchain**
-- **Download CLion**:  
+- **Download CLion (Make sure to download a version of CLion that is 2025 or later to have debug servers)**:  
   [https://www.jetbrains.com/clion/](https://www.jetbrains.com/clion/)
 - **Download ARM GNU Toolchain (non-EABI)**:  
   [https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+- (Recommended FOR WINDOWS x64: https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-mingw-w64-i686-arm-none-eabi.exe)
 - During installing, a popup will ask to add to PATH, make sure to check that box.
 - If it doesn't you'll need to add it to your system/user path manually.
 
 2. **Open the Project in CLion**
 - Launch CLion and open the **Flare-Firmware** repository root.
 - Go to **File → Settings → Build, Execution, Deployment → CMake** (This will also appear as a popup the first time you open the project.
-- SPECIFICALLY ENABLE the existing **debug - debug** and **release - release** build presets that are already configured in the repository. The ones labeled just debug and release will not work.
+- SPECIFICALLY ENABLE the existing **debug - debug** and **release - release** build presets that are already configured in the repository. The ones labeled just debug and release will not work. (CLion 2026 might be updated to make it look like GCC or smtg, not confirmed)
 - At this point you should be able to build any project by selecting one in the top righish of your screen and pressing the hammer icon.
 
 3. **Flashing and Debugging in CLion**
 - Download JLink for your device: https://www.segger.com/downloads/jlink/. Either add to path
-- Make sure the tools get added to the path and you are able to type JLinkExe in the terminal and something happens.
+- Make sure the tools get added to the path and you are able to type "JLink" in the terminal and something happens.
 - Follow only the first few instructions from here to make a debug server in CLion: https://www.jetbrains.com/help/clion/debug-servers.html#configure-debug-servers
 - Once you make the SEGGAR J-Link Debug Server make sure you put device as STM32U575RG, transport interface as swd, and upload at something like 4000. (If you added to path in first step it should have found executable for you, if not manually find it to the j link tools you installed maybe a bin folder or something) 
 - You can now use the run and debug buttons on a particular project
