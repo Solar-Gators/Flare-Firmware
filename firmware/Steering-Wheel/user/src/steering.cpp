@@ -244,6 +244,7 @@ void processTurnSignals()
     state.blink_state.store(blinker_on, std::memory_order_relaxed);
 }
 
+// TODO: Check if this function is still required, may be already done in rearvcu
 void processKill()
 {
     /*

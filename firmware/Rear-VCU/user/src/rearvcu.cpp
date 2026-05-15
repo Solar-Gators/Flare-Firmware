@@ -168,6 +168,7 @@ void processArrayContactors()
         HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
         state.array_contactors.store(flare_can::ArrayContactors::BOTH_OPEN,
                                      std::memory_order_relaxed);
+        state.killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
         return;
     }
 
