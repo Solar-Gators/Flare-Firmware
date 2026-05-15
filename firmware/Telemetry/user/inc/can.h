@@ -18,12 +18,15 @@ inline sg::CANDevice can_device(&hfdcan1,
                                     {0x064, {&steeringRequestsCallback, &radioTXCallback}},
                                     {0x020, {&rearVCUStatusCallback, &radioTXCallback}},
                                     {0x040, {&bmsFaultsMessageCallback, &radioTXCallback}},
-                                    {0x041, {&radioTXCallback}},  // batt voltage
-                                    {0x600, {&radioTXCallback}},  // mppts
+                                    {0x041, {&radioTXCallback}},  // BMS - voltage info
+
+                                    /*
+                                    {0x600, {&radioTXCallback}},  // TODO: MPPTs separate CAN bus
                                     {0x601, {&radioTXCallback}},
                                     {0x610, {&radioTXCallback}},
                                     {0x611, {&radioTXCallback}},
                                     {0x620, {&radioTXCallback}},
                                     {0x621, {&radioTXCallback}},
+                                    */
                                 },
                                 {});
