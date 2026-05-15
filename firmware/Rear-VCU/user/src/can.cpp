@@ -41,6 +41,13 @@ HAL_StatusTypeDef driverMessageCallback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
+HAL_StatusTypeDef killCarMessageCallback(const sg::CANFrame& msg, void* ctx)
+{
+    state.kill_car_requested.store(msg.data[0]);
+
+    return HAL_OK;
+}
+
 void can_init()
 {
     // start

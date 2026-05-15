@@ -22,7 +22,7 @@ namespace
 sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin, 50, GPIO_PIN_SET);
 void killSwitchButtonInit()
 {
-    // when only normal press is registered, oon any button press it should call the callback
+    // when only normal press is registered, on any button press it should call the callback
     kill_switch_button.RegisterNormalPressCallback(
         []() { killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed); });
     sg::Button::InitButtons();

@@ -162,6 +162,15 @@ void processMCOutputs()
 
 void processArrayContactors()
 {
+    if (state.kill_car_requested.load())
+    {
+        HAL_GPIO_WritePin(PRE_ARRAY_CTRL_GPIO_Port, PRE_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(MAIN_ARRAY_CTRL_GPIO_Port, MAIN_ARRAY_CTRL_Pin, GPIO_PIN_RESET);
+        state.array_contactors.store(flare_can::ArrayContactors::BOTH_OPEN,
+                                     std::memory_order_relaxed);
+        return;
+    }
+
     static uint32_t precharge_closed_timestamp{};
 
     // TODO: user timer peripheral for consistent timer logic
