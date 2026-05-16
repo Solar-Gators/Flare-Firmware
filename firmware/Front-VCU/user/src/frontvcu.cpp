@@ -4,7 +4,6 @@
 
 #include <cstdint>
 
-#include "../../../Telemetry/user/inc/telem_state.h"
 #include "can.hpp"
 #include "frontvcu_state.hpp"
 #include "ina226.hpp"
