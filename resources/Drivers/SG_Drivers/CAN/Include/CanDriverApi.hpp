@@ -1,10 +1,11 @@
 #pragma once
 
-#if defined(STM32L476xx)
+#if defined(STM32L476xx) | defined(STM32L433xx)
 #include "cmsis_os.h"
 
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_can.h"
+
 #elif defined(STM32U575xx)
 #include "cmsis_os2.h"
 

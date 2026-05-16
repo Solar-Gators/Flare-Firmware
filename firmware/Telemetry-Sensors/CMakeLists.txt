@@ -34,7 +34,13 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
     ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
     ${RESOURCES_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
-    ${RESOURCES_DIR}/Drivers/CMSIS/Include)
+    ${RESOURCES_DIR}/Drivers/CMSIS/Include
+
+    # FreeRTOS
+    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/include
+    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
+    ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F)
+
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${USER_DIR}/inc
