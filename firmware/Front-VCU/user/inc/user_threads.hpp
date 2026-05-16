@@ -15,6 +15,7 @@ extern "C"
     [[noreturn]] void StartLoadsControl_user(void* argument);
     [[noreturn]] void StartCurrentSense_user(void* argument);
     [[noreturn]] void StartBreakSense_user(void* argument);
+    [[noreturn]] void StartCalculateCC_user(void* argument);
     void init_user();
 
 #ifdef __cplusplus

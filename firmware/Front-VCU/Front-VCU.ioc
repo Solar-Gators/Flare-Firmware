@@ -366,3 +366,4 @@ rtos.0.tasks.1=allocationType,Dynamic;bufferName,NULL;codeGen,Default;controlBlo
 rtos.0.tasks.2=allocationType,Dynamic;bufferName,NULL;codeGen,Default;controlBlockName,NULL;entry,StartCANMessagesTX;name,CANMessagesTX;parameter,NULL;priority,osPriorityNormal;stackSize,128
 rtos.0.tasks.3=allocationType,Dynamic;bufferName,NULL;codeGen,Default;controlBlockName,NULL;entry,StartCurrentSense;name,CurrentSense;parameter,NULL;priority,osPriorityLow;stackSize,128
 rtos.0.tasks.4=allocationType,Dynamic;bufferName,NULL;codeGen,Default;controlBlockName,NULL;entry,StartBreakSense;name,BreakSense;parameter,NULL;priority,osPriorityNormal;stackSize,128
+rtos.0.tasks.5=allocationType,Dynamic;bufferName,NULL;codeGen,Default;controlBlockName,NULL;entry,StartCalculateCC;name,CalculateCC;parameter,NULL;priority,osPriorityNormal;stackSize,128

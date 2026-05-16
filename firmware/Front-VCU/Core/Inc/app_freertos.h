@@ -59,6 +59,7 @@ extern osThreadId_t LoadsControlHandle;
 extern osThreadId_t CANMessagesTXHandle;
 extern osThreadId_t CurrentSenseHandle;
 extern osThreadId_t BreakSenseHandle;
+extern osThreadId_t CalculateCCHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -70,6 +71,7 @@ void StartLightsControl(void *argument);
 void StartCANMessagesTX(void *argument);
 void StartCurrentSense(void *argument);
 void StartBreakSense(void *argument);
+void StartCalculateCC(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 

@@ -79,6 +79,13 @@ const osThreadAttr_t BreakSense_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
+/* Definitions for CalculateCC */
+osThreadId_t CalculateCCHandle;
+const osThreadAttr_t CalculateCC_attributes = {
+  .name = "CalculateCC",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -123,6 +130,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of BreakSense */
   BreakSenseHandle = osThreadNew(StartBreakSense, NULL, &BreakSense_attributes);
+
+  /* creation of CalculateCC */
+  CalculateCCHandle = osThreadNew(StartCalculateCC, NULL, &CalculateCC_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -222,6 +232,21 @@ void StartBreakSense(void *argument)
   /* Infinite loop */
     StartBreakSense_user(argument);
   /* USER CODE END BreakSense */
+}
+
+/* USER CODE BEGIN Header_StartCalculateCC */
+/**
+* @brief Function implementing the CalculateCC thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCalculateCC */
+void StartCalculateCC(void *argument)
+{
+  /* USER CODE BEGIN CalculateCC */
+  /* Infinite loop */
+    StartCalculateCC_user(argument);
+  /* USER CODE END CalculateCC */
 }
 
 /* Private application code --------------------------------------------------*/

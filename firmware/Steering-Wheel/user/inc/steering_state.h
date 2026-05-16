@@ -33,6 +33,7 @@ struct SteeringState
     std::atomic<uint16_t> supp_batt_voltage_mv{};
     std::atomic<uint16_t> main_batt_voltage_cv{};  // V * 100
     std::atomic<uint16_t> high_temp_dc{};          // C * 10
+    std::atomic<uint8_t> brake_state{};            // 1 = brake pressed
 
     // debug receive
     std::atomic<uint16_t> throttle_percent_debug{};

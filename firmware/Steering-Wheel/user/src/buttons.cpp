@@ -191,7 +191,7 @@ void ccDecPressedCallback()
 
         if (!current_state)
         {
-            // if turning on, set the cc to be the currect speed
+            // if turning on, set the cc to be the current speed
             uint8_t current_speed = state.car_speed.load();
             if (current_speed >= 1 && current_speed <= 99)
             {

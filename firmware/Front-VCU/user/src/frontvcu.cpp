@@ -37,9 +37,8 @@ void init()
     memset(adc_buffer, 0, sizeof(adc_buffer));
 
     // start throttle adc and dma (continuous mode)
-    if (HAL_ADC_Start_DMA(&hadc1,
-                          reinterpret_cast<uint32_t*>(adc_buffer),
-                          FrontVCUState::ADC_BUF_LEN) != HAL_OK)
+    if (HAL_ADC_Start_DMA(
+            &hadc1, reinterpret_cast<uint32_t*>(adc_buffer), FrontVCUState::ADC_BUF_LEN) != HAL_OK)
     {
         Error_Handler();
     }
@@ -58,13 +57,11 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     if (hadc->Instance == ADC1)
     {
         uint32_t total{};
-        for (size_t i = FrontVCUState::ADC_BUF_LEN / 2;
-             i < FrontVCUState::ADC_BUF_LEN;
-             ++i)
+        for (size_t i = FrontVCUState::ADC_BUF_LEN / 2; i < FrontVCUState::ADC_BUF_LEN; ++i)
         {
             total += adc_buffer[i];
         }
-        state.throttle_data.store(total / (FrontVCUState::ADC_BUF_LEN / 2));
+        state.raw_throttle_data.store(total / (FrontVCUState::ADC_BUF_LEN / 2));
     }
 }
 
@@ -78,7 +75,7 @@ extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
         {
             total += adc_buffer[i];
         }
-        state.throttle_data.store(total / (FrontVCUState::ADC_BUF_LEN / 2));
+        state.raw_throttle_data.store(total / (FrontVCUState::ADC_BUF_LEN / 2));
     }
 }
 
@@ -212,7 +209,33 @@ void readBrakeSense()
     // When brake pressed, update frontvcu state variable
     state.brake_state.store(!HAL_GPIO_ReadPin(BRAKE_GPIO_Port, BRAKE_Pin));
 
-    
+    // rearvcu already deals with throttle when brake is pressed
+    if (state.brake_state.load(std::memory_order_relaxed))
+    {
+        state.cc_state.store(false);
+        // TODO: I think you need to send this over can to steering to update state variables there
+    }
+}
+
+void calculateCC()
+{
+    static uint16_t cc_throttle_snapshot = 0;
+    static bool last_cc_state = false;
+
+    const bool cc_active = state.cc_state.load(std::memory_order_relaxed);
+    const bool brake_on = state.brake_state.load(std::memory_order_relaxed);
+
+    // CC just turned on — snapshot the current throttle position
+    if (cc_active && !last_cc_state)
+        cc_throttle_snapshot = state.raw_throttle_data.load(std::memory_order_relaxed);
+
+    last_cc_state = cc_active;
+
+    if (cc_active && !brake_on)
+        state.throttle_data.store(cc_throttle_snapshot);  // hold frozen value
+    else
+        state.throttle_data.store(  // pass raw ADC through
+            state.raw_throttle_data.load(std::memory_order_relaxed));
 }
 
 }  // namespace frontvcu
