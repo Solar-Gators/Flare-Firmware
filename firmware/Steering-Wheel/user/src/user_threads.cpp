@@ -75,7 +75,6 @@ void startPollButtons_user(void* argument)
 
     for (;;)
     {
-        // TODO: could consolidate these below functions into smt like processButtonLEDs
         steering::processHornButton();
         steering::processTurnSignals();
         steering::processCC();

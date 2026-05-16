@@ -281,10 +281,6 @@ void processCC()
     steering_requests_frame_2.data[0] = state.is_cc_on.load(std::memory_order_relaxed);
 
     can_device.send(steering_requests_frame_2);
-
-    // logic here for turning off CC
-    // TODO: turn off CC if brake pressed
-    // TODO: turn off CC if car is KILLED
 }
 
 void processRegen()

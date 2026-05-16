@@ -178,6 +178,7 @@ void hornPressedCallback()
 }
 
 // TODO: for CC buttons make it so holding will go in multiples of 5
+// TODO: will probably delete this because we are only going to have a stable cc
 void ccDecPressedCallback()
 {
     bool down_pressed = isButtonCurrentlyHeld(ButtonIndex::CC_DEC);

@@ -213,7 +213,6 @@ void readBrakeSense()
     if (state.brake_state.load(std::memory_order_relaxed))
     {
         state.cc_state.store(false);
-        // TODO: I think you need to send this over can to steering to update state variables there
     }
 }
 
