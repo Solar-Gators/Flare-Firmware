@@ -80,6 +80,7 @@ void sendRequestsMessage()
 
     can_device.send(steering_requests_frame);
 }
+
 void sendMitsubaRequestMessage()
 {
     can_device.send(mitsuba_frame0_request);
@@ -264,15 +265,22 @@ void processCC()
     HAL_GPIO_WritePin(
         BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-    if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD)
+    if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD || state.brake_state.load())
     {
         // turn off cc if car dead
         state.is_cc_on.store(false);
     }
 
-    // logic here for turning off CC
-    // TODO: turn off CC if brake pressed
-    // TODO: turn off CC if car is KILLED
+    static sg::CANFrame steering_requests_frame_2{0x065,
+                                                  sg::CANFrameIDType::STANDARD,
+                                                  sg::CANFrameRTRMode::DATA,
+                                                  sg::CANFrameLen::BYTES_8,
+                                                  0,
+                                                  {}};
+    // cc on/off
+    steering_requests_frame_2.data[0] = state.is_cc_on.load(std::memory_order_relaxed);
+
+    can_device.send(steering_requests_frame_2);
 }
 
 void processRegen()

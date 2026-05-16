@@ -178,6 +178,7 @@ void hornPressedCallback()
 }
 
 // TODO: for CC buttons make it so holding will go in multiples of 5
+// TODO: will probably delete this because we are only going to have a stable cc
 void ccDecPressedCallback()
 {
     bool down_pressed = isButtonCurrentlyHeld(ButtonIndex::CC_DEC);
@@ -191,7 +192,7 @@ void ccDecPressedCallback()
 
         if (!current_state)
         {
-            // if turning on, set the cc to be the currect speed
+            // if turning on, set the cc to be the current speed
             uint8_t current_speed = state.car_speed.load();
             if (current_speed >= 1 && current_speed <= 99)
             {

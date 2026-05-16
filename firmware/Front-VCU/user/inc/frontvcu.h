@@ -10,6 +10,8 @@ void writeLeft(bool on);
 void writeRight(bool on);
 void writeLoadsControl();
 void readCurrentSense();
+void readBrakeSense();
+void calculateCC();
 
 }  // namespace frontvcu
 

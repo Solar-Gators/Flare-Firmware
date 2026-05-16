@@ -119,5 +119,7 @@ HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& msg, void*
     state.throttle_percent_debug.store(percent,
                                        std::memory_order_relaxed);  // store as percent 0 - 100
 
+    state.brake_state.store(msg.data[7], std::memory_order_relaxed);
+
     return HAL_OK;
 }

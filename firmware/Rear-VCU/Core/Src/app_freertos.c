@@ -194,10 +194,7 @@ void startReadSupBat(void *argument)
 {
   /* USER CODE BEGIN readSupBat */
   /* Infinite loop */
-  for(;;)
-  {
-      startReadSupBat_user(argument);
-  }
+    startReadSupBat_user(argument);
   /* USER CODE END readSupBat */
 }
 
