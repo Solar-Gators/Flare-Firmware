@@ -24,7 +24,7 @@ struct FrontVCUState
     static constexpr uint8_t ADC_BUF_LEN = 20;
     // throttle and brake
     std::atomic<uint16_t> throttle_data{};
-    std::atomic<uint8_t> brake_state{};
+    std::atomic<uint8_t> brake_state{}; // 1 = brake pressed
     // lights
     std::atomic<flare_can::TurnSignals> turn_signals_status{flare_can::TurnSignals::OFF};
     std::atomic<bool> turn_signals_phase{};

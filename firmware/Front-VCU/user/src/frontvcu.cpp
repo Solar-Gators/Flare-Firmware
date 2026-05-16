@@ -39,7 +39,7 @@ void init()
     // start throttle adc and dma (continuous mode)
     if (HAL_ADC_Start_DMA(&hadc1,
                           reinterpret_cast<uint32_t*>(adc_buffer),
-                          frontvcu::FrontVCUState::ADC_BUF_LEN) != HAL_OK)
+                          FrontVCUState::ADC_BUF_LEN) != HAL_OK)
     {
         Error_Handler();
     }
@@ -58,13 +58,13 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     if (hadc->Instance == ADC1)
     {
         uint32_t total{};
-        for (size_t i = frontvcu::FrontVCUState::ADC_BUF_LEN / 2;
-             i < frontvcu::FrontVCUState::ADC_BUF_LEN;
+        for (size_t i = FrontVCUState::ADC_BUF_LEN / 2;
+             i < FrontVCUState::ADC_BUF_LEN;
              ++i)
         {
             total += adc_buffer[i];
         }
-        frontvcu::state.throttle_data.store(total / (frontvcu::FrontVCUState::ADC_BUF_LEN / 2));
+        state.throttle_data.store(total / (FrontVCUState::ADC_BUF_LEN / 2));
     }
 }
 
@@ -74,11 +74,11 @@ extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
     if (hadc->Instance == ADC1)
     {
         uint32_t total{};
-        for (size_t i{}; i < frontvcu::FrontVCUState::ADC_BUF_LEN / 2; ++i)
+        for (size_t i{}; i < FrontVCUState::ADC_BUF_LEN / 2; ++i)
         {
             total += adc_buffer[i];
         }
-        frontvcu::state.throttle_data.store(total / (frontvcu::FrontVCUState::ADC_BUF_LEN / 2));
+        state.throttle_data.store(total / (FrontVCUState::ADC_BUF_LEN / 2));
     }
 }
 
@@ -98,7 +98,7 @@ void sendCANMessagesTX()
     tb_frame.data[3] = state.fh_power_msb.load();
     tb_frame.data[4] = state.lights_power_lsb.load();
     tb_frame.data[5] = state.lights_power_msb.load();
-    tb_frame.data[7] = static_cast<uint8_t>(!HAL_GPIO_ReadPin(BRAKE_GPIO_Port, BRAKE_Pin));
+    tb_frame.data[7] = state.brake_state.load();
     can_device.send(tb_frame);
 }
 
@@ -119,7 +119,7 @@ void writeLoadsControl()
     static uint32_t last_toggle_tick{};
     static bool blink_phase_on{};  // should come from can at some point to synchrnoize
 
-    const auto turn_signals = frontvcu::state.turn_signals_status.load(std::memory_order_relaxed);
+    const auto turn_signals = state.turn_signals_status.load(std::memory_order_relaxed);
     const uint32_t toggle_period_ms = 500;
 
     // updated by can at some point
@@ -133,7 +133,7 @@ void writeLoadsControl()
     bool left_on = false;
     bool right_on = false;
 
-    bool new_phase = frontvcu::state.turn_signals_phase.load(std::memory_order_relaxed);
+    bool new_phase = state.turn_signals_phase.load(std::memory_order_relaxed);
 
     switch (turn_signals)
     {
@@ -205,6 +205,14 @@ void readCurrentSense()
     state.lights_power_lsb.store(lights.power_lsb);
     state.fh_power_msb.store(fh.power_msb);
     state.fh_power_lsb.store(fh.power_lsb);
+}
+
+void readBrakeSense()
+{
+    // When brake pressed, update frontvcu state variable
+    state.brake_state.store(!HAL_GPIO_ReadPin(BRAKE_GPIO_Port, BRAKE_Pin));
+
+    
 }
 
 }  // namespace frontvcu

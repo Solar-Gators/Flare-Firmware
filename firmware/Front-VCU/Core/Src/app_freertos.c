@@ -72,6 +72,13 @@ const osThreadAttr_t CurrentSense_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
+/* Definitions for BreakSense */
+osThreadId_t BreakSenseHandle;
+const osThreadAttr_t BreakSense_attributes = {
+  .name = "BreakSense",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -113,6 +120,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of CurrentSense */
   CurrentSenseHandle = osThreadNew(StartCurrentSense, NULL, &CurrentSense_attributes);
+
+  /* creation of BreakSense */
+  BreakSenseHandle = osThreadNew(StartBreakSense, NULL, &BreakSense_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -197,6 +207,21 @@ void StartCurrentSense(void *argument)
     osDelay(1);
   }
   /* USER CODE END CurrentSense */
+}
+
+/* USER CODE BEGIN Header_StartBreakSense */
+/**
+* @brief Function implementing the BreakSense thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartBreakSense */
+void StartBreakSense(void *argument)
+{
+  /* USER CODE BEGIN BreakSense */
+  /* Infinite loop */
+    StartBreakSense_user(argument);
+  /* USER CODE END BreakSense */
 }
 
 /* Private application code --------------------------------------------------*/

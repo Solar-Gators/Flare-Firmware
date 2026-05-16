@@ -48,3 +48,12 @@ void StartCurrentSense_user(void* argument)
         osDelay(40);
     }
 }
+
+void StartBreakSense_user(void* argument)
+{
+    for (;;)
+    {
+        frontvcu::readBrakeSense();
+        osDelay(15);
+    }
+}
