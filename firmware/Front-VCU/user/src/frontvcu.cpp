@@ -216,25 +216,41 @@ void readBrakeSense()
     }
 }
 
-void calculateCC()
+void updateThrottleCommand()
 {
     static uint16_t cc_throttle_snapshot = 0;
-    static bool last_cc_state = false;
+    static bool last_cc_active = false;
+
+    const bool car_killed = state.killed_status == flare_can::CarKilledStatus::DEAD;
 
     const bool cc_active = state.cc_state.load(std::memory_order_relaxed);
+
     const bool brake_on = state.brake_state.load(std::memory_order_relaxed);
 
-    // CC just turned on — snapshot the current throttle position
-    if (cc_active && !last_cc_state)
-        cc_throttle_snapshot = state.raw_throttle_data.load(std::memory_order_relaxed);
+    const uint16_t raw_throttle = state.raw_throttle_data.load(std::memory_order_relaxed);
 
-    last_cc_state = cc_active;
+    uint16_t output_throttle = raw_throttle;
 
-    if (cc_active && !brake_on)
-        state.throttle_data.store(cc_throttle_snapshot);  // hold frozen value
+    if (car_killed)
+    {
+        output_throttle = 0;
+    }
     else
-        state.throttle_data.store(  // pass raw ADC through
-            state.raw_throttle_data.load(std::memory_order_relaxed));
+    {
+        if (cc_active && !last_cc_active)
+        {
+            cc_throttle_snapshot = raw_throttle;
+        }
+
+        if (cc_active && !brake_on)
+        {
+            output_throttle = cc_throttle_snapshot;
+        }
+    }
+
+    last_cc_active = cc_active;
+
+    state.throttle_data.store(output_throttle, std::memory_order_relaxed);
 }
 
 }  // namespace frontvcu

@@ -62,7 +62,7 @@ void StartCalculateCC_user(void* argument)
 {
     for (;;)
     {
-        frontvcu::calculateCC();
+        frontvcu::updateThrottleCommand();
         osDelay(19);
     }
 }
