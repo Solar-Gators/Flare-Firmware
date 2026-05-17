@@ -7,6 +7,8 @@ extern "C"
 #endif
 
     void StartDefaultTask_user(void* argument);
+    void StartStatusRedPWM_user(void *argument);
+    void StartStatusFlash_user(void *argument);
 
 #ifdef __cplusplus
 }

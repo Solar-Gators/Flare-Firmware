@@ -59,6 +59,18 @@ const osThreadAttr_t StatusFlash_attributes = {
   .cb_size = sizeof(StatuscontrolBlocTask00),
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for StatusRedPWM */
+osThreadId_t StatusRedPWMHandle;
+uint32_t MyBufferTask02[ 128 ];
+osStaticThreadDef_t MycontrolBlocTask02;
+const osThreadAttr_t StatusRedPWM_attributes = {
+  .name = "StatusRedPWM",
+  .stack_mem = &MyBufferTask02[0],
+  .stack_size = sizeof(MyBufferTask02),
+  .cb_mem = &MycontrolBlocTask02,
+  .cb_size = sizeof(MycontrolBlocTask02),
+  .priority = (osPriority_t) osPriorityLow,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -66,6 +78,7 @@ const osThreadAttr_t StatusFlash_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartStatusFlash(void *argument);
+void StartStatusRedPWM(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -97,6 +110,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of StatusFlash */
   StatusFlashHandle = osThreadNew(StartStatusFlash, NULL, &StatusFlash_attributes);
 
+  /* creation of StatusRedPWM */
+  StatusRedPWMHandle = osThreadNew(StartStatusRedPWM, NULL, &StatusRedPWM_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -116,15 +132,22 @@ void MX_FREERTOS_Init(void) {
 void StartStatusFlash(void *argument)
 {
   /* USER CODE BEGIN StatusFlash */
-  /* Infinite loop */
-  for(;;)
-  {
-      HAL_GPIO_TogglePin(GPIOC, OK_LED_Pin);
-      HAL_Delay(1000);
-
-    osDelay(1);
-  }
+    StartStatusFlash_user(argument);
   /* USER CODE END StatusFlash */
+}
+
+/* USER CODE BEGIN Header_StartStatusRedPWM */
+/**
+* @brief Function implementing the StatusRedPWM thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartStatusRedPWM */
+void StartStatusRedPWM(void *argument)
+{
+  /* USER CODE BEGIN StatusRedPWM */
+    StartStatusRedPWM_user(argument);
+  /* USER CODE END StatusRedPWM */
 }
 
 /* Private application code --------------------------------------------------*/
