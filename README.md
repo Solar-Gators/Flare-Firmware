@@ -16,7 +16,7 @@ You can also build and debug projects directly in **JetBrains CLion** using the 
   [https://www.jetbrains.com/clion/](https://www.jetbrains.com/clion/)
 - **Download ARM GNU Toolchain (non-EABI)**:  
   [https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
-- (Recommended FOR WINDOWS x64: https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-mingw-w64-i686-arm-none-eabi.exe)
+  - Recommended for WINDOWS x64: https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-mingw-w64-i686-arm-none-eabi.exe
 - During installing, a popup will ask to add to PATH, make sure to check that box.
 - If it doesn't you'll need to add it to your system/user path manually.
 
