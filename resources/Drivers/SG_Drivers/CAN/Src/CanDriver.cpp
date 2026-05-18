@@ -163,9 +163,9 @@ static bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
 
 CANDevice::CANDevice(
     CanHandle_t* hcan,
-    std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallback>>>
+    std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallbackEntry>>>
         std_id_callbacks,
-    std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallback>>>
+    std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallbackEntry>>>
         ext_id_callbacks)
     : hcan_(hcan),
       filters_{},
@@ -548,7 +548,7 @@ void CANDevice::addDefaultCallback(CanCallback cb)
  * @param id    The CAN identifier to match against (11-bit or 29-bit depending on @p id_type).
  * @return const CanCallback* if found, nullptr if no connected callback
  */
-const std::vector<CanCallback>* CANDevice::find_by_id(uint32_t id, CANFrameIDType type) const
+const std::vector<CanCallbackEntry>* CANDevice::find_by_id(uint32_t id, CANFrameIDType type) const
 {
     const auto& map = (type == CANFrameIDType::STANDARD) ? stdIDCallbacks_ : extIDCallbacks_;
 
@@ -619,9 +619,9 @@ void CANDevice::HandleRxTrampoline(void* arg)
             // Process the message
             if (auto vec_ptr = find_by_id(msg.can_id, msg.id_type); vec_ptr)
             {
-                for (const CanCallback& cb : *vec_ptr)
+                for (const CanCallbackEntry& entry : *vec_ptr)
                 {
-                    (*cb)(msg, this);
+                    entry.cb(msg, entry.ctx);
                 }
             }
             else if (defaultCallback_)

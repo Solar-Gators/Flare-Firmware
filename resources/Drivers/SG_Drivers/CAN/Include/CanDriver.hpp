@@ -73,6 +73,12 @@ class CANFrame
 
 using CanCallback = HAL_StatusTypeDef (*)(const CANFrame& msg, void* ctx);
 
+struct CanCallbackEntry
+{
+    CanCallback cb;
+    void* ctx;
+};
+
 struct IdEntry
 {
     uint32_t id;
@@ -105,9 +111,9 @@ class CANDevice
      */
     explicit CANDevice(
         CanHandle_t* hcan,
-        std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallback>>>
+        std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallbackEntry>>>
             std_id_callbacks,
-        std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallback>>>
+        std::initializer_list<std::pair<const uint32_t, const std::vector<CanCallbackEntry>>>
             ext_id_callbacks);
 
     /*!
@@ -237,8 +243,8 @@ class CANDevice
     size_t filterCount_;
 
     // key = id, value = callback
-    const std::unordered_map<uint32_t, const std::vector<CanCallback>> stdIDCallbacks_;
-    const std::unordered_map<uint32_t, const std::vector<CanCallback>> extIDCallbacks_;
+    const std::unordered_map<uint32_t, const std::vector<CanCallbackEntry>> stdIDCallbacks_;
+    const std::unordered_map<uint32_t, const std::vector<CanCallbackEntry>> extIDCallbacks_;
 
     CanCallback defaultCallback_ = nullptr;
 
@@ -260,7 +266,7 @@ class CANDevice
     static CANDevice* findByHandle(CanHandle_t* h);
     static bool registerHandle(CanHandle_t* h, CANDevice* d);
     static void unregisterHandle(CanHandle_t* h);
-    const std::vector<CanCallback>* find_by_id(uint32_t id, CANFrameIDType type) const;
+    const std::vector<CanCallbackEntry>* find_by_id(uint32_t id, CANFrameIDType type) const;
 
     // ====== Tx and Rx Methods ======
 
