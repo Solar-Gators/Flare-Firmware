@@ -49,11 +49,16 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${RESOURCES_DIR}/Drivers/SG_Drivers/flare)
 # Sources
 file(GLOB STM32CUBEMX_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
-    ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c)
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c
+        ${RESOURCES_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Src/*.c
+        ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/*.c
+        ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
+        ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+        ${RESOURCES_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${USER_DIR}/src/*.cpp
-    ${USER_DIR}/src/*.c)
+    ${USER_DIR}/src/*.c
+    ${RESOURCES_DIR}/Drivers/SG_Drivers/CAN/Src/*.cpp)
 
 # Executable files
 add_executable(${EXECUTABLE}
