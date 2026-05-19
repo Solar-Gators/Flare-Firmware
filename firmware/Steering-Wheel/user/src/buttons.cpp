@@ -188,7 +188,8 @@ void fanPressedCallback()
         bool current_state = state.is_cc_on.load();
         state.is_cc_on.store(!current_state);
 
-        if (getButton(ButtonIndex::FAN).GetToggleState() && getButton(ButtonIndex::CC).GetToggleState())
+        if (getButton(ButtonIndex::FAN).GetToggleState() &&
+            getButton(ButtonIndex::CC).GetToggleState())
         {
             setLedState(ButtonIndex::CC, GPIO_PIN_SET);
         }
