@@ -19,7 +19,6 @@ void drawMainBatt(uint16_t centivolts);
 void drawHighTemp(uint16_t decicelcius);
 void drawArrayContactors(flare_can::ArrayContactors contactors);
 void drawPowerMode(flare_can::MCPowerMode mode);
-void drawCC(uint8_t mph);  // mph shouldn't be more than 2 digit
 void drawRegen(uint8_t amt);
 void drawKillStatus(flare_can::CarKilledStatus killed);
 void drawHeadlightsStatus(bool on);

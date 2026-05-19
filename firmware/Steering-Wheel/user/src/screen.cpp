@@ -34,7 +34,6 @@ void initScreen()
     drawLabels();
     drawStartup();
     drawSpeed(state.car_speed.load(std::memory_order_relaxed));
-    drawCC(state.cc_mph_requested.load(std::memory_order_relaxed));
     drawSuppBatt(state.supp_batt_voltage_mv.load(std::memory_order_relaxed));
     drawDirection(state.actual_direction.load(std::memory_order_relaxed));
     drawPowerMode(state.mc_power_mode_requested.load(std::memory_order_relaxed));
@@ -56,7 +55,6 @@ void drawStartup()
     for (int i = 90; i > 0; i -= 10)
     {
         drawSpeed(i);
-        drawCC(i);
         drawSuppBatt((i + 10) * 120);
         drawDirection(i < 50 ? flare_can::Direction::REVERSE : flare_can::Direction::FORWARD);
         drawPowerMode(i > 50 ? flare_can::MCPowerMode::ECO : flare_can::MCPowerMode::POWER);
@@ -104,7 +102,6 @@ void drawLabels()
 {
     display.SetTextSize(2);
     display.DrawText(140, 90, "MPH", RGB565_GRAY);
-    display.DrawText(210, 90, "CC", RGB565_GRAY);
     display.DrawText(260, 90, "RB", RGB565_GRAY);
     display.DrawText(5, 130, "MAIN V:", RGB565_WHITE);
     display.DrawText(5, 155, "SUPP V:", RGB565_WHITE);
@@ -119,6 +116,16 @@ void drawLabels()
 void drawSpeed(uint8_t mph)
 {
     auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ? RGB565_ORANGE : RGB565_WHITE;
+    if (state.is_cc_on.load(std::memory_order_relaxed))
+    {
+        display.SetTextSize(2);
+        display.DrawText(10, 100, "CC ON ", RGB565_BLACK);
+    }
+    else
+    {
+        display.SetTextSize(2);
+        display.DrawText(10, 100, "CC OFF", RGB565_BLACK);
+    }
     display.SetTextSize(5);
     if (mph > 99)  // >99 means can/sensor error
     {
@@ -305,24 +312,6 @@ void drawPowerMode(flare_can::MCPowerMode mode)
     {
         display.DrawText(64, 70, "PW", RGB565_GREEN);
     }
-}
-void drawCC(uint8_t mph)
-{
-    display.SetTextSize(3);
-
-    // orange text for cc on, white for off
-    auto text_color = state.is_cc_on.load(std::memory_order_relaxed) ? RGB565_ORANGE : RGB565_WHITE;
-
-    if (mph > 110)
-    {
-        snprintf(text_buffer.data(), text_buffer.size(), "ER");
-    }
-    else
-    {
-        snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(mph));
-    }
-    display.FillRect(210, 60, 45, 30, background_color);
-    display.DrawText(210, 60, text_buffer.data(), text_color);
 }
 
 void drawKillStatus(flare_can::CarKilledStatus killed)
