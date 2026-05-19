@@ -7,15 +7,17 @@ enum class ButtonIndex : uint8_t
     LEFT_TURN = 0,
     POWER_MODE = 1,
     ARRAY = 2,
-    CC_DEC = 3,
+    FAN = 3,
     RIGHT_TURN = 4,
     DIRECTION = 5,
     HORN = 6,  // be careful changing this one cause its light is messed up
-    CC_INC
+    CC
 };
 
 #define HORN_PORT BUTTON7_GPIO_Port
 #define HORN_PIN BUTTON7_Pin
+#define FAN_PORT BUTTON4_GPIO_Port
+#define FAN_PIN BUTTON4_Pin
 #define REGEN_PLUS_PORT REGEN_INCREASE_GPIO_Port
 #define REGEN_PLUS_PIN REGEN_INCREASE_Pin
 #define REGEN_MINUS_PORT REGEN_DECREASE_GPIO_Port
@@ -25,18 +27,18 @@ enum class ButtonIndex : uint8_t
 // 1(lt)      5(rt) (both for hazards)
 // 2(pwr,eco)    6(fwrd/rev) // prev. 2 was headlights
 // 3(array)   7(horn)
-// 4(cc down)     8(cc inc) || to en/dis cc press both
+// 4(fan)     8(N/A) || to en/dis cc press both 4 and 8
 
-// paddles do cc or regen strengths depending on mode maybe
+// paddles do regen strength
 
 void leftTurnPressedCallback();
 void powerModePressedCallback();
 void arrayPressedCallback();
-void ccDecPressedCallback();
+void fanPressedCallback();
 void rightTurnPressedCallback();
 void directionPressedCallback();
 void hornPressedCallback();
-void ccIncPressedCallback();
+void ccPressedCallback();
 
 void initButtons();
 

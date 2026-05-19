@@ -45,6 +45,7 @@ void StartCurrentSense_user(void* argument)
     for (;;)
     {
         frontvcu::readCurrentSense();
+        frontvcu::processHornAndFan();
         osDelay(40);
     }
 }

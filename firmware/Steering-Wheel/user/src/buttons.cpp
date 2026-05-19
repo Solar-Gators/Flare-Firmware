@@ -177,62 +177,44 @@ void hornPressedCallback()
     // update: still messing with b8, keep this light off
 }
 
-// TODO: for CC buttons make it so holding will go in multiples of 5
-// TODO: will probably delete this because we are only going to have a stable cc
-void ccDecPressedCallback()
+void fanPressedCallback()
 {
-    bool down_pressed = isButtonCurrentlyHeld(ButtonIndex::CC_DEC);
-    bool up_pressed = isButtonCurrentlyHeld(ButtonIndex::CC_INC);
+    bool fan_pressed = isButtonCurrentlyHeld(ButtonIndex::FAN);
+    bool cc_pressed = isButtonCurrentlyHeld(ButtonIndex::CC);
 
-    if (down_pressed && up_pressed)
+    if (fan_pressed && cc_pressed)
     {
         // toggle cc state (both pressed)
         bool current_state = state.is_cc_on.load();
         state.is_cc_on.store(!current_state);
 
-        if (!current_state)
+        if (getButton(ButtonIndex::FAN).GetToggleState() &&
+            getButton(ButtonIndex::CC).GetToggleState())
         {
-            // if turning on, set the cc to be the current speed
-            uint8_t current_speed = state.car_speed.load();
-            if (current_speed >= 1 && current_speed <= 99)
-            {
-                state.cc_mph_requested.store(current_speed);
-            }
+            setLedState(ButtonIndex::CC, GPIO_PIN_SET);
         }
-
-        // blink led to alert entering/exiting cc
-        // TODO: evaluate this, migth not be needed and blocking operation
-        // its okay it will just block thread that handles buttons so no other presses will register if we make it quick its fine
-        for (int i = 0; i < 2; i++)
+        else
         {
-            setLedState(ButtonIndex::CC_DEC, GPIO_PIN_SET);
-            setLedState(ButtonIndex::CC_INC, GPIO_PIN_SET);
-            osDelay(100);
-            setLedState(ButtonIndex::CC_DEC, GPIO_PIN_RESET);
-            setLedState(ButtonIndex::CC_INC, GPIO_PIN_RESET);
-            osDelay(50);
+            setLedState(ButtonIndex::CC, GPIO_PIN_RESET);
         }
         return;
     }
 
-    // normal dec
-    if (down_pressed)
+    // process just button 3 pressed
+    if (fan_pressed)
     {
-        uint8_t current_val = state.cc_mph_requested.load();
-        if (current_val > 0)
-        {
-            state.cc_mph_requested.store(current_val - 1);
-        }
+        state.fan_requested_on.store(!state.fan_requested_on.load());
     }
 }
 
-void ccIncPressedCallback()
+// PLACEHOLDER FOR NOW
+void ccPressedCallback()
 {
     // Read the current states of both buttons
-    bool down_pressed = isButtonCurrentlyHeld(ButtonIndex::CC_DEC);
-    bool up_pressed = isButtonCurrentlyHeld(ButtonIndex::CC_INC);
+    bool fan_pressed = isButtonCurrentlyHeld(ButtonIndex::FAN);
+    bool cc_pressed = isButtonCurrentlyHeld(ButtonIndex::CC);
 
-    if (down_pressed && up_pressed)
+    if (fan_pressed && cc_pressed)
     {
         // if both being pressed return (don't inc)
         // other callbacks handles this to toggle state
@@ -240,13 +222,9 @@ void ccIncPressedCallback()
     }
 
     // normal inc
-    if (up_pressed)
+    if (cc_pressed)
     {
-        uint8_t current_val = state.cc_mph_requested.load();
-        if (current_val < 99)
-        {
-            state.cc_mph_requested.store(current_val + 1);
-        }
+        // do nothing for now
     }
 }
 
@@ -255,11 +233,11 @@ void initButtons()
     getButton(ButtonIndex::LEFT_TURN).RegisterNormalPressCallback(&leftTurnPressedCallback);
     getButton(ButtonIndex::POWER_MODE).RegisterNormalPressCallback(&powerModePressedCallback);
     getButton(ButtonIndex::ARRAY).RegisterNormalPressCallback(&arrayPressedCallback);
-    getButton(ButtonIndex::CC_DEC).RegisterNormalPressCallback(&ccDecPressedCallback);
+    getButton(ButtonIndex::FAN).RegisterNormalPressCallback(&fanPressedCallback);
     getButton(ButtonIndex::RIGHT_TURN).RegisterNormalPressCallback(&rightTurnPressedCallback);
     getButton(ButtonIndex::DIRECTION).RegisterNormalPressCallback(&directionPressedCallback);
     getButton(ButtonIndex::HORN).RegisterNormalPressCallback(&hornPressedCallback);
-    getButton(ButtonIndex::CC_INC).RegisterNormalPressCallback(&ccIncPressedCallback);
+    getButton(ButtonIndex::CC).RegisterNormalPressCallback(&ccPressedCallback);
 
     sg::Button::InitButtons();
 }

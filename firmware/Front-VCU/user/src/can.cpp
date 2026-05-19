@@ -21,6 +21,8 @@ HAL_StatusTypeDef steeringRequestsCallback(const sg::CANFrame& frame, void* ctx)
 
     state.horn_state.store(frame.data[3]);
 
+    state.fan_state.store(frame.data[7]);
+
     return HAL_OK;
 }
 

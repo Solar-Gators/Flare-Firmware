@@ -75,8 +75,8 @@ void sendRequestsMessage()
     steering_requests_frame.data[6] =
         static_cast<uint8_t>(state.mc_power_mode_requested.load(std::memory_order_relaxed));
 
-    // cc mph
-    steering_requests_frame.data[7] = state.cc_mph_requested.load(std::memory_order_relaxed);
+    // fan request
+    steering_requests_frame.data[7] = state.fan_requested_on.load(std::memory_order_relaxed);
 
     can_device.send(steering_requests_frame);
 }
@@ -87,7 +87,7 @@ void sendMitsubaRequestMessage()
 }
 
 // TODO: some indicator for the button 7 light
-// TODO: important info not done: cruise control, regenerative breaking
+// TODO: important info not done: regenerative breaking
 void processScreen()
 {
     // cc values used for both cc and speed redraws
@@ -100,16 +100,8 @@ void processScreen()
     {
         drawSpeed(speed);
         old_speed = speed;
+        old_cc_on = cc_on;
     }
-
-    static uint8_t old_cc_val = state.cc_mph_requested.load(std::memory_order_relaxed);
-    if (uint8_t cc_val = state.cc_mph_requested.load(std::memory_order_relaxed);
-        cc_val != old_cc_val || cc_on != old_cc_on)
-    {
-        drawCC(cc_val);
-        old_cc_val = cc_val;
-    }
-    old_cc_on = cc_on;  // update after
 
     static auto old_power_mode = state.mc_power_mode_requested.load(std::memory_order::relaxed);
     if (auto power_mode = state.mc_power_mode_requested.load(std::memory_order::relaxed);
@@ -119,6 +111,7 @@ void processScreen()
         old_power_mode = power_mode;
     }
 
+    // TODO: sup batt reading like .15 volts lower than it actually is with all the boards connected, test and fix
     static uint16_t old_supp_batt_mv = state.supp_batt_voltage_mv.load(std::memory_order_relaxed);
     if (uint16_t sup_batt_mv = state.supp_batt_voltage_mv.load(std::memory_order_relaxed);
         sup_batt_mv != old_supp_batt_mv)
