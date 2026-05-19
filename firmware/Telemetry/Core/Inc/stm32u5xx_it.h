@@ -53,6 +53,7 @@ void BusFault_Handler(void);
 void UsageFault_Handler(void);
 void DebugMon_Handler(void);
 void EXTI12_IRQHandler(void);
+void GPDMA1_Channel0_IRQHandler(void);
 void FDCAN1_IT0_IRQHandler(void);
 void TIM6_IRQHandler(void);
 /* USER CODE BEGIN EFP */

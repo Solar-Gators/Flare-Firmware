@@ -61,6 +61,10 @@ void Error_Handler(void);
 #define CAN_LED_GPIO_Port GPIOC
 #define OK_LED_Pin GPIO_PIN_1
 #define OK_LED_GPIO_Port GPIOC
+#define RADIO_UART_TX_Pin GPIO_PIN_2
+#define RADIO_UART_TX_GPIO_Port GPIOA
+#define RADIO_UART_RX_Pin GPIO_PIN_3
+#define RADIO_UART_RX_GPIO_Port GPIOA
 #define BRAKE_LIGHT_CTRL_Pin GPIO_PIN_6
 #define BRAKE_LIGHT_CTRL_GPIO_Port GPIOA
 #define REAR_LEFT_LIGHT_CTRL_Pin GPIO_PIN_7
