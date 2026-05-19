@@ -253,4 +253,25 @@ void updateThrottleCommand()
     state.throttle_data.store(output_throttle, std::memory_order_relaxed);
 }
 
+void processHornAndFan()
+{
+    if (state.horn_state.load(std::memory_order_relaxed))
+    {
+        HAL_GPIO_WritePin(HORN_CTRL_GPIO_Port, HORN_CTRL_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(HORN_CTRL_GPIO_Port, HORN_CTRL_Pin, GPIO_PIN_RESET);
+    }
+
+    if (state.fan_state.load(std::memory_order_relaxed))
+    {
+        HAL_GPIO_WritePin(FAN_CTRL_GPIO_Port, FAN_CTRL_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(FAN_CTRL_GPIO_Port, FAN_CTRL_Pin, GPIO_PIN_RESET);
+    }
+}
+
 }  // namespace frontvcu

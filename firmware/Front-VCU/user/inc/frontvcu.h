@@ -12,6 +12,7 @@ void writeLoadsControl();
 void readCurrentSense();
 void readBrakeSense();
 void updateThrottleCommand();
+void processHornAndFan();
 
 }  // namespace frontvcu
 
