@@ -177,10 +177,10 @@ void hornPressedCallback()
     // update: still messing with b8, keep this light off
 }
 
-void fanPressedCallback()
+/*void fanPressedCallback()
 {
 
-}
+}*/
 
 void fanLongPressCallback()
 {
@@ -210,7 +210,7 @@ void initButtons()
     getButton(ButtonIndex::POWER_MODE).RegisterNormalPressCallback(&powerModePressedCallback);
     getButton(ButtonIndex::ARRAY).RegisterNormalPressCallback(&arrayPressedCallback);
     getButton(ButtonIndex::FAN).RegisterNormalPressCallback(&fanPressedCallback);
-    getButton(ButtonIndex::FAN).RegisterLongPressCallback(&fanLongPressCallback,1500,false);
+    getButton(ButtonIndex::FAN).RegisterLongPressCallback(&fanLongPressCallback, 1500, false);
     getButton(ButtonIndex::RIGHT_TURN).RegisterNormalPressCallback(&rightTurnPressedCallback);
     getButton(ButtonIndex::DIRECTION).RegisterNormalPressCallback(&directionPressedCallback);
     getButton(ButtonIndex::HORN).RegisterNormalPressCallback(&hornPressedCallback);
