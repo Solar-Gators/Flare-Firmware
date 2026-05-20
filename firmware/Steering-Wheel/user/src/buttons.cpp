@@ -179,11 +179,12 @@ void hornPressedCallback()
 
 void fanPressedCallback()
 {
-    // empty for now
+    // TODO: lap timer maybe?
 }
 
 void fanLongPressCallback()
 {
+    // TODO: Figure out leds
     // process button 3 pressed for more than 1.5 seconds
     state.fan_requested_on.store(!state.fan_requested_on.load(std::memory_order_relaxed));
 }
@@ -191,11 +192,12 @@ void fanLongPressCallback()
 // PLACEHOLDER FOR NOW
 void ccPressedCallback()
 {
-    // TODO: lap timer maybe?
+    // empty for now
 }
 
 void ccLongPressCallback()
 {
+    // TODO: Figure out leds
     state.is_cc_on.store(!state.is_cc_on.load(std::memory_order_relaxed));
 }
 
