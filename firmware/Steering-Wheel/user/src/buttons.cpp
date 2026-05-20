@@ -177,10 +177,10 @@ void hornPressedCallback()
     // update: still messing with b8, keep this light off
 }
 
-/*void fanPressedCallback()
+void fanPressedCallback()
 {
-
-}*/
+    // empty for now
+}
 
 void fanLongPressCallback()
 {
