@@ -46,6 +46,7 @@ void initScreen()
     drawKillStatus(state.killed_status.load(std::memory_order_relaxed));
     drawHeadlightsStatus(state.headlights_requested_on.load(std::memory_order_relaxed));
     drawHornStatus(state.horn_requested_on.load(std::memory_order_relaxed));
+    drawFanStatus(state.fan_requested_on.load(std::memory_order_relaxed));
     drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
 }
 
@@ -341,10 +342,20 @@ void drawHornStatus(bool on)
 {
     // horn draw
     display.SetTextSize(2);
-    display.FillRect(265, 15, 20, 20, background_color);
+    display.FillRect(245, 35, 20, 20, background_color);
     if (on)
     {
-        display.DrawText(265, 15, "H", RGB565_ORANGE);
+        display.DrawText(245, 35, "H", RGB565_BLACK);
+    }
+}
+void drawFanStatus(bool on)
+{
+    // horn draw
+    display.SetTextSize(2);
+    display.FillRect(265, 35, 60, 20, background_color);
+    if (on)
+    {
+        display.DrawText(275, 35, "FAN", RGB565_BLACK);
     }
 }
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
@@ -362,7 +373,7 @@ void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
 
     if (left_changed)
     {
-        display.FillRect(10, 10, 30, 30, background_color);  // clear Left
+        display.FillRect(10, 10, 30, 20, background_color);  // clear Left
         // left 'arrow'
         if (left_active && blink_state)
         {
@@ -376,7 +387,7 @@ void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
 
     if (right_changed)
     {
-        display.FillRect(290, 10, 30, 30, background_color);  // clear Right
+        display.FillRect(290, 10, 30, 20, background_color);  // clear Right
         // right 'arrow'
         if (right_active && blink_state)
         {
