@@ -163,6 +163,14 @@ void processScreen()
         old_horn_status = horn_status;
     }
 
+    static bool old_fan_status = state.fan_requested_on.load(std::memory_order_relaxed);
+    if (bool fan_status = state.fan_requested_on.load(std::memory_order_relaxed);
+        old_fan_status != fan_status)
+    {
+        drawFanStatus(fan_status);
+        old_fan_status = fan_status;
+    }
+
     static bool old_headlights_status =
         state.headlights_requested_on.load(std::memory_order_relaxed);
     if (bool headlights_status = state.headlights_requested_on.load(std::memory_order_relaxed);

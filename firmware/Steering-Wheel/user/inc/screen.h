@@ -23,6 +23,7 @@ void drawRegen(uint8_t amt);
 void drawKillStatus(flare_can::CarKilledStatus killed);
 void drawHeadlightsStatus(bool on);
 void drawHornStatus(bool on);
+void drawFanStatus(bool on);
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state);
 void drawThrottlePercent(uint16_t percent);
 
