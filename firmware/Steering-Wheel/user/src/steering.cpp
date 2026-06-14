@@ -261,10 +261,11 @@ void processCC()
 {
     bool active = state.is_cc_on.load();
 
-    HAL_GPIO_WritePin(
+    // this turns on the bottom left led for some reason, probably take out and put in buttons.cpp if anything
+    /*HAL_GPIO_WritePin(
         BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(
-        BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);*/
 
     if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD || state.brake_state.load())
     {

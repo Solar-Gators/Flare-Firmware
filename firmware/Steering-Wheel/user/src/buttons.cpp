@@ -197,7 +197,6 @@ void ccPressedCallback()
 
 void ccLongPressCallback()
 {
-    // TODO: Figure out leds
     state.is_cc_on.store(!state.is_cc_on.load(std::memory_order_relaxed));
 }
 
