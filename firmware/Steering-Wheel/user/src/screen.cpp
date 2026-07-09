@@ -358,6 +358,19 @@ void drawFanStatus(bool on)
         display.DrawText(275, 35, "FAN", RGB565_BLACK);
     }
 }
+void drawTimer(uint32_t timerValue)
+{
+    display.SetTextSize(2);
+    uint32_t totalSeconds = timerValue / 10;
+    uint32_t minutes = totalSeconds / 60;
+    uint32_t seconds = totalSeconds % 60;
+    uint32_t tenths = timerValue % 10;
+    
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), "%01lu:%02lu.%1lu", minutes, seconds, tenths);
+
+    display.DrawText(275, 55, buffer, RGB565_BLACK);
+}
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
 {
     // track the prev states
