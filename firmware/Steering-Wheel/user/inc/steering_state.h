@@ -42,6 +42,11 @@ struct SteeringState
     std::atomic<bool> left_blink_active{false};
     std::atomic<bool> right_blink_active{false};
     std::atomic<bool> blink_state{false};
+
+    // timer
+    std::atomic<bool> timer_requested_on{false};
+    std::atomic<uint32_t> timer_value{};
+
 };
 
 inline SteeringState state;

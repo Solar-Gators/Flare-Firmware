@@ -11,9 +11,6 @@
 #include "steering.h"
 #include "watchdog.hpp"
 
-#include <array>
-#include <string>
-
 void init_user()
 {
     // total init
@@ -80,6 +77,7 @@ void startPollButtons_user(void* argument)
         steering::processCC();
         steering::processRegen();
         steering::sendRequestsMessage();
+        steering::processTimer();
 
         wdog3.Kick();
 

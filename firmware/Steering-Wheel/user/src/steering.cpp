@@ -14,6 +14,8 @@
 
 #include <limits>
 
+extern TIM_HandleTypeDef htim1;
+
 // private variables
 namespace
 {
@@ -311,6 +313,35 @@ void processRegen()
     while (HAL_GPIO_ReadPin(REGEN_PLUS_PORT, REGEN_PLUS_PIN) == GPIO_PIN_RESET ||
            HAL_GPIO_ReadPin(REGEN_MINUS_PORT, REGEN_MINUS_PIN) == GPIO_PIN_RESET)
         ;
+}
+
+void processTimer()
+{
+    static bool was_running = false;
+    bool requested = state.timer_requested_on.load(std::memory_order_relaxed);
+
+    if (requested && !was_running) {
+        // start timer
+        __HAL_TIM_SET_COUNTER(&htim1, 0); // reset hardware counter
+        state.timer_value.store(0, std::memory_order_relaxed); // reset variable
+        HAL_TIM_Base_Start_IT(&htim1);
+        was_running = true;
+    }
+    else if (!requested && was_running) {
+        // stop timer
+        HAL_TIM_Base_Stop_IT(&htim1);
+        was_running = false;
+    }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    // Ensure the interrupt came from the timer you configured (TIM1)
+    if (htim->Instance == TIM1) {
+        // Atomic increment of your timer value
+        uint32_t val = state.timer_value.load(std::memory_order_relaxed);
+        state.timer_value.store(val + 1, std::memory_order_relaxed);
+    }
 }
 
 }  // namespace steering
