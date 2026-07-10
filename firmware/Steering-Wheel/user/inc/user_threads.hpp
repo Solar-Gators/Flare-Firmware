@@ -15,7 +15,7 @@ extern "C"
     [[noreturn]] void startHeartbeatTask_user(void* argument);
     [[noreturn]] void startScreenTask_user(void* argument);
     [[noreturn]] void startDancingFlareScreenTask_user(void* argument);
-    void HAL_TIM_PeriodElapsedCallback_user(TIM_HandleTypeDef *htim);
+    void HAL_TIM_PeriodElapsedCallback_user(TIM_HandleTypeDef* htim);
 
 #ifdef __cplusplus
 }

@@ -328,14 +328,16 @@ void processTimer()
     static bool was_running = false;
     bool requested = state.timer_requested_on.load(std::memory_order_relaxed);
 
-    if (requested && !was_running) {
+    if (requested && !was_running)
+    {
         // start timer
-        __HAL_TIM_SET_COUNTER(&htim1, 0); // reset hardware counter
-        state.timer_value.store(0, std::memory_order_relaxed); // reset variable
+        __HAL_TIM_SET_COUNTER(&htim1, 0);                       // reset hardware counter
+        state.timer_value.store(0, std::memory_order_relaxed);  // reset variable
         HAL_TIM_Base_Start_IT(&htim1);
         was_running = true;
     }
-    else if (!requested && was_running) {
+    else if (!requested && was_running)
+    {
         // stop timer
         HAL_TIM_Base_Stop_IT(&htim1);
         was_running = false;

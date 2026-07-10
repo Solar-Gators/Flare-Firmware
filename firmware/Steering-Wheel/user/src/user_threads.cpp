@@ -3,10 +3,10 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
+#include "../inc/steering_state.h"
 #include "CanDriver.hpp"
 #include "ILI9341.hpp"
 #include "Steering_wheel_buttons.hpp"
-#include "../inc/steering_state.h"
 #include "app_freertos.h"
 #include "main.h"
 #include "steering.h"
@@ -102,10 +102,11 @@ void startDancingFlareScreenTask_user(void* argument)
     }
 }
 
-void HAL_TIM_PeriodElapsedCallback_user(TIM_HandleTypeDef *htim)
+void HAL_TIM_PeriodElapsedCallback_user(TIM_HandleTypeDef* htim)
 {
     // Ensure the interrupt came from the timer you configured (TIM1)
-    if (htim->Instance == TIM1) {
+    if (htim->Instance == TIM1)
+    {
         // Atomic increment of your timer value
         uint32_t val = state.timer_value.load(std::memory_order_relaxed);
         state.timer_value.store(val + 1, std::memory_order_relaxed);

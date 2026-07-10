@@ -367,7 +367,7 @@ void drawTimer(uint32_t timerValue)
     uint32_t minutes = totalSeconds / 60;
     uint32_t seconds = totalSeconds % 60;
     uint32_t tenths = timerValue % 10;
-    
+
     char buffer[10];
     snprintf(buffer, sizeof(buffer), "%01lu:%02lu.%1lu", minutes, seconds, tenths);
 
