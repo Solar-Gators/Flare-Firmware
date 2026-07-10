@@ -105,6 +105,14 @@ void processScreen()
         old_cc_on = cc_on;
     }
 
+    static auto timerValue = state.timer_value.load(std::memory_order::relaxed);
+    if (auto newTimerValue = state.timer_value.load(std::memory_order::relaxed);
+        newTimerValue != timerValue)
+    {
+        drawTimer(newTimerValue);
+        timerValue = newTimerValue;
+    }
+
     static auto old_power_mode = state.mc_power_mode_requested.load(std::memory_order::relaxed);
     if (auto power_mode = state.mc_power_mode_requested.load(std::memory_order::relaxed);
         power_mode != old_power_mode)
@@ -331,16 +339,6 @@ void processTimer()
         // stop timer
         HAL_TIM_Base_Stop_IT(&htim1);
         was_running = false;
-    }
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    // Ensure the interrupt came from the timer you configured (TIM1)
-    if (htim->Instance == TIM1) {
-        // Atomic increment of your timer value
-        uint32_t val = state.timer_value.load(std::memory_order_relaxed);
-        state.timer_value.store(val + 1, std::memory_order_relaxed);
     }
 }
 
