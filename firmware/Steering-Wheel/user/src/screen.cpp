@@ -48,6 +48,7 @@ void initScreen()
     drawHornStatus(state.horn_requested_on.load(std::memory_order_relaxed));
     drawFanStatus(state.fan_requested_on.load(std::memory_order_relaxed));
     drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
+    drawTimer(state.timer_value.load(std::memory_order_relaxed));
 }
 
 // startup for turning everything on, yk like in car where when u start the car all the icons turn on
@@ -67,6 +68,7 @@ void drawStartup()
         drawHeadlightsStatus(true);
         drawHornStatus(true);
         drawTurnIndicator(true, true, true);
+        drawTimer(i);
 
         HAL_GPIO_WritePin(
             BUTTON1_LED_GPIO_Port, BUTTON1_LED_Pin, i < 30 ? GPIO_PIN_SET : GPIO_PIN_RESET);
@@ -357,6 +359,19 @@ void drawFanStatus(bool on)
     {
         display.DrawText(275, 35, "FAN", RGB565_BLACK);
     }
+}
+void drawTimer(uint32_t timerValue)
+{
+    display.SetTextSize(2);
+    uint32_t totalSeconds = timerValue / 10;
+    uint32_t minutes = totalSeconds / 60;
+    uint32_t seconds = totalSeconds % 60;
+    uint32_t tenths = timerValue % 10;
+
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), "%01lu:%02lu.%1lu", minutes, seconds, tenths);
+
+    display.DrawText(235, 55, buffer, RGB565_BLACK);
 }
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
 {

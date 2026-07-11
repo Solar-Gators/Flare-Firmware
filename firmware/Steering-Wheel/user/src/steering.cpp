@@ -14,6 +14,8 @@
 
 #include <limits>
 
+extern TIM_HandleTypeDef htim1;
+
 // private variables
 namespace
 {
@@ -101,6 +103,14 @@ void processScreen()
         drawSpeed(speed);
         old_speed = speed;
         old_cc_on = cc_on;
+    }
+
+    static auto timerValue = state.timer_value.load(std::memory_order::relaxed);
+    if (auto newTimerValue = state.timer_value.load(std::memory_order::relaxed);
+        newTimerValue != timerValue)
+    {
+        drawTimer(newTimerValue);
+        timerValue = newTimerValue;
     }
 
     static auto old_power_mode = state.mc_power_mode_requested.load(std::memory_order::relaxed);
@@ -261,10 +271,11 @@ void processCC()
 {
     bool active = state.is_cc_on.load();
 
-    HAL_GPIO_WritePin(
+    // this turns on the bottom left led for some reason, probably take out and put in buttons.cpp if anything
+    /*HAL_GPIO_WritePin(
         BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(
-        BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);*/
 
     if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD || state.brake_state.load())
     {
@@ -310,6 +321,27 @@ void processRegen()
     while (HAL_GPIO_ReadPin(REGEN_PLUS_PORT, REGEN_PLUS_PIN) == GPIO_PIN_RESET ||
            HAL_GPIO_ReadPin(REGEN_MINUS_PORT, REGEN_MINUS_PIN) == GPIO_PIN_RESET)
         ;
+}
+
+void processTimer()
+{
+    static bool was_running = false;
+    bool requested = state.timer_requested_on.load(std::memory_order_relaxed);
+
+    if (requested && !was_running)
+    {
+        // start timer
+        __HAL_TIM_SET_COUNTER(&htim1, 0);                       // reset hardware counter
+        state.timer_value.store(0, std::memory_order_relaxed);  // reset variable
+        HAL_TIM_Base_Start_IT(&htim1);
+        was_running = true;
+    }
+    else if (!requested && was_running)
+    {
+        // stop timer
+        HAL_TIM_Base_Stop_IT(&htim1);
+        was_running = false;
+    }
 }
 
 }  // namespace steering
