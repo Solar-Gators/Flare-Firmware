@@ -127,7 +127,7 @@ static bool CAN_ReadOne(CanHandle_t* h, CANFrame& out)
 {
 #if defined(HAL_CAN_MODULE_ENABLED)
     CAN_RxHeaderTypeDef hdr{};
-    if (HAL_CAN_GetRxMessage(h, CAN_RX_FIFO0, &hdr, out.data) != HAL_OK)
+    if (HAL_CAN_GetRxMessage(h, CAN_RX_FIFO0, &hdr, out.data.data()) != HAL_OK)
         return false;
     // out.hcan = h;
     out.can_id = (hdr.IDE == CAN_ID_EXT) ? hdr.ExtId : hdr.StdId;
@@ -310,12 +310,12 @@ HAL_StatusTypeDef CANDevice::addFilterId(uint32_t can_id,
 
     if (id_type == sg::CANFrameIDType::STANDARD)
     {
-        if (can_id > MAX_CAN_ID)
+        if (can_id > MAX_CAN_ID_STD)
             return HAL_ERROR;
 
         // Exact match: use IDMASK with all 11 ID bits compared (mask 0x7FF)
-        const uint32_t filter_id = ((can_id & MAX_CAN_ID) << 21) | CAN_ID_STD | hal_rtr;
-        const uint32_t filter_mask = ((MAX_CAN_ID) << 21) | 0b110;  // also match IDE & RTR
+        const uint32_t filter_id = ((can_id & MAX_CAN_ID_STD) << 21) | CAN_ID_STD | hal_rtr;
+        const uint32_t filter_mask = ((MAX_CAN_ID_STD) << 21) | 0b110;  // also match IDE & RTR
 
         CAN_FilterTypeDef f = {};
         f.FilterIdHigh = (filter_id >> 16) & 0xFFFFu;
@@ -435,14 +435,14 @@ HAL_StatusTypeDef CANDevice::addFilterRange(uint32_t can_id,
 
     if (id_type == sg::CANFrameIDType::STANDARD)
     {
-        if (can_id > MAX_CAN_ID)
+        if (can_id > MAX_CAN_ID_STD)
             return HAL_ERROR;
-        if (end_inc > MAX_CAN_ID)
-            end_inc = MAX_CAN_ID;
+        if (end_inc > MAX_CAN_ID_STD)
+            end_inc = MAX_CAN_ID_STD;
 
         // bxCAN 32-bit IDMASK packing (STD: ID at bits 31..21)
-        uint32_t filter_id = ((base & MAX_CAN_ID) << 21) | CAN_ID_STD | hal_rtr;
-        uint32_t filter_mask = ((id_mask & MAX_CAN_ID) << 21) | 0b110;  // match IDE & RTR
+        uint32_t filter_id = ((base & MAX_CAN_ID_STD) << 21) | CAN_ID_STD | hal_rtr;
+        uint32_t filter_mask = ((id_mask & MAX_CAN_ID_STD) << 21) | 0b110;  // match IDE & RTR
 
         CanFilter_t f = {};
         f.FilterIdHigh = (filter_id >> 16) & 0xFFFFu;
@@ -693,7 +693,7 @@ void CANDevice::HandleTxTrampoline(void* arg)
         uint32_t txMailbox;
 
         // Request HAL message send
-        HAL_CAN_AddTxMessage(hcan_, &txHeader, tx_msg.data, &txMailbox);
+        HAL_CAN_AddTxMessage(hcan_, &txHeader, tx_msg.data.data(), &txMailbox);
 #endif
     }
 }
@@ -763,7 +763,7 @@ void CANDevice::unregisterHandle(CanHandle_t* h)
  */
 extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 {
-    CANDriver::CANDevice::RxCallback(hcan);
+    sg::CANDevice::RxCallback(hcan);
 }
 #elif defined(HAL_FDCAN_MODULE_ENABLED)
 /**

@@ -66,7 +66,7 @@ class CANFrame
     std::array<uint8_t, 64> data;          /* payload data array, maximum of 64 bytes */
     static constexpr uint8_t max_len = 64; /* maximum payload length */
 #else
-    uint8_t data[8];                      /* payload data array, maximum of 8 bytes */
+    std::array<uint8_t, 8> data;          /* payload data array, maximum of 8 bytes */
     static constexpr uint8_t max_len = 8; /* maximum payload length */
 #endif
 };
