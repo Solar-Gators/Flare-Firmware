@@ -179,31 +179,31 @@ void hornPressedCallback()
 
 void fanPressedCallback()
 {
-    // TODO: lap timer maybe?
     state.timer_requested_on.store(!state.timer_requested_on.load(std::memory_order_relaxed));
+    if (getButton(ButtonIndex::FAN).GetToggleState())
+    {
+        setLedState(ButtonIndex::FAN, GPIO_PIN_SET);
+    }
+    else
+    {
+        setLedState(ButtonIndex::FAN, GPIO_PIN_RESET);
+    }
 }
 
 void fanLongPressCallback()
 {
-    // TODO: Figure out leds
     state.fan_requested_on.store(!state.fan_requested_on.load(std::memory_order_relaxed));
 }
 
-// PLACEHOLDER FOR NOW
 void ccPressedCallback()
 {
-    // empty for now
+  // empty
 }
 
 void ccLongPressCallback()
 {
     state.is_cc_on.store(!state.is_cc_on.load(std::memory_order_relaxed));
 }
-
-/*void ccDoublePressCallback()
-{
-
-}*/
 
 void initButtons()
 {
