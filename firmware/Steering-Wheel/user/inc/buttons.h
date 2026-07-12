@@ -10,8 +10,8 @@ enum class ButtonIndex : uint8_t
     FAN = 3,
     RIGHT_TURN = 4,
     DIRECTION = 5,
-    HORN = 6,  // be careful changing this one cause its light is messed up
-    CC = 7     // I don't think this led is working either
+    HORN = 6,  // LED isnt working
+    CC = 7     // LED isnt working
 };
 
 #define HORN_PORT BUTTON7_GPIO_Port
