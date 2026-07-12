@@ -4,12 +4,12 @@
 
 void startDefaultTask_user(void* argument)
 {
-    for (;;);
+    for (;;)
+        ;
 }
 
 void startMsgTask_user(void* argument)
 {
-
     for (;;)
     {
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
