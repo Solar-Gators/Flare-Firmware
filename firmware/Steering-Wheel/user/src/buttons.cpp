@@ -197,7 +197,7 @@ void fanLongPressCallback()
 
 void ccPressedCallback()
 {
-  // empty
+    // empty
 }
 
 void ccLongPressCallback()

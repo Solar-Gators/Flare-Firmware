@@ -3,13 +3,13 @@
 #include <cmsis_os2.h>
 #include <stm32u5xx_hal.h>
 
-#include "steering_state.h"
 #include "CanDriver.hpp"
 #include "ILI9341.hpp"
 #include "Steering_wheel_buttons.hpp"
 #include "app_freertos.h"
 #include "main.h"
 #include "steering.h"
+#include "steering_state.h"
 #include "watchdog.hpp"
 
 void init_user()
