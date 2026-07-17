@@ -19,14 +19,6 @@ extern "C" I2C_HandleTypeDef hi2c1;
 
 namespace
 {
-sg::Button kill_switch_button(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin, 50, GPIO_PIN_SET);
-void killSwitchButtonInit()
-{
-    // when only normal press is registered, on any button press it should call the callback
-    kill_switch_button.RegisterNormalPressCallback(
-        []() { killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed); });
-    sg::Button::InitButtons();
-}
 
 MaxM10S gps(&hi2c1);
 
@@ -63,7 +55,6 @@ namespace telem
 
 void init()
 {
-    killSwitchButtonInit();
     gps.init();
     radioInit();
     canInit();

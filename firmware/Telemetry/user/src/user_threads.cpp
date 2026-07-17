@@ -83,6 +83,11 @@ void startKillSwitchMessageTask_user(void* argument)
 
     for (;;)
     {
+        // On e-stop kill the car and require power cycle to reset
+        if (HAL_GPIO_ReadPin(KILL_SW_INPUT_GPIO_Port, KILL_SW_INPUT_Pin) == GPIO_PIN_RESET)
+        {
+            telem::killed_status.store(flare_can::CarKilledStatus::DEAD, std::memory_order_relaxed);
+        }
         telem::sendKillFrame();
         wdog5.Kick();
         osDelay(50);
