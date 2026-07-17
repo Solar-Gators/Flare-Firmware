@@ -21,11 +21,7 @@ struct RadioMessage
 };
 
 void radioInit();
-bool addCanMessageToRadioQueue(uint32_t id, const uint8_t* data, uint8_t len);
-bool addGpsDataToRadioQueue(const double& latitude,
-                            const double& longitude,
-                            float speed,
-                            uint8_t num_satellites);
+bool enqueueRadioMessage(uint32_t id, const uint8_t* data, uint8_t len);
 RadioMessage waitForRadioMessageData();
 void radioSend(const RadioMessage& msg);
 

@@ -44,7 +44,7 @@ void radioInit()
     }
 }
 
-bool addCanMessageToRadioQueue(uint32_t id, const uint8_t* data, uint8_t len)
+bool enqueueRadioMessage(uint32_t id, const uint8_t* data, uint8_t len)
 {
     if (len > max_radio_message_array_size)
     {
@@ -55,39 +55,6 @@ bool addCanMessageToRadioQueue(uint32_t id, const uint8_t* data, uint8_t len)
     msg.size = len;
     msg.id = id;
     std::copy_n(data, len, msg.data.data());
-
-    if (osMessageQueuePut(queue, &msg, 0, 100) != osOK)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool addGpsDataToRadioQueue(
-    const double& latitude,
-    const double& longitude,
-    float speed,
-    uint8_t
-        num_satellites)  // if we weren't trash this would be like a gps packet or something not a bunch of params
-                         // gps packet could be defined in the max10 files
-{
-    RadioMessage msg{};
-    msg.size = 21;
-    msg.id = 0xFFFFFFFF;  // gps packets id
-    std::copy_n(
-        reinterpret_cast<const uint8_t*>(&latitude),
-        sizeof(latitude),
-        msg.data
-            .data());  // this is so bad but we have to send the number of satellites in the same packet as the gps data for it to be useful and we only have 21 bytes to work with so we have to do this hacky stuff
-    std::copy_n(reinterpret_cast<const uint8_t*>(&longitude),
-                sizeof(longitude),
-                msg.data.data() + sizeof(latitude));
-    std::copy_n(reinterpret_cast<const uint8_t*>(&speed),
-                sizeof(speed),
-                msg.data.data() + sizeof(latitude) + sizeof(longitude));
-    // msg.data[20] = num_satellites;
-    msg.data.back() = num_satellites;
 
     if (osMessageQueuePut(queue, &msg, 0, 100) != osOK)
     {

@@ -3,8 +3,23 @@
 #include "CanDriver.hpp"
 #include "queue.h"
 #include "radio.h"
+#include "telem_packets.h"
 #include "telem_state.h"
 #include "user_threads.hpp"
+
+namespace
+{
+// Pack the latest input + output measurements for one MPPT and forward them over
+// the radio through the shared telemetry sink.
+void forwardMpptState(uint32_t telem_id, const MpptState& state)
+{
+    MpptPacket packet{state.input.voltage.load(std::memory_order_relaxed),
+                      state.input.current.load(std::memory_order_relaxed),
+                      state.output.voltage.load(std::memory_order_relaxed),
+                      state.output.current.load(std::memory_order_relaxed)};
+    enqueueMpptData(telem_id, packet);
+}
+}  // namespace
 
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
@@ -53,14 +68,9 @@ HAL_StatusTypeDef bmsFaultsMessageCallback(const sg::CANFrame& frame, void* ctx)
 
 HAL_StatusTypeDef radioTXCallback(const sg::CANFrame& frame, void* ctx)
 {
-    uint8_t packed_frame[10];
-    packed_frame[0] = frame.can_id & 0xFF;
-    packed_frame[1] = frame.can_id >> 8;
-    memcpy(packed_frame + 2, frame.data.data(), 8);
-
-    if (addCanMessageToRadioQueue(frame.can_id, frame.data.data(), static_cast<uint8_t>(frame.len)))
+    if (enqueueRadioMessage(frame.can_id, frame.data.data(), static_cast<uint8_t>(frame.len)))
     {
-        return HAL_OK;  // like stuff like this too atp we are mixing hal return with os return
+        return HAL_OK;
     }
 
     return HAL_ERROR;
@@ -120,6 +130,7 @@ HAL_StatusTypeDef MPPT1OutputMeasurementsCallback(const sg::CANFrame& frame, voi
     mppt1.output.voltage.store(voltage, std::memory_order_relaxed);
     mppt1.output.current.store(current, std::memory_order_relaxed);
 
+    forwardMpptState(TELEM_ID_MPPT1, mppt1);
     return HAL_OK;
 }
 
@@ -134,6 +145,7 @@ HAL_StatusTypeDef MPPT2OutputMeasurementsCallback(const sg::CANFrame& frame, voi
     mppt2.output.voltage.store(voltage, std::memory_order_relaxed);
     mppt2.output.current.store(current, std::memory_order_relaxed);
 
+    forwardMpptState(TELEM_ID_MPPT2, mppt2);
     return HAL_OK;
 }
 
@@ -148,5 +160,6 @@ HAL_StatusTypeDef MPPT3OutputMeasurementsCallback(const sg::CANFrame& frame, voi
     mppt3.output.voltage.store(voltage, std::memory_order_relaxed);
     mppt3.output.current.store(current, std::memory_order_relaxed);
 
+    forwardMpptState(TELEM_ID_MPPT3, mppt3);
     return HAL_OK;
 }
