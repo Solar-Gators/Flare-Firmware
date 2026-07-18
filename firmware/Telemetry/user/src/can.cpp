@@ -6,6 +6,8 @@
 #include "telem_state.h"
 #include "user_threads.hpp"
 
+using namespace telem;
+
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
         Error_Handler();

@@ -9,6 +9,9 @@
 
 #include <atomic>
 
+namespace telem
+{
+
 // internal globals
 inline std::atomic killed_status{flare_can::CarKilledStatus::ALIVE};
 inline std::atomic turn_signals_status{flare_can::TurnSignals::OFF};
@@ -37,5 +40,7 @@ struct MpptState
 inline MpptState mppt1;
 inline MpptState mppt2;
 inline MpptState mppt3;
+
+}  // namespace telem
 
 #endif  //FLAREFIRMWARE_TELEM_STATE_H
