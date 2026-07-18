@@ -258,20 +258,24 @@ void processHornAndFan()
     if (state.horn_state.load(std::memory_order_relaxed))
     {
         //HAL_GPIO_WritePin(HORN_CTRL_GPIO_Port, HORN_CTRL_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(R_HEADLIGHT_CTRL_GPIO_Port, R_HEADLIGHT_CTRL_Pin, GPIO_PIN_SET); // Connected to HL1
+        HAL_GPIO_WritePin(
+            R_HEADLIGHT_CTRL_GPIO_Port, R_HEADLIGHT_CTRL_Pin, GPIO_PIN_SET);  // Connected to HL1
     }
     else
     {
-        HAL_GPIO_WritePin(R_HEADLIGHT_CTRL_GPIO_Port, R_HEADLIGHT_CTRL_Pin, GPIO_PIN_RESET); // Connected to HL1
+        HAL_GPIO_WritePin(
+            R_HEADLIGHT_CTRL_GPIO_Port, R_HEADLIGHT_CTRL_Pin, GPIO_PIN_RESET);  // Connected to HL1
     }
 
     if (state.fan_state.load(std::memory_order_relaxed))
     {
-        HAL_GPIO_WritePin(L_HEADLIGHT_CTRL_GPIO_Port, L_HEADLIGHT_CTRL_Pin, GPIO_PIN_SET); // Connected to HL2
+        HAL_GPIO_WritePin(
+            L_HEADLIGHT_CTRL_GPIO_Port, L_HEADLIGHT_CTRL_Pin, GPIO_PIN_SET);  // Connected to HL2
     }
     else
     {
-        HAL_GPIO_WritePin(L_HEADLIGHT_CTRL_GPIO_Port, L_HEADLIGHT_CTRL_Pin, GPIO_PIN_RESET); //Connected to HL2
+        HAL_GPIO_WritePin(
+            L_HEADLIGHT_CTRL_GPIO_Port, L_HEADLIGHT_CTRL_Pin, GPIO_PIN_RESET);  //Connected to HL2
     }
 }
 
