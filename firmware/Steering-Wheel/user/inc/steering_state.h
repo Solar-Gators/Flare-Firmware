@@ -46,6 +46,8 @@ struct SteeringState
     // timer
     std::atomic<bool> timer_requested_on{false};
     std::atomic<uint32_t> timer_value{};
+
+    std::atomic<uint16_t> bms_state{};
 };
 
 inline SteeringState state;
