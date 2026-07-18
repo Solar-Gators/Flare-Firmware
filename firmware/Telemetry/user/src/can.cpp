@@ -20,6 +20,7 @@ void forwardMpptState(uint32_t telem_id, const MpptState& state)
     enqueueMpptData(telem_id, packet);
 }
 }  // namespace
+using namespace telem;
 
 #define ASSERT_HAL_OK(statement) \
     if (statement != HAL_OK)     \
