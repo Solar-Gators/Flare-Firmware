@@ -11,7 +11,7 @@ namespace
 {
 // Pack the latest input + output measurements for one MPPT and forward them over
 // the radio through the shared telemetry sink.
-void forwardMpptState(uint32_t telem_id, const MpptState& state)
+void forwardMpptState(uint32_t telem_id, const telem::MpptState& state)
 {
     MpptPacket packet{state.input.voltage.load(std::memory_order_relaxed),
                       state.input.current.load(std::memory_order_relaxed),
