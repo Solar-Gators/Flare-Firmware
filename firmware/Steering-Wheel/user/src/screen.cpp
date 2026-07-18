@@ -322,9 +322,9 @@ void drawKillStatus(flare_can::CarKilledStatus killed)
     // kill status draw
     if (killed == flare_can::CarKilledStatus::DEAD)
     {
-        display.SetTextSize(3);
+        display.SetTextSize(4);
         display.FillRect(105, 5, 75, 16, background_color);
-        display.DrawText(105, 5, "KILLED", RGB565_RED);
+        display.DrawText(105, 5, "KILLED", RGB565_WHITE);
     }
 }
 
