@@ -18,6 +18,7 @@ void sendKillFrame();
 void sendSpeedFrame();
 void processLightsOutputs();
 void queueGpsData();
+void queueRadioStats();
 void readGpsData();
 void waitAndSendRadioData();
 

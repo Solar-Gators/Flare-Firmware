@@ -20,13 +20,21 @@ struct RadioMessage
     std::array<uint8_t, max_radio_message_array_size> data{};  // this is so fragile im kms
 };
 
+// Snapshot of radio-link health, used to build the diagnostics telemetry frame.
+struct RadioStats
+{
+    uint16_t queue_used;        // messages currently waiting in the TX queue
+    uint16_t queue_capacity;    // TX queue depth
+    uint16_t queue_high_water;  // peak queue_used observed since boot
+    uint32_t enqueued;          // total messages successfully queued
+    uint32_t dropped;           // total messages dropped because the queue was full
+    uint32_t sent;              // total messages transmitted over the UART
+};
+
 void radioInit();
-bool addCanMessageToRadioQueue(uint32_t id, const uint8_t* data, uint8_t len);
-bool addGpsDataToRadioQueue(const double& latitude,
-                            const double& longitude,
-                            float speed,
-                            uint8_t num_satellites);
+bool enqueueRadioMessage(uint32_t id, const uint8_t* data, uint8_t len);
 RadioMessage waitForRadioMessageData();
 void radioSend(const RadioMessage& msg);
+RadioStats radioGetStats();
 
 #endif  //FLAREFIRMWARE_RADIO_H
