@@ -123,3 +123,10 @@ HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& msg, void*
 
     return HAL_OK;
 }
+
+HAL_StatusTypeDef bmsFaultMessageCallback(const sg::CANFrame& msg, void* ctx)
+{
+    uint16_t bms_faults = (static_cast<uint16_t>(msg.data[0]) << 8) | msg.data[1];
+    state.bms_state.store(bms_faults, std::memory_order_relaxed);
+    return HAL_OK;
+}

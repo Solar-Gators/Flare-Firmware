@@ -210,6 +210,15 @@ void processScreen()
         old_throttle_percent = throttle_percent;
     }
 
+    static uint8_t old_regen_percent =
+        state.regen_percent_requested.load(std::memory_order_relaxed);
+    if (uint8_t regen_percent = state.regen_percent_requested.load(std::memory_order_relaxed);
+        old_regen_percent != regen_percent)
+    {
+        drawRegenPercent(regen_percent);
+        old_regen_percent = regen_percent;
+    }
+
     drawTurnIndicator(state.left_blink_active.load(std::memory_order_relaxed),
                       state.right_blink_active.load(std::memory_order_relaxed),
                       state.blink_state.load(std::memory_order_relaxed));
