@@ -37,7 +37,7 @@ class INA226
     };
 
     // Constructor: addr is 7-bit I2C address (0x40..0x4F), we shift <<1 internally
-    INA226(I2C_HandleTypeDef *hi2c, uint8_t addr_7bit = I2C_ADDR_BASE);
+    INA226(I2C_HandleTypeDef* hi2c, uint8_t addr_7bit = I2C_ADDR_BASE);
 
     // Initialize:
     //  - shunt_res_ohm: value of shunt resistor in ohms
@@ -46,19 +46,19 @@ class INA226
     HAL_StatusTypeDef init(float shunt_res_ohm, float max_current_A, uint16_t config = 0x4127);
 
     // Read individual quantities
-    HAL_StatusTypeDef readShuntVoltage(float &volts);  // V
-    HAL_StatusTypeDef readBusVoltage(float &volts);    // V
-    HAL_StatusTypeDef readCurrent(float &amps);        // A
-    HAL_StatusTypeDef readPower(float &watts);         // W
+    HAL_StatusTypeDef readShuntVoltage(float& volts);  // V
+    HAL_StatusTypeDef readBusVoltage(float& volts);    // V
+    HAL_StatusTypeDef readCurrent(float& amps);        // A
+    HAL_StatusTypeDef readPower(float& watts);         // W
 
     // Convenience: read everything at once
-    HAL_StatusTypeDef readMeasurement(Measurement &m);
+    HAL_StatusTypeDef readMeasurement(Measurement& m);
 
     // Optionally re-write config or calibration
     HAL_StatusTypeDef writeConfig(uint16_t config);
     HAL_StatusTypeDef writeCalibration(uint16_t cal);
 
-    I2C_HandleTypeDef *hi2c_;
+    I2C_HandleTypeDef* hi2c_;
     uint8_t addr_;  // 8-bit address for HAL (7-bit << 1)
 
     float shunt_res_ohm_ = 0.0f;
@@ -82,7 +82,7 @@ class INA226
 
     // Low-level helpers
     HAL_StatusTypeDef writeReg16(uint8_t reg, uint16_t value);
-    HAL_StatusTypeDef readReg16(uint8_t reg, uint16_t &value);
+    HAL_StatusTypeDef readReg16(uint8_t reg, uint16_t& value);
 
     // Calibration calculation
     uint16_t computeCalibration(float shunt_res_ohm, float max_current_A);

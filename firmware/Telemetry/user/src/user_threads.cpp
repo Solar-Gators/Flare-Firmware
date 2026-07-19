@@ -58,6 +58,7 @@ void startGPSProcessTask_user(void* argument)
     for (;;)
     {
         telem::queueGpsData();
+        telem::queueRadioStats();
         wdog3.Kick();
         osDelay(1000);
     }

@@ -12,7 +12,7 @@
 // -----------------------------------------------------------------------------
 // Constructor
 // -----------------------------------------------------------------------------
-INA226::INA226(I2C_HandleTypeDef *hi2c, uint8_t addr_7bit)
+INA226::INA226(I2C_HandleTypeDef* hi2c, uint8_t addr_7bit)
     : hi2c_(hi2c), addr_(static_cast<uint8_t>(addr_7bit << 1))  // HAL expects 8-bit addr
 {
 }
@@ -29,7 +29,7 @@ HAL_StatusTypeDef INA226::writeReg16(uint8_t reg, uint16_t value)
     return HAL_I2C_Mem_Write(hi2c_, addr_, reg, I2C_MEMADD_SIZE_8BIT, buf, 2, HAL_MAX_DELAY);
 }
 
-HAL_StatusTypeDef INA226::readReg16(uint8_t reg, uint16_t &value)
+HAL_StatusTypeDef INA226::readReg16(uint8_t reg, uint16_t& value)
 {
     uint8_t buf[2] = {0, 0};
 
@@ -118,7 +118,7 @@ HAL_StatusTypeDef INA226::writeCalibration(uint16_t cal)
 // Read shunt voltage [V]
 // Shunt Voltage register: signed 16-bit, LSB = 2.5 µV. :contentReference[oaicite:8]{index=8}
 // -----------------------------------------------------------------------------
-HAL_StatusTypeDef INA226::readShuntVoltage(float &volts)
+HAL_StatusTypeDef INA226::readShuntVoltage(float& volts)
 {
     uint16_t raw_u16 = 0;
     HAL_StatusTypeDef st = readReg16(REG_SHUNT_V, raw_u16);
@@ -134,7 +134,7 @@ HAL_StatusTypeDef INA226::readShuntVoltage(float &volts)
 // Read bus voltage [V]
 // Bus Voltage register: unsigned, bits [15:3] used, LSB = 1.25 mV. :contentReference[oaicite:9]{index=9}
 // -----------------------------------------------------------------------------
-HAL_StatusTypeDef INA226::readBusVoltage(float &volts)
+HAL_StatusTypeDef INA226::readBusVoltage(float& volts)
 {
     uint16_t raw = 0;
     HAL_StatusTypeDef st = readReg16(REG_BUS_V, raw);
@@ -152,7 +152,7 @@ HAL_StatusTypeDef INA226::readBusVoltage(float &volts)
 // Read current [A]
 // Current register: signed 16-bit in units of Current_LSB. :contentReference[oaicite:10]{index=10}
 // -----------------------------------------------------------------------------
-HAL_StatusTypeDef INA226::readCurrent(float &amps)
+HAL_StatusTypeDef INA226::readCurrent(float& amps)
 {
     if (current_lsb_A_ <= 0.0f)
     {
@@ -174,7 +174,7 @@ HAL_StatusTypeDef INA226::readCurrent(float &amps)
 // Read power [W]
 // Power register: unsigned 16-bit in units of 25 * Current_LSB. :contentReference[oaicite:11]{index=11}
 // -----------------------------------------------------------------------------
-HAL_StatusTypeDef INA226::readPower(float &watts)
+HAL_StatusTypeDef INA226::readPower(float& watts)
 {
     if (power_lsb_W_ <= 0.0f)
     {
@@ -194,7 +194,7 @@ HAL_StatusTypeDef INA226::readPower(float &watts)
 // -----------------------------------------------------------------------------
 // Convenience: read all measurements
 // -----------------------------------------------------------------------------
-HAL_StatusTypeDef INA226::readMeasurement(Measurement &m)
+HAL_StatusTypeDef INA226::readMeasurement(Measurement& m)
 {
     HAL_StatusTypeDef st;
 
