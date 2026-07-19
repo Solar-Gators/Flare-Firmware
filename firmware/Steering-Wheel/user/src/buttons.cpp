@@ -198,6 +198,7 @@ void fanLongPressCallback()
 void ccPressedCallback()
 {
     // empty
+    state.regen_percent_requested.store(state.regen_percent_requested.load(std::memory_order_relaxed)+5);
 }
 
 void ccLongPressCallback()

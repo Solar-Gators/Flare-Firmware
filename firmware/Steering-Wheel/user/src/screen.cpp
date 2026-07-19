@@ -49,6 +49,7 @@ void initScreen()
     drawFanStatus(state.fan_requested_on.load(std::memory_order_relaxed));
     drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
     drawTimer(state.timer_value.load(std::memory_order_relaxed));
+    drawRegenPercent(state.regen_percent_requested.load(std::memory_order_relaxed));
 }
 
 // startup for turning everything on, yk like in car where when u start the car all the icons turn on
@@ -433,6 +434,13 @@ void drawThrottlePercent(uint16_t percent)
     }
     display.FillRect(35, 10, 80, 16, background_color);
     display.DrawText(35, 10, text_buffer.data(), RGB565_BLACK);
+}
+void drawRegenPercent(uint8_t regenStrength)
+{
+    display.SetTextSize(4);
+    snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(regenStrength));
+    display.FillRect(260, 80, 80, 35, background_color);
+    display.DrawText(260, 80, text_buffer.data(), text_color);
 }
 
 constexpr uint8_t car[]{
