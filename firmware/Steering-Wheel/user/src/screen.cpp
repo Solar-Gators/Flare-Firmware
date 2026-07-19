@@ -105,8 +105,8 @@ void drawStartup()
 void drawLabels()
 {
     display.SetTextSize(2);
-    display.DrawText(140, 90, "MPH", RGB565_GRAY);
-    display.DrawText(260, 90, "RB", RGB565_GRAY);
+    display.DrawText(140, 100, "MPH", RGB565_GRAY);
+    display.DrawText(220, 100, "RB", RGB565_GRAY);
     display.DrawText(5, 130, "MAIN V:", RGB565_WHITE);
     display.DrawText(5, 155, "SUPP V:", RGB565_WHITE);
     display.DrawText(5, 180, "H TEMP:", RGB565_WHITE);
@@ -139,8 +139,8 @@ void drawSpeed(uint8_t mph)
     {
         snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(mph));
     }
-    display.FillRect(130, 45, 100, 40, background_color);
-    display.DrawText(130, 50, text_buffer.data(), text_color);
+    display.FillRect(130, 55, 100, 40, background_color);
+    display.DrawText(130, 60, text_buffer.data(), text_color);
 }
 
 void drawSuppBatt(uint16_t millivolts)
@@ -345,20 +345,20 @@ void drawHornStatus(bool on)
 {
     // horn draw
     display.SetTextSize(2);
-    display.FillRect(245, 35, 20, 20, background_color);
+    display.FillRect(295, 80, 20, 20, background_color);
     if (on)
     {
-        display.DrawText(245, 35, "H", RGB565_BLACK);
+        display.DrawText(295, 80, "H", RGB565_BLACK);
     }
 }
 void drawFanStatus(bool on)
 {
     // horn draw
     display.SetTextSize(2);
-    display.FillRect(265, 35, 60, 20, background_color);
+    display.FillRect(275, 100, 60, 20, background_color);
     if (on)
     {
-        display.DrawText(275, 35, "FAN", RGB565_BLACK);
+        display.DrawText(275, 100, "FAN", RGB565_BLACK);
     }
 }
 void drawTimer(uint32_t timerValue)
@@ -372,7 +372,7 @@ void drawTimer(uint32_t timerValue)
     char buffer[10];
     snprintf(buffer, sizeof(buffer), "%01lu:%02lu.%1lu", minutes, seconds, tenths);
 
-    display.DrawText(235, 55, buffer, RGB565_BLACK);
+    display.DrawText(235, 40, buffer, RGB565_BLACK);
 }
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state)
 {
@@ -432,7 +432,7 @@ void drawThrottlePercent(uint16_t percent)
         snprintf(
             text_buffer.data(), sizeof(text_buffer), "%3lu%%", static_cast<unsigned long>(percent));
     }
-    display.FillRect(35, 10, 80, 16, background_color);
+    display.FillRect(35, 10, 60, 16, background_color);
     display.DrawText(35, 10, text_buffer.data(), RGB565_BLACK);
 }
 void drawRegenPercent(uint8_t regenStrength)
