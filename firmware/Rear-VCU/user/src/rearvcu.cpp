@@ -139,6 +139,9 @@ void processRegenThrottleOutputs()
     }
 
     // otherwise actually use the throttle requested by driver
+    // cap it lol
+    throttle_vol = std::min(throttle_vol, 3500);
+
     HAL_DAC_SetValue(&dac, dac_channel_regen, DAC_ALIGN_12B_R, 0);
     HAL_DAC_SetValue(&dac, dac_channel_throttle, DAC_ALIGN_12B_R, throttle_vol);
 }

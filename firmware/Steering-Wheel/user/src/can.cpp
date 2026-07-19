@@ -84,26 +84,111 @@ HAL_StatusTypeDef speedMessageCallback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
+namespace
+{
+
+uint64_t packMitsubaLe(const sg::CANFrame& msg, int nbytes)
+{
+    uint64_t full_data = 0;
+    for (int i = 0; i < nbytes; i++)
+    {
+        full_data |= (static_cast<uint64_t>(msg.data[i]) << (8 * i));
+    }
+    return full_data;
+}
+
+}  // namespace
+
 HAL_StatusTypeDef mitsubaFrame0Callback(const sg::CANFrame& msg, void* ctx)
 {
-    // need to get rpm here
-    uint64_t full_data = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        full_data = (full_data << 8) | msg.data[7 - i];  // lsb first
-    }
+    uint64_t full_data = packMitsubaLe(msg, 8);
 
-    uint16_t motor_rpm =
-        (full_data >> MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX) & ((1 << MITSUBA_RPM_VELOCITY_LEN) - 1);
-    /*
-    uint16_t motor_voltage = (full_data >> MITSUBA_VOLTAGE_LSB_BIT_INDEX) & ((1 << MITSUBA_VOLTAGE_LEN) - 1);
-    uint16_t motor_current = (full_data >> MITSUBA_CURRENT_LSB_BIT_INDEX) & ((1 << MITSUBA_CURRENT_LEN) - 1);
-    uint8_t motor_current_direction = (full_data >> MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX) & 0x01;
-    */
+    // volatiles for debugger breakpoints
+    volatile uint16_t batt_voltage_raw = (full_data >> MITSUBA_VOLTAGE_LSB_BIT_INDEX) &
+                                         ((1u << MITSUBA_VOLTAGE_LEN) - 1);  // 0.5V/LSB
+    volatile uint16_t batt_current_raw =
+        (full_data >> MITSUBA_CURRENT_LSB_BIT_INDEX) & ((1u << MITSUBA_CURRENT_LEN) - 1);  // 1A/LSB
+    volatile uint8_t batt_current_dir =
+        (full_data >> MITSUBA_BATTERY_CURRENT_DIRECTION_BIT_INDEX) & 0x01;  // 0=discharge, 1=charge
+    volatile uint16_t motor_rpm =
+        (full_data >> MITSUBA_RPM_VELOCITY_LSB_BIT_INDEX) & ((1u << MITSUBA_RPM_VELOCITY_LEN) - 1);
 
     state.motor_rpm.store(motor_rpm, std::memory_order_relaxed);
 
-    return HAL_OK;
+    (void) batt_voltage_raw;
+    (void) batt_current_raw;
+    (void) batt_current_dir;
+    (void) ctx;
+    return HAL_OK;  // breakpoint here for frame 0
+}
+
+HAL_StatusTypeDef mitsubaFrame1Callback(const sg::CANFrame& msg, void* ctx)
+{
+    uint64_t full_data = packMitsubaLe(msg, 5);
+
+    volatile uint8_t mode = full_data & 0x1;                  // 0=eco, 1=power
+    volatile uint8_t control = (full_data >> 1) & 0x1;        // 0=CCM, 1=PWM
+    volatile uint16_t accel_pos = (full_data >> 2) & 0x3FF;   // 0.5%/LSB
+    volatile uint16_t regen_pos = (full_data >> 12) & 0x3FF;  // 0.5%/LSB
+    volatile uint8_t motor_stat = (full_data >> 36) & 0x3;    // wait/fwd/rev
+    volatile uint8_t drive = (full_data >> 38) & 0x1;         // 0=drive, 1=regen
+
+    (void) mode;
+    (void) control;
+    (void) accel_pos;
+    (void) regen_pos;
+    (void) motor_stat;
+    (void) drive;
+    (void) ctx;
+    return HAL_OK;  // breakpoint here for frame 1
+}
+
+HAL_StatusTypeDef mitsubaFrame2Callback(const sg::CANFrame& msg, void* ctx)
+{
+    uint64_t full_data = packMitsubaLe(msg, 5);
+
+    // Sensor / system faults (1 = active)
+    volatile bool ad_sensor_error = (full_data >> 0) & 1;
+    volatile bool motor_curr_sensor_u_error = (full_data >> 1) & 1;
+    volatile bool motor_curr_sensor_w_error = (full_data >> 2) & 1;
+    volatile bool fet_therm_error = (full_data >> 3) & 1;
+    volatile bool batt_volt_sensor_error = (full_data >> 5) & 1;
+    volatile bool batt_curr_sensor_error = (full_data >> 6) & 1;
+    volatile bool batt_curr_sensor_adj_error = (full_data >> 7) & 1;
+    volatile bool motor_curr_sensor_adj_error = (full_data >> 8) & 1;
+    volatile bool accel_pos_error = (full_data >> 9) & 1;  // throttle out of range (LED 6)
+    volatile bool cont_volt_sensor_error = (full_data >> 11) & 1;
+    volatile bool power_system_error = (full_data >> 16) & 1;
+    volatile bool over_curr_error = (full_data >> 17) & 1;  // LED 1
+    volatile bool over_volt_error = (full_data >> 19) & 1;  // LED 8
+    volatile bool over_curr_limit = (full_data >> 21) & 1;
+    volatile bool motor_system_error = (full_data >> 24) & 1;
+    volatile bool motor_lock = (full_data >> 25) & 1;         // LED 4
+    volatile bool hall_sensor_short = (full_data >> 26) & 1;  // LED 3
+    volatile bool hall_sensor_open = (full_data >> 27) & 1;   // LED 3
+    volatile uint8_t fet_oh_lvl = (full_data >> 32) & 0x3;    // LED 9: 0=ok, 1/2/3 heat stages
+
+    (void) ad_sensor_error;
+    (void) motor_curr_sensor_u_error;
+    (void) motor_curr_sensor_w_error;
+    (void) fet_therm_error;
+    (void) batt_volt_sensor_error;
+    (void) batt_curr_sensor_error;
+    (void) batt_curr_sensor_adj_error;
+    (void) motor_curr_sensor_adj_error;
+    (void) accel_pos_error;
+    (void) cont_volt_sensor_error;
+    (void) power_system_error;
+    (void) over_curr_error;
+    (void) over_volt_error;
+    (void) over_curr_limit;
+    (void) motor_system_error;
+    (void) motor_lock;
+    (void) hall_sensor_short;
+    (void) hall_sensor_open;
+    (void) fet_oh_lvl;
+    (void) ctx;
+    return HAL_OK;  // breakpoint here for frame 2 faults
 }
 
 HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& msg, void* ctx)

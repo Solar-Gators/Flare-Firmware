@@ -18,6 +18,6 @@ void processKill();
 void processCC();
 void processTimer();
 
-inline uint32_t mitsuba_request_message_send_period_ms = 500;
+inline uint32_t mitsuba_request_message_send_period_ms = 1000;
 
 }  // namespace steering
