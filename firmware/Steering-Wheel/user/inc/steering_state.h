@@ -48,6 +48,8 @@ struct SteeringState
     std::atomic<uint32_t> timer_value{};
 
     std::atomic<uint16_t> bms_state{};
+    std::atomic<uint32_t> mc_fault_bits{};
+    std::atomic<uint8_t> mc_overheat_level{};
 };
 
 inline SteeringState state;
