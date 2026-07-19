@@ -130,21 +130,3 @@ HAL_StatusTypeDef bmsFaultMessageCallback(const sg::CANFrame& msg, void* ctx)
     state.bms_state.store(bms_faults, std::memory_order_relaxed);
     return HAL_OK;
 }
-
-HAL_StatusTypeDef mitsubaFrame2Callback(const sg::CANFrame& msg, void* ctx)
-{
-    uint64_t full_data = 0;
-    for (int i = 0; i < 5; i++)
-    {
-        full_data = (full_data << 8) | msg.data[4 - i];  // lsb first
-    }
-
-    // bits 0-27ish are individual error flags, bit 32:33 is overheat level
-    uint32_t fault_bits = static_cast<uint32_t>(full_data & 0xFFFFFFFF);
-    uint8_t overheat_level = static_cast<uint8_t>((full_data >> 32) & 0x3);
-
-    state.mc_fault_bits.store(fault_bits, std::memory_order_relaxed);
-    state.mc_overheat_level.store(overheat_level, std::memory_order_relaxed);
-
-    return HAL_OK;
-}
