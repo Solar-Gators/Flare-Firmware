@@ -166,6 +166,38 @@ void queueGpsData()
     enqueueGpsData(packet);
 }
 
+void queueRadioStats()
+{
+    // Mean gap between transmitted frames over the window since the last sample.
+    // Sampled here (rather than timed per-send) so it costs nothing on the hot path.
+    static uint32_t last_sent = 0;
+    static uint32_t last_tick = 0;
+
+    RadioStats stats = radioGetStats();
+
+    uint32_t now = HAL_GetTick();
+    uint32_t dt_ms = now - last_tick;
+    uint32_t sent_delta = stats.sent - last_sent;
+    last_sent = stats.sent;
+    last_tick = now;
+
+    uint16_t mean_interval_ms = 0;  // 0 => nothing sent this window (link stalled)
+    if (sent_delta > 0)
+    {
+        uint32_t interval = dt_ms / sent_delta;
+        mean_interval_ms = interval > 0xFFFF ? 0xFFFF : static_cast<uint16_t>(interval);
+    }
+
+    RadioStatsPacket packet{stats.queue_used,
+                            static_cast<uint8_t>(stats.queue_capacity),
+                            stats.queue_high_water,
+                            stats.enqueued,
+                            stats.dropped,
+                            stats.sent,
+                            mean_interval_ms};
+    enqueueRadioStats(packet);
+}
+
 void readGpsData()
 {
     gps.readOutputBuffer();

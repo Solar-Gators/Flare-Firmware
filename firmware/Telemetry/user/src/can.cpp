@@ -32,6 +32,9 @@ using namespace telem;
 
 void canInit()
 {
+    // Forward every can frame that isn't explicitly handled above straight to the
+    // radio. Lets us send all bus traffic without hitting the id-map size limit.
+    can_device.addDefaultCallback(&radioTXCallback);
     ASSERT_HAL_OK(can_device.startCANDevice());
 }
 HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& frame, void* ctx)

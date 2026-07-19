@@ -14,15 +14,15 @@
 
 #include "radio.h"
 
-// Synthetic packet IDs for radio-only messages that don't originate from a CAN
-// frame. Kept above the 11-bit standard CAN id range (> 0x7FF) so they can never
-// collide with a forwarded CAN frame id on the ground-station side.
+// Packet IDs
 enum : uint32_t
 {
+    TELEM_ID_MPPT1 = 0x600,  // matches MPPT1_BASE_ADDR
+    TELEM_ID_MPPT2 = 0x610,  // matches MPPT2_BASE_ADDR
+    TELEM_ID_MPPT3 = 0x620,  // matches MPPT3_BASE_ADDR
+
     TELEM_ID_GPS = 0x10000000,
-    TELEM_ID_MPPT1 = 0x10000001,
-    TELEM_ID_MPPT2 = 0x10000002,
-    TELEM_ID_MPPT3 = 0x10000003,
+    TELEM_ID_RADIO_STATS = 0x10000001,
 };
 
 struct __attribute__((packed)) GpsPacket
@@ -45,6 +45,19 @@ struct __attribute__((packed)) MpptPacket
 static_assert(sizeof(MpptPacket) <= max_radio_message_array_size,
               "MpptPacket exceeds radio payload size");
 
+struct __attribute__((packed)) RadioStatsPacket
+{
+    uint16_t queue_used;        // 2  messages waiting in the TX queue right now
+    uint8_t queue_capacity;     // 1  TX queue depth
+    uint16_t queue_high_water;  // 2  peak queue_used since boot
+    uint32_t enqueued;          // 4  total frames queued
+    uint32_t dropped;           // 4  total frames dropped (queue full)
+    uint32_t sent;              // 4  total frames transmitted over UART
+    uint16_t mean_interval_ms;  // 2  mean gap between sent frames over last window
+};  //    -> 19 bytes
+static_assert(sizeof(RadioStatsPacket) <= max_radio_message_array_size,
+              "RadioStatsPacket exceeds radio payload size");
+
 inline bool enqueueTelemPacket(uint32_t id, const void* packet, uint8_t len)
 {
     return enqueueRadioMessage(id, static_cast<const uint8_t*>(packet), len);
@@ -58,6 +71,11 @@ inline bool enqueueGpsData(const GpsPacket& packet)
 inline bool enqueueMpptData(uint32_t id, const MpptPacket& packet)
 {
     return enqueueTelemPacket(id, &packet, sizeof(packet));
+}
+
+inline bool enqueueRadioStats(const RadioStatsPacket& packet)
+{
+    return enqueueTelemPacket(TELEM_ID_RADIO_STATS, &packet, sizeof(packet));
 }
 
 #endif  //FLAREFIRMWARE_TELEM_PACKETS_H

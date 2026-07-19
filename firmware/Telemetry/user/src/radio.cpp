@@ -13,12 +13,23 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 
 extern UART_HandleTypeDef huart2;
 
 namespace
 {
 osMessageQueueId_t queue;
+
+constexpr uint32_t RADIO_QUEUE_DEPTH = 32;
+
+// Radio-link health counters (see radioGetStats). Relaxed atomics: producers run
+// in the CAN RX task, the consumer in the radio TX task, and the reader in the
+// telemetry task; we only need coherent counts, not ordering.
+std::atomic<uint32_t> stat_enqueued{0};
+std::atomic<uint32_t> stat_dropped{0};
+std::atomic<uint32_t> stat_sent{0};
+std::atomic<uint16_t> stat_queue_high_water{0};
 
 // Pre-COBS body layout: [can_id (4 LE)][payload size (2 LE)][payload][crc (2 LE)]
 constexpr size_t RADIO_ID_SIZE = sizeof(uint32_t);
@@ -79,7 +90,7 @@ sg::Rfd900 radio(&huart2);
 void radioInit()
 {
     // radio.enterLocalATCommandMode(); // we probably don't wanna call this? we wanna be in data mode not command (at) mode
-    queue = osMessageQueueNew(10, sizeof(RadioMessage), nullptr);
+    queue = osMessageQueueNew(RADIO_QUEUE_DEPTH, sizeof(RadioMessage), nullptr);
     if (!queue)
     {
         Error_Handler();
@@ -98,9 +109,23 @@ bool enqueueRadioMessage(uint32_t id, const uint8_t* data, uint8_t len)
     msg.id = id;
     std::copy_n(data, len, msg.data.data());
 
-    if (osMessageQueuePut(queue, &msg, 0, 100) != osOK)
+    // Best-effort, non-blocking: if the radio can't keep up we drop the frame and
+    // count it rather than block the CAN RX task (which would stall CAN dispatch).
+    if (osMessageQueuePut(queue, &msg, 0, 0) != osOK)
     {
+        stat_dropped.fetch_add(1, std::memory_order_relaxed);
         return false;
+    }
+
+    stat_enqueued.fetch_add(1, std::memory_order_relaxed);
+
+    // Track the peak queue occupancy so the diagnostics frame can report how close
+    // to saturation we got, even if it has drained by the time stats are sampled.
+    uint16_t used = static_cast<uint16_t>(osMessageQueueGetCount(queue));
+    uint16_t peak = stat_queue_high_water.load(std::memory_order_relaxed);
+    while (used > peak &&
+           !stat_queue_high_water.compare_exchange_weak(peak, used, std::memory_order_relaxed))
+    {
     }
 
     return true;
@@ -148,4 +173,17 @@ void radioSend(const RadioMessage& msg)
     frame[frame_len++] = 0x00;  // frame delimiter
 
     radio.sendData(frame.data(), frame_len);
+    stat_sent.fetch_add(1, std::memory_order_relaxed);
+}
+
+RadioStats radioGetStats()
+{
+    RadioStats stats{};
+    stats.queue_used = queue ? static_cast<uint16_t>(osMessageQueueGetCount(queue)) : 0;
+    stats.queue_capacity = queue ? static_cast<uint16_t>(osMessageQueueGetCapacity(queue)) : 0;
+    stats.queue_high_water = stat_queue_high_water.load(std::memory_order_relaxed);
+    stats.enqueued = stat_enqueued.load(std::memory_order_relaxed);
+    stats.dropped = stat_dropped.load(std::memory_order_relaxed);
+    stats.sent = stat_sent.load(std::memory_order_relaxed);
+    return stats;
 }

@@ -1,0 +1,1058 @@
+# =============================================================================
+# Flare-Firmware CAN Bus + Radio Message Catalog
+# =============================================================================
+# [[message]]      - every CAN frame TRANSMITTED on a physical CAN bus.
+# [[radio_packet]] - every frame the Telemetry board sends DOWN THE RADIO link.
+#
+# The Telemetry board bridges CAN to the RFD900x radio. It forwards can frames
+# raw (keyed by their real CAN id) and also emits synthetic packets that have no
+# CAN origin (GPS over I2C, radio self-diagnostics) or that repack several CAN
+# frames into one (MPPT). See the [radio] section for the on-air framing.
+#
+# Notes:
+#   * DLC == CANFrameLen (BYTES_n == n data bytes).
+#   * All IDs are STANDARD (11-bit) unless id_type = "extended".
+#   * Multi-byte scalar payloads are little-endian (LSB first) unless noted.
+#   * Bytes not listed in a message's [[message.bytes]] are transmitted as 0.
+# =============================================================================
+
+[meta]
+description = "SolarGators / University of Florida solar car CAN bus message catalog"
+repos = ["Flare-Firmware", "DistributedBMS"]
+boards = [
+    "Front-VCU", "Rear-VCU", "Steering-Wheel", "Telemetry",       # Flare-Firmware
+    "BMS-Primary", "BMS-Daughter",                                 # DistributedBMS
+]
+# Two physical CAN buses exist:
+#   "vehicle"  - main car bus (VCUs, steering, telemetry, BMS primary)
+#   "bms"      - internal BMS bus (daughter boards -> BMS secondary)
+# BMS-Secondary transmits NO CAN (it forwards to BMS-Primary over UART).
+# BMS-Primary has two hardware revisions; PrimaryV2 is current/active. The four
+# battery frames (0x040-0x043) are byte-identical between V1 and V2; frames
+# 0x044/0x045/0x180/0x181/0x190/0x192/0x1B0 are PrimaryV2-only (see per-message
+# `primary_v1` flags).
+
+# -----------------------------------------------------------------------------
+# Shared enum definitions (resources/Drivers/SG_Drivers/flare/can_protocol.h)
+# -----------------------------------------------------------------------------
+[enums.ArrayContactors]
+BOTH_OPEN       = 0
+PRECHARGE_CLOSED = 1
+MAIN_CLOSED     = 2
+
+[enums.TurnSignals]
+OFF     = 0
+LEFT    = 1
+RIGHT   = 2
+HAZARDS = 3
+
+[enums.Direction]
+FORWARD = 0
+REVERSE = 1
+
+[enums.MCPowerMode]
+ECO   = 0
+POWER = 1
+
+[enums.CarKilledStatus]
+ALIVE = 0
+DEAD  = 1
+
+
+# =============================================================================
+# Messages
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "kill_frame"
+id         = 0x010
+sender     = "Telemetry"
+dlc        = 1
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 50
+source     = "firmware/Telemetry/user/src/telemetry.cpp:64"
+trigger    = "startKillSwitchMessageTask_user; latches DEAD if kill-switch GPIO low"
+description = "Car kill-switch state broadcast."
+  [[message.bytes]]
+  index = 0
+  name  = "killed_status"
+  type  = "enum CarKilledStatus"
+  notes = "ALIVE=0, DEAD=1"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "rearvcu_statuses_frame"
+id         = 0x020
+sender     = "Rear-VCU"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 50
+source     = "firmware/Rear-VCU/user/src/rearvcu.cpp:210"
+trigger    = "startSendStatusTask_user"
+description = "Rear-VCU motor/array status and requested drive modes."
+  [[message.bytes]]
+  index = 0
+  name  = "mc_enabled"
+  type  = "uint8 (constant 1)"
+  notes = "Motor controller enabled/high flag."
+  [[message.bytes]]
+  index = 1
+  name  = "direction_requested"
+  type  = "enum Direction"
+  [[message.bytes]]
+  index = 2
+  name  = "mc_power_mode_requested"
+  type  = "enum MCPowerMode"
+  [[message.bytes]]
+  index = 3
+  name  = "array_contactors"
+  type  = "enum ArrayContactors"
+  [[message.bytes]]
+  index = 4
+  name  = "car_speed"
+  type  = "uint8"
+  notes = "Speed."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "supp_batt_frame"
+id         = 0x021
+sender     = "Rear-VCU"
+dlc        = 4
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 60
+source     = "firmware/Rear-VCU/user/src/rearvcu.cpp:96"
+trigger    = "startReadSupBat_user (osDelay 30 + ~30ms internal read delay)"
+description = "Supplemental (12V) battery voltage and current."
+  [[message.bytes]]
+  index = "0-1"
+  name  = "supp_batt_voltage_mv"
+  type  = "uint16 LE"
+  notes = "Supplemental battery voltage, millivolts."
+  [[message.bytes]]
+  index = "2-3"
+  name  = "supp_batt_current"
+  type  = "uint16 LE"
+  notes = "Supplemental battery current (moving average)."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "steering_requests_frame"
+id         = 0x064
+sender     = "Steering-Wheel"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 20
+source     = "firmware/Steering-Wheel/user/src/steering.cpp:46"
+trigger    = "startPollButtons_user"
+description = "Primary driver-input request frame from the steering wheel."
+  [[message.bytes]]
+  index = 0
+  name  = "turn_signals_requested"
+  type  = "enum TurnSignals"
+  [[message.bytes]]
+  index = 1
+  name  = "direction_requested"
+  type  = "enum Direction"
+  [[message.bytes]]
+  index = 2
+  name  = "array_contactors_requested_closed"
+  type  = "bool"
+  notes = "1 = request array contactors closed."
+  [[message.bytes]]
+  index = 3
+  name  = "horn_requested_on"
+  type  = "bool"
+  [[message.bytes]]
+  index = 4
+  name  = "blink_phase"
+  type  = "bool"
+  notes = "Turn-signal blink phase = (HAL_GetTick()/500) % 2 == 0."
+  [[message.bytes]]
+  index = 5
+  name  = "regen_percent_requested"
+  type  = "uint8 (0-100)"
+  [[message.bytes]]
+  index = 6
+  name  = "mc_power_mode_requested"
+  type  = "enum MCPowerMode"
+  [[message.bytes]]
+  index = 7
+  name  = "fan_requested_on"
+  type  = "bool"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "steering_requests_frame_2"
+id         = 0x065
+sender     = "Steering-Wheel"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 20
+source     = "firmware/Steering-Wheel/user/src/steering.cpp:287"
+trigger    = "startPollButtons_user (processCC)"
+description = "Cruise-control request. Forced off when car DEAD or brake pressed."
+  [[message.bytes]]
+  index = 0
+  name  = "is_cc_on"
+  type  = "bool"
+  notes = "Cruise control enabled."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "mitsuba_frame0_request"
+id         = 0x08F89540
+sender     = "Steering-Wheel"
+dlc        = 1
+id_type    = "extended"
+rtr        = "data"
+period_ms  = 1000
+source     = "firmware/Steering-Wheel/user/inc/can.h:6"
+trigger    = "startHeartbeatTask_user"
+description = "Request frame-0 telemetry from the Mitsuba motor controller. Only extended-ID transmit in the codebase."
+  [[message.bytes]]
+  index = 0
+  name  = "request_bitmask"
+  type  = "uint8 bitfield"
+  notes = "0b00000001 = request frame 0."
+
+# -----------------------------------------------------------------------------
+# Mitsuba motor-controller RESPONSE frames (0x08x50225, extended 29-bit).
+# The Mitsuba is an external device, not one of our boards; it answers the
+# request frame above on the vehicle bus and Telemetry forwards the frames raw
+# over the radio. These are BIT-PACKED, not byte-aligned: fields are described
+# by `bits = "start-end"` where bit 0 is the LSB of byte 0 and bit numbering
+# runs little-endian across the whole payload (int.from_bytes(payload, "little")
+# then shift/mask). engineering_value = raw * scale.
+# Decoders: Flare-Telemetry-Collector/app/payload_parsers.py (_parse_mitsuba_*).
+# -----------------------------------------------------------------------------
+[enums.MitsubaDriveAction]
+STOP    = 0
+FORWARD = 2
+REVERSE = 3
+
+# overheat_level, Frame2 bits 32-33
+[enums.MitsubaOverheat]
+NORMAL    = 0
+LEVEL_1   = 1
+LEVEL_2   = 2
+OVER_HEAT = 3
+
+# Frame2 error bitfield (bit index -> fault name; unlisted bits reserved)
+[enums.MitsubaError]
+ANALOG_SENSOR                 = 0
+MOTOR_CURRENT_SENSOR_U        = 1
+MOTOR_CURRENT_SENSOR_W        = 2
+FET_THERMISTOR                = 3
+BATTERY_VOLTAGE_SENSOR        = 5
+BATTERY_CURRENT_SENSOR        = 6
+BATTERY_CURRENT_SENSOR_ADJUST = 7
+MOTOR_CURRENT_SENSOR_ADJUST   = 8
+ACCELERATOR_POSITION          = 9
+CONTROLLER_VOLTAGE_SENSOR     = 11
+POWER_SYSTEM                  = 16
+OVER_CURRENT                  = 17
+OVER_VOLTAGE                  = 19
+OVER_CURRENT_LIMIT            = 21
+MOTOR_SYSTEM                  = 24
+MOTOR_LOCK                    = 25
+HALL_SENSOR_SHORT             = 26
+HALL_SENSOR_OPEN              = 27
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "mitsuba_frame0"
+id         = 0x08850225
+sender     = "Mitsuba"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "extended"
+rtr        = "data"
+period_ms  = 1000
+source     = "external Mitsuba motor controller (responds to 0x08F89540 request)"
+trigger    = "reply to mitsuba_frame0_request"
+description = "Mitsuba primary status: battery/motor voltage & current, FET temp, RPM, PWM duty, lead angle."
+  [[message.bits]]
+  bits  = "0-9"
+  name  = "battery_voltage"
+  type  = "uint10"
+  scale = 0.5
+  unit  = "V"
+  [[message.bits]]
+  bits  = "10-18"
+  name  = "battery_current"
+  type  = "uint9"
+  scale = 1.0
+  unit  = "A"
+  notes = "Magnitude; sign given by battery_current_minus."
+  [[message.bits]]
+  bits  = "19"
+  name  = "battery_current_minus"
+  type  = "bool"
+  notes = "1 = current flowing out of battery into MC (discharge)."
+  [[message.bits]]
+  bits  = "20-29"
+  name  = "motor_current"
+  type  = "uint10"
+  scale = 1.0
+  unit  = "A"
+  [[message.bits]]
+  bits  = "30-34"
+  name  = "fet_temp"
+  type  = "uint5"
+  scale = 5.0
+  unit  = "degC"
+  [[message.bits]]
+  bits  = "35-46"
+  name  = "motor_rpm"
+  type  = "uint12"
+  scale = 1.0
+  unit  = "RPM"
+  [[message.bits]]
+  bits  = "47-56"
+  name  = "pwm_duty"
+  type  = "uint10"
+  scale = 0.5
+  unit  = "%"
+  [[message.bits]]
+  bits  = "57-63"
+  name  = "lead_angle"
+  type  = "uint7"
+  scale = 0.5
+  unit  = "deg"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "mitsuba_frame1"
+id         = 0x08950225
+sender     = "Mitsuba"
+bus        = "vehicle"
+dlc        = 5
+id_type    = "extended"
+rtr        = "data"
+period_ms  = 1000
+source     = "external Mitsuba motor controller"
+trigger    = "reply to mitsuba_frame0_request"
+description = "Mitsuba mode / target: power & PWM mode, accelerator/regen positions, drive action."
+  [[message.bits]]
+  bits  = "0"
+  name  = "power_mode"
+  type  = "bool"
+  notes = "1 = power, 0 = eco (enum MCPowerMode)."
+  [[message.bits]]
+  bits  = "1"
+  name  = "pwm_mode"
+  type  = "bool"
+  notes = "1 = PWM mode, 0 = current mode."
+  [[message.bits]]
+  bits  = "2-11"
+  name  = "accelerator_position"
+  type  = "uint10"
+  scale = 0.5
+  unit  = "%"
+  [[message.bits]]
+  bits  = "12-21"
+  name  = "regen_vr_position"
+  type  = "uint10"
+  scale = 0.5
+  unit  = "%"
+  [[message.bits]]
+  bits  = "22-25"
+  name  = "digit_sw_position"
+  type  = "uint4"
+  [[message.bits]]
+  bits  = "26-35"
+  name  = "output_target"
+  type  = "uint10"
+  notes = "Raw target: 0.5 A/LSB in current mode, 0.5 %/LSB in PWM mode."
+  [[message.bits]]
+  bits  = "36-37"
+  name  = "drive_action"
+  type  = "uint2 (enum MitsubaDriveAction)"
+  [[message.bits]]
+  bits  = "38"
+  name  = "regen_active"
+  type  = "bool"
+  notes = "1 = regen, 0 = drive."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "mitsuba_frame2"
+id         = 0x08A50225
+sender     = "Mitsuba"
+bus        = "vehicle"
+dlc        = 5
+id_type    = "extended"
+rtr        = "data"
+period_ms  = 1000
+source     = "external Mitsuba motor controller"
+trigger    = "reply to mitsuba_frame0_request"
+description = "Mitsuba error frame: 40-bit fault bitfield plus overheat level."
+  [[message.bits]]
+  bits  = "0-39"
+  name  = "error_flags"
+  type  = "uint40 bitfield (enum MitsubaError)"
+  notes = "Each set bit is an active fault; see enum MitsubaError for bit->name."
+  [[message.bits]]
+  bits  = "32-33"
+  name  = "overheat_level"
+  type  = "uint2 (enum MitsubaOverheat)"
+  notes = "Overlaps error_flags bits 32-33 (no error names assigned there)."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "tb_frame"
+id         = 0x080
+sender     = "Front-VCU"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 20
+source     = "firmware/Front-VCU/user/src/frontvcu.cpp:84"
+trigger    = "StartCANMessagesTX_user"
+description = "Front-VCU throttle command plus fan/horn and lights power sense."
+  [[message.bytes]]
+  index = "0-1"
+  name  = "throttle_data"
+  type  = "uint16 LE"
+  notes = "Processed throttle command; 0 when car killed, else raw ADC or cruise snapshot."
+  [[message.bytes]]
+  index = "2-3"
+  name  = "fh_power"
+  type  = "uint16 LE"
+  notes = "Fan/horn channel INA226 power register."
+  [[message.bytes]]
+  index = "4-5"
+  name  = "lights_power"
+  type  = "uint16 LE"
+  notes = "Lights channel INA226 power register."
+  [[message.bytes]]
+  index = 7
+  name  = "brake_state"
+  type  = "bool"
+  notes = "Brake pressed (from BRAKE GPIO). Byte 6 unused (0)."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "speed_frame"
+id         = 0x0A0
+sender     = "Telemetry"
+dlc        = 1
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 250
+source     = "firmware/Telemetry/user/src/telemetry.cpp:79"
+trigger    = "startSpeedMessageTask_user"
+description = "GPS ground speed broadcast."
+  [[message.bytes]]
+  index = 0
+  name  = "speed"
+  type  = "uint8"
+  notes = "round(gps.getSpeed()), nearest integer."
+
+
+# =============================================================================
+# DistributedBMS  (../DistributedBMS, separate repo)
+# =============================================================================
+# BMS-Primary transmits onto the shared VEHICLE bus (classic CAN, 11-bit std,
+# 8-byte). Telemetry consumes 0x040/0x041 from here. Multi-byte scalars in
+# these frames are BIG-ENDIAN (MSB first) unless noted little-endian.
+# BMS-Daughter transmits onto the internal BMS bus only.
+# Two Primary HW revisions exist; PrimaryV2 is current. `primary_v1 = true`
+# marks frames also emitted by the older PrimaryV1.
+
+# BMS fault bitfield (bytes 0-1 of 0x040, big-endian; masked to 0x003F)
+[enums.BmsFaults]
+NONE                = 0x0000
+OVERVOLTAGE         = 0x0001
+UNDERVOLTAGE        = 0x0002
+CELL_IMBALANCE      = 0x0004
+OVERTEMPERATURE     = 0x0008
+UNDERTEMPERATURE    = 0x0010
+BATTERY_OVERCURRENT = 0x0020
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_status"
+id         = 0x040
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 50
+primary_v1 = true
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:8"
+trigger    = "periodic (updatePeriodicTransmission)"
+description = "BMS fault flags, contactor and daughter-board status. Telemetry latches car DEAD on any fault here."
+  [[message.bytes]]
+  index = "0-1"
+  name  = "bms_faults"
+  type  = "uint16 BE bitfield (enum BmsFaults)"
+  notes = "Big-endian, masked to 0x003F."
+  [[message.bytes]]
+  index = 2
+  name  = "contactors_state"
+  type  = "uint8"
+  notes = "0=open, 1=closed."
+  [[message.bytes]]
+  index = 3
+  name  = "daughter_board_status"
+  type  = "uint8 bitmap"
+  notes = "bit N set = module N online."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_battery_voltage"
+id         = 0x041
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 50
+primary_v1 = true
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:25"
+trigger    = "periodic"
+description = "Pack voltage plus highest/lowest cell voltages and their indices."
+  [[message.bytes]]
+  index = "0-1"
+  name  = "pack_voltage"
+  type  = "uint16 BE"
+  notes = "Volts x100 (9067 = 90.67 V)."
+  [[message.bytes]]
+  index = "2-3"
+  name  = "high_cell_mv"
+  type  = "uint16 BE"
+  [[message.bytes]]
+  index = 4
+  name  = "high_cell_index"
+  type  = "uint8"
+  [[message.bytes]]
+  index = "5-6"
+  name  = "low_cell_mv"
+  type  = "uint16 BE"
+  [[message.bytes]]
+  index = 7
+  name  = "low_cell_index"
+  type  = "uint8"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_battery_temperature"
+id         = 0x042
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 50
+primary_v1 = true
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:42"
+trigger    = "periodic"
+description = "Highest and average pack temperature. (avg currently equals high temp - placeholder.)"
+  [[message.bytes]]
+  index = "0-1"
+  name  = "high_temp"
+  type  = "int16 BE"
+  notes = "degC x10 (456 = 45.6 C)."
+  [[message.bytes]]
+  index = 2
+  name  = "high_temp_index"
+  type  = "uint8"
+  [[message.bytes]]
+  index = "3-4"
+  name  = "avg_temp"
+  type  = "int16 BE"
+  notes = "degC x10. Placeholder: set equal to high_temp."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_battery_current"
+id         = 0x043
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 50
+primary_v1 = true
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:59"
+trigger    = "periodic"
+description = "Pack current."
+  [[message.bytes]]
+  index = "0-3"
+  name  = "current"
+  type  = "float32 BE"
+  notes = "Amps, IEEE-754 big-endian. Positive = discharge."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_aux_current"
+id         = 0x044
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 100
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:97"
+trigger    = "periodic (PrimaryV2 only)"
+description = "Auxiliary-rail current."
+  [[message.bytes]]
+  index = "0-3"
+  name  = "aux_current"
+  type  = "float32 BE"
+  notes = "Amps, IEEE-754 big-endian."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_fan_current"
+id         = 0x045
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 100
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:101"
+trigger    = "periodic (PrimaryV2 only)"
+description = "Fan-rail current."
+  [[message.bytes]]
+  index = "0-3"
+  name  = "fan_current"
+  type  = "float32 BE"
+  notes = "Amps, IEEE-754 big-endian."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_heartbeat"
+id         = 0x180
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 100
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:105"
+trigger    = "periodic (PrimaryV2 only)"
+description = "BMS liveness heartbeat with state and counters."
+  [[message.bytes]]
+  index = 0
+  name  = "node_id"
+  type  = "uint8"
+  notes = "0x01."
+  [[message.bytes]]
+  index = 1
+  name  = "state"
+  type  = "uint8 (enum BmsState)"
+  [[message.bytes]]
+  index = 2
+  name  = "fault_count"
+  type  = "uint8"
+  [[message.bytes]]
+  index = 3
+  name  = "warning_count"
+  type  = "uint8"
+  [[message.bytes]]
+  index = "4-5"
+  name  = "uptime_s"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = "6-7"
+  name  = "sequence"
+  type  = "uint16 LE"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_pack_status"
+id         = 0x181
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 100
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:120"
+trigger    = "periodic (PrimaryV2 only)"
+description = "Pack summary: voltage, current, SOC, SOH."
+  [[message.bytes]]
+  index = "0-1"
+  name  = "pack_voltage_mv"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = "2-3"
+  name  = "pack_current_ma"
+  type  = "int16 LE"
+  notes = "Discharge positive."
+  [[message.bytes]]
+  index = "4-5"
+  name  = "soc"
+  type  = "uint16 LE"
+  notes = "Percent x10 (0-1000)."
+  [[message.bytes]]
+  index = "6-7"
+  name  = "soh"
+  type  = "uint16 LE"
+  notes = "Percent x10. Hardcoded 1000 (placeholder)."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_fault_status"
+id         = 0x190
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 0
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:161"
+trigger    = "event-driven on active-fault change (PrimaryV2 only; min 10 ms gap)"
+description = "Detailed fault snapshot emitted when the active-fault set changes."
+  [[message.bytes]]
+  index = "0-1"
+  name  = "active_faults"
+  type  = "uint16 LE bitfield (enum BmsFaults)"
+  [[message.bytes]]
+  index = "2-3"
+  name  = "fault_count"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = 4
+  name  = "critical_fault"
+  type  = "uint8"
+  notes = "0/1."
+  [[message.bytes]]
+  index = 5
+  name  = "fault_code"
+  type  = "uint8"
+  notes = "Index of most-significant set fault bit."
+  [[message.bytes]]
+  index = "6-7"
+  name  = "fault_timestamp_s"
+  type  = "uint16 LE"
+  notes = "Seconds since boot."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_state_change"
+id         = 0x192
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 0
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:188"
+trigger    = "event-driven on state-machine transition (PrimaryV2 only)"
+description = "Emitted when the BMS state machine transitions."
+  [[message.bytes]]
+  index = 0
+  name  = "old_state"
+  type  = "uint8 (enum BmsState)"
+  [[message.bytes]]
+  index = 1
+  name  = "new_state"
+  type  = "uint8 (enum BmsState)"
+  [[message.bytes]]
+  index = "2-3"
+  name  = "duration_ms"
+  type  = "uint16 LE"
+  notes = "Time in prior state, clamped 0xFFFF."
+  [[message.bytes]]
+  index = "4-7"
+  name  = "timestamp_ms"
+  type  = "uint32 LE"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "bms_config_response"
+id         = 0x1B0
+sender     = "BMS-Primary"
+repo       = "DistributedBMS"
+bus        = "vehicle"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 0
+primary_v1 = false
+source     = "DistributedBMSPrimaryV2/Drivers/DataHandlers/Src/BmsCanProtocol.cpp:201"
+trigger    = "on request (reply to config request RX 0x1A1; PrimaryV2 only)"
+description = "Reports configured cell voltage thresholds in response to a config request."
+  [[message.bytes]]
+  index = 0
+  name  = "response_type"
+  type  = "uint8"
+  notes = "Echoes ConfigRequestType."
+  [[message.bytes]]
+  index = "2-3"
+  name  = "cell_overvoltage_mv"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = "4-5"
+  name  = "cell_undervoltage_mv"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = "6-7"
+  name  = "cell_imbalance_mv"
+  type  = "uint16 LE"
+
+# -----------------------------------------------------------------------------
+# BMS-Daughter internal-bus frames. All three share one CAN ID =
+# 0x100 + DEVICE_NUMBER (per-board, 0x100-0x107; currently 0x105) and are
+# demultiplexed by byte 0 (message type). Sent every 250 ms cycle.
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "daughter_averages"
+id         = "0x100 + DEVICE_NUMBER"
+sender     = "BMS-Daughter"
+repo       = "DistributedBMS"
+bus        = "bms"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 250
+msg_type   = 0x02
+source     = "DistributedBMSDaughter/Core/Inc/CanFrame.hpp:36"
+trigger    = "StartVoltageTask cycle"
+description = "Per-module average temperature and cell voltage."
+  [[message.bytes]]
+  index = 0
+  name  = "msg_type"
+  type  = "uint8"
+  notes = "0x02 = AVERAGES."
+  [[message.bytes]]
+  index = "1-4"
+  name  = "avg_temp_c"
+  type  = "float32 LE"
+  notes = "Average temperature, degC."
+  [[message.bytes]]
+  index = "5-6"
+  name  = "avg_cell_mv"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = 7
+  name  = "num_cells"
+  type  = "uint8"
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "daughter_voltage_extremes"
+id         = "0x100 + DEVICE_NUMBER"
+sender     = "BMS-Daughter"
+repo       = "DistributedBMS"
+bus        = "bms"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 250
+msg_type   = 0x01
+source     = "DistributedBMSDaughter/Core/Inc/CanFrame.hpp:23"
+trigger    = "StartVoltageTask cycle"
+description = "Per-module highest/lowest cell voltage, indices, and fault bits."
+  [[message.bytes]]
+  index = 0
+  name  = "msg_type"
+  type  = "uint8"
+  notes = "0x01 = VOLTAGE_EXTREMES."
+  [[message.bytes]]
+  index = "1-2"
+  name  = "high_cell_mv"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = "3-4"
+  name  = "low_cell_mv"
+  type  = "uint16 LE"
+  [[message.bytes]]
+  index = 5
+  name  = "low_cell_index"
+  type  = "uint8"
+  [[message.bytes]]
+  index = 6
+  name  = "high_cell_index"
+  type  = "uint8"
+  [[message.bytes]]
+  index = 7
+  name  = "faults"
+  type  = "uint8 bitfield"
+  notes = "Fault bitmask (docs incorrectly call this reserved)."
+
+# -----------------------------------------------------------------------------
+[[message]]
+name       = "daughter_high_temp"
+id         = "0x100 + DEVICE_NUMBER"
+sender     = "BMS-Daughter"
+repo       = "DistributedBMS"
+bus        = "bms"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 250
+msg_type   = 0x00
+source     = "DistributedBMSDaughter/Core/Inc/CanFrame.hpp:15"
+trigger    = "StartVoltageTask cycle"
+description = "Per-module highest temperature and its sensor index."
+  [[message.bytes]]
+  index = 0
+  name  = "msg_type"
+  type  = "uint8"
+  notes = "0x00 = HIGH_TEMP."
+  [[message.bytes]]
+  index = "1-4"
+  name  = "high_temp_c"
+  type  = "float32 LE"
+  notes = "Highest temperature, degC."
+  [[message.bytes]]
+  index = 5
+  name  = "high_temp_index"
+  type  = "uint8"
+
+
+# =============================================================================
+# RADIO LINK  (Telemetry board -> RFD900x -> ground station)
+# =============================================================================
+[radio]
+board       = "Telemetry"
+repo        = "Flare-Firmware"
+uart        = "USART2, 57600 baud, 8N1, no flow control"
+source      = "firmware/Telemetry/user/src/radio.cpp"
+# On-air frame: COBS( body ) + 0x00 delimiter, where
+#   body = [ id : 4 LE ][ payload_size : 2 LE ][ payload ][ crc16 : 2 LE ]
+# COBS removes all 0x00 bytes from the body so a single 0x00 marks frame end.
+framing     = "COBS([id:4 LE][size:2 LE][payload][crc16:2 LE]) + 0x00"
+crc         = "CRC-16/CCITT-FALSE (poly 0x1021, init 0xFFFF, no reflect, xorout 0x0000)"
+max_payload = 21  # bytes (max_radio_message_array_size)
+tx_queue_depth = 32
+# Two sources feed the radio:
+#   1. Forwarded can frames  - keyed by their real CAN id (see [[message]] above).
+#      The Telemetry id map handles a few frames locally; ALL other bus frames are
+#      forwarded raw by a default callback. So on the radio you can see any id in
+#      the [[message]] catalog that appears on the vehicle bus.
+#   2. Synthetic [[radio_packet]] frames below (GPS, MPPT, radio diagnostics).
+# Note: MPPT frames (0x600-0x621) are NOT forwarded raw; they are repacked into the
+# MpptPacket radio_packet, which reuses the controller's base CAN id.
+
+# -----------------------------------------------------------------------------
+[[radio_packet]]
+name        = "GpsPacket"
+id          = 0x10000000
+size        = 21
+source      = "firmware/Telemetry/user/inc/telem_packets.h (TELEM_ID_GPS)"
+period_ms   = 1000
+origin      = "GPS over I2C (MAX-M10S); no CAN origin -> synthetic id > 0x7FF"
+description = "Vehicle position, speed, and fix quality."
+  [[radio_packet.bytes]]
+  index = "0-7"
+  name  = "latitude"
+  type  = "float64 LE"
+  notes = "Degrees."
+  [[radio_packet.bytes]]
+  index = "8-15"
+  name  = "longitude"
+  type  = "float64 LE"
+  notes = "Degrees."
+  [[radio_packet.bytes]]
+  index = "16-19"
+  name  = "speed"
+  type  = "float32 LE"
+  notes = "Ground speed."
+  [[radio_packet.bytes]]
+  index = 20
+  name  = "num_satellites"
+  type  = "uint8"
+
+# -----------------------------------------------------------------------------
+# One MpptPacket per controller. Folds the input-measurement CAN frame (base id)
+# and output-measurement frame (base+1) into a single radio packet, tagged with
+# the controller's base CAN id so it lines up with raw-CAN debugging.
+[[radio_packet]]
+name        = "MpptPacket"
+id          = "0x600 / 0x610 / 0x620"
+size        = 16
+source      = "firmware/Telemetry/user/inc/telem_packets.h (TELEM_ID_MPPT1..3)"
+period_ms   = 500
+origin      = "repacked from MPPT CAN frames 0x600/0x601, 0x610/0x611, 0x620/0x621 (rate-limited)"
+description = "Per-MPPT input and output voltage/current."
+  [[radio_packet.bytes]]
+  index = "0-3"
+  name  = "input_voltage"
+  type  = "float32 LE"
+  [[radio_packet.bytes]]
+  index = "4-7"
+  name  = "input_current"
+  type  = "float32 LE"
+  [[radio_packet.bytes]]
+  index = "8-11"
+  name  = "output_voltage"
+  type  = "float32 LE"
+  [[radio_packet.bytes]]
+  index = "12-15"
+  name  = "output_current"
+  type  = "float32 LE"
+
+# -----------------------------------------------------------------------------
+[[radio_packet]]
+name        = "RadioStatsPacket"
+id          = 0x10000001
+size        = 19
+source      = "firmware/Telemetry/user/inc/telem_packets.h (TELEM_ID_RADIO_STATS)"
+period_ms   = 1000
+origin      = "radio self-diagnostics; no CAN origin -> synthetic id > 0x7FF"
+description = "Radio-link health: TX-queue occupancy, dropped-frame counts, throughput. Lets the ground station see when CAN traffic exceeds radio bandwidth."
+  [[radio_packet.bytes]]
+  index = "0-1"
+  name  = "queue_used"
+  type  = "uint16 LE"
+  notes = "Messages waiting in the TX queue right now."
+  [[radio_packet.bytes]]
+  index = 2
+  name  = "queue_capacity"
+  type  = "uint8"
+  notes = "TX queue depth (32)."
+  [[radio_packet.bytes]]
+  index = "3-4"
+  name  = "queue_high_water"
+  type  = "uint16 LE"
+  notes = "Peak queue_used since boot; pegs at capacity when saturated."
+  [[radio_packet.bytes]]
+  index = "5-8"
+  name  = "enqueued"
+  type  = "uint32 LE"
+  notes = "Total frames successfully queued since boot."
+  [[radio_packet.bytes]]
+  index = "9-12"
+  name  = "dropped"
+  type  = "uint32 LE"
+  notes = "Total frames dropped because the queue was full (CAN faster than radio)."
+  [[radio_packet.bytes]]
+  index = "13-16"
+  name  = "sent"
+  type  = "uint32 LE"
+  notes = "Total frames transmitted over the UART since boot."
+  [[radio_packet.bytes]]
+  index = "17-18"
+  name  = "mean_interval_ms"
+  type  = "uint16 LE"
+  notes = "Mean gap between sent frames over the last ~1s window. 0 = link stalled."
