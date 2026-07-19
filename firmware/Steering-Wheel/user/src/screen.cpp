@@ -437,10 +437,13 @@ void drawThrottlePercent(uint16_t percent)
 }
 void drawRegenPercent(uint8_t regenStrength)
 {
+    uint8_t percent =
+        static_cast<uint8_t>((static_cast<uint16_t>(regenStrength) * 100 + 127) / 255);
+
     display.SetTextSize(4);
-    snprintf(text_buffer.data(), sizeof(text_buffer), "%02lu", static_cast<unsigned long>(regenStrength));
-    display.FillRect(260, 80, 80, 35, background_color);
-    display.DrawText(260, 80, text_buffer.data(), text_color);
+    snprintf(text_buffer.data(), sizeof(text_buffer), "%02u", percent);
+    display.FillRect(210, 65, 80, 35, background_color);
+    display.DrawText(210, 65, text_buffer.data(), RGB565_WHITE);
 }
 
 constexpr uint8_t car[]{

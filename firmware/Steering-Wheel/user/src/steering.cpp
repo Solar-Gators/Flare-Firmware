@@ -210,9 +210,9 @@ void processScreen()
         old_throttle_percent = throttle_percent;
     }
 
-    static bool old_regen_percent =
+    static uint8_t old_regen_percent =
         state.regen_percent_requested.load(std::memory_order_relaxed);
-    if (auto regen_percent = state.regen_percent_requested.load(std::memory_order_relaxed);
+    if (uint8_t regen_percent = state.regen_percent_requested.load(std::memory_order_relaxed);
         old_regen_percent != regen_percent)
     {
         drawRegenPercent(regen_percent);
