@@ -24,7 +24,8 @@ namespace sg
 class BQ7692000PW : public I2CDevice
 {
    public:
-    BQ7692000PW(I2C_HandleTypeDef* h) : I2CDevice(h, i2c_addr) {}
+    BQ7692000PW(I2C_HandleTypeDef* h) : I2CDevice(h, i2c_addr)
+    {}
 
     /**
      * @brief Enables Coulomb Counting and ADC reading on VC pins
