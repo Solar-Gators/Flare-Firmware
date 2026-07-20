@@ -29,8 +29,11 @@ namespace sg
 #define THREAD_STACK_SIZE_WORDS 512
 
 #define TX_QUEUE_SIZE 8 /* Size of Tx message queue */
-#define RX_QUEUE_SIZE 8 /* Size of Tx message queue */
-#define TX_TIMEOUT 10   /* Timeout for tx thread in ms */
+#define RX_QUEUE_SIZE \
+    32                /* Size of Rx message queue. Deep enough to absorb ISR \
+                            bursts (e.g. full-bus forwarding) between RX task    \
+                            wakeups so control frames aren't evicted. */
+#define TX_TIMEOUT 10 /* Timeout for tx thread in ms */
 
 #define MAX_CAN_ID_STD 0x7FFu
 #define MAX_CAN_ID_EXT 0x1FFFFFFF

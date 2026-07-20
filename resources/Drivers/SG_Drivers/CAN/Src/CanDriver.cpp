@@ -588,8 +588,11 @@ HAL_StatusTypeDef CANDevice::RxCallback(CanHandle_t* hcan)
         osStatus_t stat = osMessageQueuePut(self->rx_queue_, &msg, 0, 0);
         if (stat != osOK)
         {
+            // Software queue is full: drop this frame but keep draining the
+            // hardware FIFO. Returning here would leave frames in the FDCAN
+            // FIFO, which can overflow and wedge RX until error recovery.
             self->dropped_rx_frame_count_.fetch_add(1, std::memory_order_relaxed);
-            return HAL_BUSY;
+            continue;
         }
     }
 
