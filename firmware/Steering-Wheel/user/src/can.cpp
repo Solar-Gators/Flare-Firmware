@@ -124,6 +124,48 @@ HAL_StatusTypeDef frontVCUThrottleMessageCallback(const sg::CANFrame& msg, void*
     return HAL_OK;
 }
 
+HAL_StatusTypeDef MPPT1OutputMeasurementsCallback(const sg::CANFrame& frame, void* ctx)
+{
+    float voltage = 0.0f;
+    float current = 0.0f;
+
+    std::memcpy(&voltage, &frame.data[0], sizeof(float));
+    std::memcpy(&current, &frame.data[4], sizeof(float));
+
+    mppt1.output.voltage.store(voltage, std::memory_order_relaxed);
+    mppt1.output.current.store(current, std::memory_order_relaxed);
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef MPPT2OutputMeasurementsCallback(const sg::CANFrame& frame, void* ctx)
+{
+    float voltage = 0.0f;
+    float current = 0.0f;
+
+    std::memcpy(&voltage, &frame.data[0], sizeof(float));
+    std::memcpy(&current, &frame.data[4], sizeof(float));
+
+    mppt2.output.voltage.store(voltage, std::memory_order_relaxed);
+    mppt2.output.current.store(current, std::memory_order_relaxed);
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef MPPT3OutputMeasurementsCallback(const sg::CANFrame& frame, void* ctx)
+{
+    float voltage = 0.0f;
+    float current = 0.0f;
+
+    std::memcpy(&voltage, &frame.data[0], sizeof(float));
+    std::memcpy(&current, &frame.data[4], sizeof(float));
+
+    mppt3.output.voltage.store(voltage, std::memory_order_relaxed);
+    mppt3.output.current.store(current, std::memory_order_relaxed);
+
+    return HAL_OK;
+}
+
 HAL_StatusTypeDef bmsFaultMessageCallback(const sg::CANFrame& msg, void* ctx)
 {
     uint16_t bms_faults = (static_cast<uint16_t>(msg.data[0]) << 8) | msg.data[1];

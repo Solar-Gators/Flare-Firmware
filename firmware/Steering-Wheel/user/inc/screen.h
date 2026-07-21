@@ -27,6 +27,7 @@ void drawTimer(uint32_t);
 void drawTurnIndicator(bool left_active, bool right_active, bool blink_state);
 void drawThrottlePercent(uint16_t percent);
 void drawRegenPercent(uint8_t);
+void drawMPPTOutput(uint16_t);
 
 void drawCar(flare_can::Direction direction);
 

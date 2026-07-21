@@ -217,6 +217,21 @@ void processScreen()
         old_regen_percent = regen_percent;
     }*/
 
+    static uint16_t old_mppt_watts = 0;
+    uint16_t mppt_watts =
+        static_cast<uint16_t>((mppt1.output.voltage.load(std::memory_order_relaxed) *
+                               mppt1.output.current.load(std::memory_order_relaxed)) +
+                              (mppt2.output.voltage.load(std::memory_order_relaxed) *
+                               mppt2.output.current.load(std::memory_order_relaxed)) +
+                              (mppt3.output.voltage.load(std::memory_order_relaxed) *
+                               mppt3.output.current.load(std::memory_order_relaxed)));
+
+    if (old_mppt_watts != mppt_watts)
+    {
+        drawMPPTOutput(mppt_watts);
+        old_mppt_watts = mppt_watts;
+    }
+
     drawTurnIndicator(state.left_blink_active.load(std::memory_order_relaxed),
                       state.right_blink_active.load(std::memory_order_relaxed),
                       state.blink_state.load(std::memory_order_relaxed));

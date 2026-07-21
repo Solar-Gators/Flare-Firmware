@@ -50,6 +50,7 @@ void initScreen()
     //drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
     drawTimer(state.timer_value.load(std::memory_order_relaxed));
     //drawRegenPercent(state.regen_percent_requested.load(std::memory_order_relaxed));
+    drawMPPTOutput(0);
 }
 
 // startup for turning everything on, yk like in car where when u start the car all the icons turn on
@@ -111,6 +112,7 @@ void drawLabels()
     display.DrawText(5, 155, "SUPP V:", RGB565_WHITE);
     display.DrawText(5, 180, "H TEMP:", RGB565_WHITE);
     display.DrawText(5, 205, "ARR CN:", RGB565_WHITE);
+    display.DrawText(200, 100, "WATTS", RGB565_BLACK);
 
     display.SetTextSize(3);
     display.DrawText(10, 40, "R N F", RGB565_BLACK);
@@ -444,6 +446,14 @@ void drawRegenPercent(uint8_t regenStrength)
     snprintf(text_buffer.data(), sizeof(text_buffer), "%02u", percent);
     display.FillRect(210, 65, 80, 35, background_color);
     display.DrawText(210, 65, text_buffer.data(), RGB565_WHITE);
+}
+
+void drawMPPTOutput(uint16_t watts)
+{
+    display.SetTextSize(3);
+    snprintf(text_buffer.data(), sizeof(text_buffer), "%02u", watts);
+    display.FillRect(195, 75, 70, 23, background_color);
+    display.DrawText(195, 75, text_buffer.data(), RGB565_WHITE);
 }
 
 constexpr uint8_t car[]{
