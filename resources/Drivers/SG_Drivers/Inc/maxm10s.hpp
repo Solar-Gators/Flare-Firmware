@@ -87,7 +87,20 @@ class MaxM10S : public I2CDevice
     }
 
    private:
+    static constexpr uint32_t CFG_RATE_MEAS_KEY = 0x30210001U;
+    static constexpr uint16_t NAV_RATE_4HZ_MS = 250U;
+
+    static constexpr uint8_t UBX_SYNC_CHAR_1 = 0xB5;
+    static constexpr uint8_t UBX_SYNC_CHAR_2 = 0x62;
+    static constexpr uint8_t UBX_CLASS_CFG = 0x06;
+    static constexpr uint8_t UBX_ID_CFG_VALSET = 0x8A;
+    static constexpr uint8_t UBX_CFG_LAYER_RAM = 0x01;
+
     uint16_t getDataLength();
+    bool configureNavigationRate();
+    void appendUbxChecksum(uint8_t* message, size_t length);
+    bool extractSentence(char* sentence, size_t sentence_capacity);
+    void processSentence(char* sentence);
     void parseGNRMC(char* sentence);
     void parseGNGGA(char* sentence);
     double nmeaToDecimal(const char* nmeaCoord, const char direction);
@@ -104,12 +117,12 @@ class MaxM10S : public I2CDevice
     char time[16];
 
 #ifdef USING_FREERTOS
-    SemaphoreHandle_t buffer_mutex = nullptr;
     SemaphoreHandle_t fix_data_mutex = nullptr;
     SemaphoreHandle_t long_lat_read_mutex = nullptr;
 #endif
 
     static constexpr size_t GPS_BUFFER_SIZE = 1024;
+    static constexpr size_t MAX_NMEA_SENTENCE_SIZE = 256;
     volatile uint8_t gps_buffer[GPS_BUFFER_SIZE];
     volatile uint16_t gps_head = 0;
     volatile uint16_t gps_tail = 0;

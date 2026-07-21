@@ -5,14 +5,9 @@
 void MaxM10S::init()
 {
 #ifdef USING_FREERTOS
-    buffer_mutex = xSemaphoreCreateMutex();
     fix_data_mutex = xSemaphoreCreateMutex();
     long_lat_read_mutex = xSemaphoreCreateMutex();
 
-    if (buffer_mutex == nullptr)
-    {
-        Error_Handler();
-    }
     if (fix_data_mutex == nullptr)
     {
         Error_Handler();
@@ -23,7 +18,51 @@ void MaxM10S::init()
     }
 #endif
 
-    // TODO: Disable unused NMEA sentences and all UBX formatted data
+    if (!configureNavigationRate())
+    {
+        Error_Handler();
+    }
+}
+
+void MaxM10S::appendUbxChecksum(uint8_t* message, size_t length)
+{
+    uint8_t ck_a = 0;
+    uint8_t ck_b = 0;
+
+    for (size_t i = 2; i < length; i++)
+    {
+        ck_a = static_cast<uint8_t>(ck_a + message[i]);
+        ck_b = static_cast<uint8_t>(ck_b + ck_a);
+    }
+
+    message[length] = ck_a;
+    message[length + 1] = ck_b;
+}
+
+bool MaxM10S::configureNavigationRate()
+{
+    uint8_t message[] = {
+        UBX_SYNC_CHAR_1,
+        UBX_SYNC_CHAR_2,
+        UBX_CLASS_CFG,
+        UBX_ID_CFG_VALSET,
+        0x0A,
+        0x00,  // payload length
+        0x00,  // version
+        UBX_CFG_LAYER_RAM,
+        0x00,
+        0x00,  // reserved
+        static_cast<uint8_t>(CFG_RATE_MEAS_KEY),
+        static_cast<uint8_t>(CFG_RATE_MEAS_KEY >> 8),
+        static_cast<uint8_t>(CFG_RATE_MEAS_KEY >> 16),
+        static_cast<uint8_t>(CFG_RATE_MEAS_KEY >> 24),
+        static_cast<uint8_t>(NAV_RATE_4HZ_MS),
+        static_cast<uint8_t>(NAV_RATE_4HZ_MS >> 8),
+    };
+
+    appendUbxChecksum(message, sizeof(message));
+
+    return writeN(DATA_REG, message, sizeof(message) + 2) == HAL_OK;
 }
 
 void MaxM10S::readOutputBuffer()
@@ -37,20 +76,11 @@ void MaxM10S::readOutputBuffer()
         {
             bytes_available = 256;
         }
-        /*
-        HAL_I2C_Mem_Read(i2c_handle,
-                         (I2C_ADDRESS << 1),
-                         DATA_REG,
-                         I2C_MEMADD_SIZE_8BIT,
-                         rx_buff,
-                         bytes_available,
-                         HAL_MAX_DELAY);
-        */
-        readN(DATA_REG, rx_buff, bytes_available);
 
-#ifdef USING_FREERTOS
-        osMutexAcquire(buffer_mutex, osWaitForever);
-#endif
+        if (readN(DATA_REG, rx_buff, bytes_available) != HAL_OK)
+        {
+            return;
+        }
 
         for (uint16_t i = 0; i < bytes_available; i++)
         {
@@ -58,121 +88,109 @@ void MaxM10S::readOutputBuffer()
 
             if (next_head == gps_tail)
             {
-#ifdef USING_FREERTOS
-                osMutexRelease(buffer_mutex);
-#endif
-                return;  // buffer is full discard new data
+                // Buffer full: drop the oldest byte to make room for newer data.
+                gps_tail = (gps_tail + 1) % GPS_BUFFER_SIZE;
+                next_head = (gps_head + 1) % GPS_BUFFER_SIZE;
             }
 
             gps_buffer[gps_head] = rx_buff[i];
             gps_head = next_head;
         }
-#ifdef USING_FREERTOS
-        osMutexRelease(buffer_mutex);
-#endif
+    }
+}
+
+bool MaxM10S::extractSentence(char* sentence, size_t sentence_capacity)
+{
+    while (gps_tail != gps_head)
+    {
+        if (gps_buffer[gps_tail] != '$')
+        {
+            gps_tail = (gps_tail + 1) % GPS_BUFFER_SIZE;
+            continue;
+        }
+
+        const uint16_t start = gps_tail;
+        uint16_t end = start;
+        bool found_newline = false;
+
+        uint16_t i = (start + 1) % GPS_BUFFER_SIZE;
+        while (i != gps_head)
+        {
+            if (gps_buffer[i] == '\n')
+            {
+                end = i;
+                found_newline = true;
+                break;
+            }
+            i = (i + 1) % GPS_BUFFER_SIZE;
+        }
+
+        if (!found_newline)
+        {
+            return false;
+        }
+
+        size_t sentence_length = 0;
+        uint16_t j = start;
+        while (j != (end + 1) % GPS_BUFFER_SIZE)
+        {
+            sentence_length++;
+            j = (j + 1) % GPS_BUFFER_SIZE;
+        }
+
+        gps_tail = (end + 1) % GPS_BUFFER_SIZE;
+
+        if (sentence_length == 0 || sentence_length >= sentence_capacity)
+        {
+            continue;
+        }
+
+        j = start;
+        size_t idx = 0;
+        while (j != (end + 1) % GPS_BUFFER_SIZE)
+        {
+            sentence[idx++] = static_cast<char>(gps_buffer[j]);
+            j = (j + 1) % GPS_BUFFER_SIZE;
+        }
+        sentence[idx] = '\0';
+        return true;
+    }
+
+    return false;
+}
+
+void MaxM10S::processSentence(char* sentence)
+{
+    if (!NMEAchecksumValid(sentence))
+    {
+        return;
+    }
+
+    if (strncmp(sentence, "$GNRMC", 6) == 0)
+    {
+        parseGNRMC(sentence);
+    }
+    else if (strncmp(sentence, "$GNGGA", 6) == 0)
+    {
+        parseGNGGA(sentence);
     }
 }
 
 void MaxM10S::parseNMEA()
 {
-    char sentence[256];
-    uint16_t start;
-    uint16_t end;
+    char sentence[MAX_NMEA_SENTENCE_SIZE];
 
-#ifdef USING_FREERTOS
-    osMutexAcquire(buffer_mutex, osWaitForever);
-#endif
-
-    bool valid_sentence_found = false;
-
-    uint16_t i = gps_tail;
-
-    while (i != gps_head)
+    while (extractSentence(sentence, sizeof(sentence)))
     {
-        if (gps_buffer[i] == '$')
-            break;                      // Found start of a sentence
-        i = (i + 1) % GPS_BUFFER_SIZE;  // Move to next byte
-    }
-
-    if (i == gps_head)
-    {
-#ifdef USING_FREERTOS
-        osMutexRelease(buffer_mutex);
-#endif
-        return;
-    }
-
-    start = i;
-
-    while (i != gps_head)
-    {
-        if (gps_buffer[i] == '\n')
-        {
-            valid_sentence_found = true;
-            break;
-        }
-        i = (i + 1) % GPS_BUFFER_SIZE;
-    }
-
-    if (!valid_sentence_found)
-    {
-#ifdef USING_FREERTOS
-        osMutexRelease(buffer_mutex);
-#endif
-        return;
-    }
-
-    end = i;
-
-    uint16_t j = start;
-    uint16_t idx = 0;
-    while (j != (end + 1) % GPS_BUFFER_SIZE)
-    {
-        sentence[idx++] = gps_buffer[j];
-        j = (j + 1) % GPS_BUFFER_SIZE;
-    }
-    sentence[idx] = '\0';
-    gps_tail = (end + 1) % GPS_BUFFER_SIZE;  // update tail
-
-#ifdef USING_FREERTOS
-    osMutexRelease(buffer_mutex);
-#endif
-
-    // NEW
-    if (j != (end + 1) % GPS_BUFFER_SIZE)
-    {
-        return;
-    }
-
-    if (!NMEAchecksumValid(sentence))
-    {
-        return;  // Invalid checksum, discard sentence
-    }
-
-    if (strncmp(sentence, "$GNRMC", 6) == 0)
-    {
-        parseGNRMC(sentence);  // Call parsing function for GNRMC
-    }
-    else if (strncmp(sentence, "$GNGGA", 6) == 0)
-    {
-        parseGNGGA(sentence);  // Call parsing function for GNGGA
+        processSentence(sentence);
     }
 }
 
 uint16_t MaxM10S::getDataLength()
 {
-    uint8_t error_count = 0;
-    HAL_StatusTypeDef status;
-
     uint8_t rx[2];
-    /*
-    status = HAL_I2C_Mem_Read(
-        i2c_handle, (I2C_ADDRESS << 1), LEN_REG_HIGH, I2C_MEMADD_SIZE_8BIT, rx, 2, HAL_MAX_DELAY);
-    */
-    status = readN(LEN_REG_HIGH, rx, 2);
-    error_count += (status != HAL_OK);
 
-    if (error_count > 0)
+    if (readN(LEN_REG_HIGH, rx, 2) != HAL_OK)
     {
         return 0;
     }
