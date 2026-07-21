@@ -125,6 +125,7 @@ void rightTurnPressedCallback()
 
 void powerModePressedCallback()
 {
+    /*
     if (getButton(ButtonIndex::POWER_MODE).GetToggleState())
     {
         setLedState(ButtonIndex::POWER_MODE, GPIO_PIN_SET);
@@ -135,6 +136,7 @@ void powerModePressedCallback()
         setLedState(ButtonIndex::POWER_MODE, GPIO_PIN_RESET);
         state.mc_power_mode_requested.store(flare_can::MCPowerMode::ECO);
     }
+    */
 }
 
 void arrayPressedCallback()
@@ -179,30 +181,25 @@ void hornPressedCallback()
 
 void fanPressedCallback()
 {
-    state.timer_requested_on.store(!state.timer_requested_on.load(std::memory_order_relaxed));
-    if (getButton(ButtonIndex::FAN).GetToggleState())
-    {
-        setLedState(ButtonIndex::FAN, GPIO_PIN_SET);
-    }
-    else
-    {
-        setLedState(ButtonIndex::FAN, GPIO_PIN_RESET);
-    }
-}
-
-void fanLongPressCallback()
-{
     state.fan_requested_on.store(!state.fan_requested_on.load(std::memory_order_relaxed));
 }
 
-void ccPressedCallback()
+/*void fanLongPressCallback()
 {
-    // empty
-}
+    state.fan_requested_on.store(!state.fan_requested_on.load(std::memory_order_relaxed));
+}*/
 
-void ccLongPressCallback()
+void timerPressedCallback()
 {
-    state.is_cc_on.store(!state.is_cc_on.load(std::memory_order_relaxed));
+    state.timer_requested_on.store(!state.timer_requested_on.load(std::memory_order_relaxed));
+    if (getButton(ButtonIndex::TIMER).GetToggleState())
+    {
+        setLedState(ButtonIndex::TIMER, GPIO_PIN_SET);
+    }
+    else
+    {
+        setLedState(ButtonIndex::TIMER, GPIO_PIN_RESET);
+    }
 }
 
 void initButtons()
@@ -210,14 +207,12 @@ void initButtons()
     getButton(ButtonIndex::LEFT_TURN).RegisterNormalPressCallback(&leftTurnPressedCallback);
     getButton(ButtonIndex::POWER_MODE).RegisterNormalPressCallback(&powerModePressedCallback);
     getButton(ButtonIndex::ARRAY).RegisterNormalPressCallback(&arrayPressedCallback);
-    getButton(ButtonIndex::FAN).RegisterNormalPressCallback(&fanPressedCallback);
-    getButton(ButtonIndex::FAN).RegisterLongPressCallback(&fanLongPressCallback, 1500, false);
+    getButton(ButtonIndex::TIMER).RegisterNormalPressCallback(&timerPressedCallback);
     getButton(ButtonIndex::RIGHT_TURN).RegisterNormalPressCallback(&rightTurnPressedCallback);
     getButton(ButtonIndex::DIRECTION).RegisterNormalPressCallback(&directionPressedCallback);
     getButton(ButtonIndex::HORN).RegisterNormalPressCallback(&hornPressedCallback);
-    getButton(ButtonIndex::CC).RegisterNormalPressCallback(&ccPressedCallback);
-    getButton(ButtonIndex::CC).RegisterLongPressCallback(&ccLongPressCallback, 1500, false);
-    //getButton(ButtonIndex::CC).RegisterDoublePressCallback(&ccDoublePressCallback, 300, false);
+    getButton(ButtonIndex::FAN).RegisterNormalPressCallback(&fanPressedCallback);
+    //getButton(ButtonIndex::FAN).RegisterLongPressCallback(&fanLongPressCallback, 1500, false);
 
     sg::Button::InitButtons();
 }

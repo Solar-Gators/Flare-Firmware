@@ -88,8 +88,6 @@ void sendMitsubaRequestMessage()
     can_device.send(mitsuba_frame0_request);
 }
 
-// TODO: some indicator for the button 7 light
-// TODO: important info not done: regenerative breaking
 void processScreen()
 {
     // cc values used for both cc and speed redraws
@@ -200,7 +198,7 @@ void processScreen()
     }
 
     // draw percent for debugging
-    static uint16_t old_throttle_percent =
+    /*static uint16_t old_throttle_percent =
         state.throttle_percent_debug.load(std::memory_order_relaxed);
     if (auto throttle_percent = state.throttle_percent_debug.load(std::memory_order_relaxed);
         old_throttle_percent != throttle_percent)
@@ -208,16 +206,16 @@ void processScreen()
         // top middle
         drawThrottlePercent(throttle_percent);
         old_throttle_percent = throttle_percent;
-    }
+    }*/
 
-    static uint8_t old_regen_percent =
+    /*static uint8_t old_regen_percent =
         state.regen_percent_requested.load(std::memory_order_relaxed);
     if (uint8_t regen_percent = state.regen_percent_requested.load(std::memory_order_relaxed);
         old_regen_percent != regen_percent)
     {
         drawRegenPercent(regen_percent);
         old_regen_percent = regen_percent;
-    }
+    }*/
 
     drawTurnIndicator(state.left_blink_active.load(std::memory_order_relaxed),
                       state.right_blink_active.load(std::memory_order_relaxed),
@@ -279,14 +277,6 @@ void processKill()
 
 void processCC()
 {
-    bool active = state.is_cc_on.load();
-
-    // this turns on the bottom left led for some reason, probably take out and put in buttons.cpp if anything
-    /*HAL_GPIO_WritePin(
-        BUTTON4_LED_GPIO_Port, BUTTON4_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(
-        BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, active ? GPIO_PIN_SET : GPIO_PIN_RESET);*/
-
     if (state.killed_status.load() == flare_can::CarKilledStatus::DEAD || state.brake_state.load())
     {
         // turn off cc if car dead

@@ -7,11 +7,11 @@ enum class ButtonIndex : uint8_t
     LEFT_TURN = 0,
     POWER_MODE = 1,
     ARRAY = 2,
-    FAN = 3,
+    TIMER = 3,
     RIGHT_TURN = 4,
     DIRECTION = 5,
     HORN = 6,  // LED isnt working
-    CC = 7     // LED isnt working
+    FAN = 7     // LED isnt working
 };
 
 #define HORN_PORT BUTTON7_GPIO_Port
@@ -27,7 +27,7 @@ enum class ButtonIndex : uint8_t
 // 1(lt)      5(rt) (both for hazards)
 // 2(pwr,eco)    6(fwrd/rev) // prev. 2 was headlights
 // 3(array)   7(horn)
-// 4(fan)     8(N/A) || to en/dis cc press both 4 and 8
+// 4(timer)     8(fan)
 
 // paddles do regen strength
 
@@ -38,7 +38,7 @@ void fanPressedCallback();
 void rightTurnPressedCallback();
 void directionPressedCallback();
 void hornPressedCallback();
-void ccPressedCallback();
+void timerPressedCallback();
 
 void initButtons();
 

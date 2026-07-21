@@ -47,9 +47,9 @@ void initScreen()
     drawHeadlightsStatus(state.headlights_requested_on.load(std::memory_order_relaxed));
     drawHornStatus(state.horn_requested_on.load(std::memory_order_relaxed));
     drawFanStatus(state.fan_requested_on.load(std::memory_order_relaxed));
-    drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
+    //drawThrottlePercent(state.throttle_percent_debug.load(std::memory_order_relaxed));
     drawTimer(state.timer_value.load(std::memory_order_relaxed));
-    drawRegenPercent(state.regen_percent_requested.load(std::memory_order_relaxed));
+    //drawRegenPercent(state.regen_percent_requested.load(std::memory_order_relaxed));
 }
 
 // startup for turning everything on, yk like in car where when u start the car all the icons turn on
@@ -83,8 +83,8 @@ void drawStartup()
             BUTTON5_LED_GPIO_Port, BUTTON5_LED_Pin, i < 70 ? GPIO_PIN_SET : GPIO_PIN_RESET);
         HAL_GPIO_WritePin(
             BUTTON6_LED_GPIO_Port, BUTTON6_LED_Pin, i < 80 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(
-            BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, i < 90 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        /*HAL_GPIO_WritePin(
+            BUTTON8_LED_GPIO_Port, BUTTON8_LED_Pin, i < 90 ? GPIO_PIN_SET : GPIO_PIN_RESET);*/
 
         HAL_Delay(10);
     }
@@ -106,7 +106,7 @@ void drawLabels()
 {
     display.SetTextSize(2);
     display.DrawText(140, 100, "MPH", RGB565_GRAY);
-    display.DrawText(220, 100, "RB", RGB565_GRAY);
+    //display.DrawText(220, 100, "RB", RGB565_GRAY);
     display.DrawText(5, 130, "MAIN V:", RGB565_WHITE);
     display.DrawText(5, 155, "SUPP V:", RGB565_WHITE);
     display.DrawText(5, 180, "H TEMP:", RGB565_WHITE);

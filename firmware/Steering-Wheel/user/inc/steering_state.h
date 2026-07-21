@@ -47,6 +47,7 @@ struct SteeringState
     std::atomic<bool> timer_requested_on{false};
     std::atomic<uint32_t> timer_value{};
 
+    // faults receive
     std::atomic<uint16_t> bms_state{};
 };
 
