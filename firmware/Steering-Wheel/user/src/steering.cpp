@@ -85,7 +85,7 @@ void sendRequestsMessage()
 
 void sendMitsubaRequestMessage()
 {
-    can_device.send(mitsuba_frame0_request);
+    can_device.send(mitsuba_status_request);
 }
 
 void processScreen()
