@@ -45,18 +45,6 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for HeartbeatTask */
-osThreadId_t HeartbeatTaskHandle;
-uint32_t HeartbeatTaskBuffer[ 128 ];
-osStaticThreadDef_t HeartbeatTaskCB;
-const osThreadAttr_t HeartbeatTask_attributes = {
-  .name = "HeartbeatTask",
-  .stack_mem = &HeartbeatTaskBuffer[0],
-  .stack_size = sizeof(HeartbeatTaskBuffer),
-  .cb_mem = &HeartbeatTaskCB,
-  .cb_size = sizeof(HeartbeatTaskCB),
-  .priority = (osPriority_t) osPriorityNormal1,
-};
 /* Definitions for GPSReadBufferTask */
 osThreadId_t GPSReadBufferTaskHandle;
 uint32_t GPSReadBufferBuffer[ 512 ];
@@ -167,9 +155,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  /* creation of HeartbeatTask */
-  HeartbeatTaskHandle = osThreadNew(StartHeartbeatTask, NULL, &HeartbeatTask_attributes);
-
   /* creation of GPSReadBufferTask */
   GPSReadBufferTaskHandle = osThreadNew(StartGPSReadBufferTask, NULL, &GPSReadBufferTask_attributes);
 
@@ -198,20 +183,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_EVENTS */
 
 }
-/* USER CODE BEGIN Header_StartHeartbeatTask */
-/**
-* @brief Function implementing the HeartbeatTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartHeartbeatTask */
-void StartHeartbeatTask(void *argument)
-{
-  /* USER CODE BEGIN HeartbeatTask */
-    startHeartbeatTask_user(argument);
-  /* USER CODE END HeartbeatTask */
-}
-
 /* USER CODE BEGIN Header_StartGPSReadBufferTask */
 /**
 * @brief Function implementing the GPSReadBufferTask thread.
