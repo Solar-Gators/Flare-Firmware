@@ -22,21 +22,6 @@ void init_user()
     telem::init();
 }
 
-void startHeartbeatTask_user(void* argument)
-{
-    sg::Watchdog wdog1;
-    wdog1.IWDG_Init();
-
-    for (;;)
-    {
-        HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
-        HAL_GPIO_TogglePin(GPS_LED_GPIO_Port, GPS_LED_Pin);
-        HAL_GPIO_TogglePin(RADIO_LED_GPIO_Port, RADIO_LED_Pin);
-        wdog1.Kick();
-        osDelay(500);
-    }
-}
-
 void startGPSReadBufferTask_user(void* argument)
 {
     sg::Watchdog wdog2;
@@ -57,10 +42,15 @@ void startGPSProcessTask_user(void* argument)
 
     for (;;)
     {
+        // queue GPS data for radio
         telem::queueGpsData();
         telem::queueRadioStats();
+
+        // Toggle heartbeat LED
+        HAL_GPIO_TogglePin(OK_LED_GPIO_Port, OK_LED_Pin);
+
         wdog3.Kick();
-        osDelay(1000);
+        osDelay(500);
     }
 }
 
@@ -71,6 +61,7 @@ void startTXRadioTask_user(void* argument)
 
     for (;;)
     {
+        // Empty the radio queue and send the data
         telem::waitAndSendRadioData();
         wdog4.Kick();
         // no os delay needed internally calls wait forever on an os queue
@@ -102,6 +93,7 @@ void startLightsOutputsTask_user(void* argument)
 
     for (;;)
     {
+        // Update light outputs based on the current state
         telem::processLightsOutputs();
         wdog6.Kick();
         osDelay(30);  // tracks time internally
@@ -114,6 +106,7 @@ void startSpeedMessageTask_user(void* argument)
 
     for (;;)
     {
+        // Send speed frame for steering wheel driver display
         telem::sendSpeedFrame();
         wdog7.Kick();
         osDelay(250);
