@@ -13,7 +13,7 @@ void LTC33002::genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
 
     #define TOPBITBM 1 << 7 //Bitmask to hold to the top of the nibble
 
-    uint8_t const truncPoly = polynomial << 3;
+    uint8_t const truncPoly = polynomial << 4;
 
     //Repeats for all the possible dividends
     for (int dividend = 0; dividend < 256; ++dividend)
@@ -26,7 +26,7 @@ void LTC33002::genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
 
             if (remainder & TOPBITBM)
             {
-                remainder = (remainder ^ truncPoly) << 1;
+                remainder = (remainder  << 1) ^ truncPoly;
             }
             else
             {
@@ -36,7 +36,7 @@ void LTC33002::genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
         }
 
         //Sets the value in the LUT adjusted to the lower nibble of the data
-        LUT[dividend] = (remainder >> 4) & 0x0F;
+        LUT[dividend] = (remainder>>4) & 0x0F;
 
     }
 }
@@ -45,16 +45,18 @@ void LTC33002::genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
 uint8_t LTC33002::calcCRC4Remainder(uint8_t const message[], uint8_t msgSize, uint8_t const CRC4LUT[256])
 {
     uint8_t remainder = 0;
+    uint8_t data = 0;
 
     //Shifts in the highest bit at the start of the next byte
     for (uint8_t byteInd = 0; byteInd < msgSize; ++byteInd)
     {
         //Calculating CRC is distributive so finding the CRC of the 16 bit message is the same as XORing the CRCs of the two bytes
-        remainder = CRC4LUT[message[byteInd]] ^ remainder;
+        data = message[byteInd] ^ (remainder << 4);
+        remainder = CRC4LUT[data];
 
     }
 
-    return remainder;
+    return remainder & 0x0F;
 }
 
 
@@ -91,19 +93,25 @@ bool LTC33002::generateBalCmd(uint8_t cmdArray[2], uint8_t const CRC4LUT[256], u
             //Tests for the given cell within the given
             if (balBMArray[operation] & 1 << (5-i))
             {
-                longBalCmd |= balCmdArray[operation] << ((i + 2) * 2);
+                longBalCmd |= balCmdArray[operation] << (i * 2);
             }
 
         }
     }
 
     //Converts the long 16-bit command into a byte array
-    cmdArray[1] = longBalCmd >> 8;
-    cmdArray[0] = longBalCmd & 0xFF;
+    //For proper CRC calculation the value must be passed as a 12-bit value
+    cmdArray[0] = longBalCmd >> 8;
+    cmdArray[1] = longBalCmd & 0xFF;
 
-    //Generates and appends the inverted CRC data
+    //Generates the inverted CRC data
     uint8_t crcAppend = ~ calcCRC4Remainder(cmdArray, 2, CRC4LUT);
-    cmdArray[0] |= crcAppend;
+
+    //Shifts the data to add the 4 CRC bits
+    cmdArray[0] = (cmdArray[0] << 4) | (cmdArray[1] >> 4); //Upper nibble is bits 11-8 Lower is bits 7-4 of 12 bit message
+    cmdArray[1] = (cmdArray[1] << 4) | (crcAppend & 0x0F); //Upper nibble is bits 3-0 of message and the 4 CRC bits
+
+
 
     return true;
 }
