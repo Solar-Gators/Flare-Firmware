@@ -286,5 +286,5 @@ VP_TIM2_VS_ClockSourceINT.Mode=Internal
 VP_TIM2_VS_ClockSourceINT.Signal=TIM2_VS_ClockSourceINT
 board=custom
 rtos.0.ip=STMicroelectronics.X-CUBE-FREERTOS.1.1.0
-rtos.0.tasks.0=allocationType,Static;bufferName,StatusBuff00;codeGen,Default;controlBlockName,StatuscontrolBlocTask00;entry,StartStatusFlash;name,StatusFlash;parameter,NULL;priority,osPriorityLow;stackSize,128
+rtos.0.tasks.0=allocationType,Static;bufferName,StatusBuff00;codeGen,Default;controlBlockName,StatuscontrolBlocTask00;entry,StartStatusFlash;name,StatusFlash;parameter,NULL;priority,osPriorityLow;stackSize,512
 rtos.0.tasks.1=allocationType,Static;bufferName,MyBufferTask02;codeGen,Default;controlBlockName,MycontrolBlocTask02;entry,StartStatusRedPWM;name,StatusRedPWM;parameter,NULL;priority,osPriorityLow;stackSize,128

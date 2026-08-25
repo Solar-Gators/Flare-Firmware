@@ -49,7 +49,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE END Variables */
 /* Definitions for StatusFlash */
 osThreadId_t StatusFlashHandle;
-uint32_t StatusBuff00[ 128 ];
+uint32_t StatusBuff00[ 512 ];
 osStaticThreadDef_t StatuscontrolBlocTask00;
 const osThreadAttr_t StatusFlash_attributes = {
   .name = "StatusFlash",

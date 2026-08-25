@@ -7,8 +7,16 @@
 
 #include <functional>
 
+inline bool checkParity(uint8_t byte) {
+    byte ^= byte >> 4;
+    byte ^= byte >> 2;
+    byte ^= byte >> 1;
 
-void LTC33002::genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
+    // Returns 1 if odd (needs a 1 to become even), 0 if even
+    return (byte & 1);
+}
+
+void genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
 {
 
     #define TOPBITBM 1 << 7 //Bitmask to hold to the top of the nibble
@@ -42,7 +50,7 @@ void LTC33002::genCRC4LUT(uint8_t LUT[256],uint8_t const polynomial)
 }
 
 
-uint8_t LTC33002::calcCRC4Remainder(uint8_t const message[], uint8_t msgSize, uint8_t const CRC4LUT[256])
+uint8_t calcCRC4Remainder(uint8_t const message[], uint8_t msgSize, uint8_t const CRC4LUT[256])
 {
     uint8_t remainder = 0;
     uint8_t data = 0;
@@ -60,7 +68,7 @@ uint8_t LTC33002::calcCRC4Remainder(uint8_t const message[], uint8_t msgSize, ui
 }
 
 
-bool LTC33002::generateBalCmd(uint8_t cmdArray[2], uint8_t const CRC4LUT[256], uint8_t chargeBM, uint8_t dischargeSyncBM, uint8_t dischargeNonBM)
+bool generateBalCmd(uint8_t cmdArray[2], uint8_t const CRC4LUT[256], uint8_t chargeBM, uint8_t dischargeSyncBM, uint8_t dischargeNonBM)
 {
 
 #define chargeCMD 0b11
@@ -71,10 +79,11 @@ bool LTC33002::generateBalCmd(uint8_t cmdArray[2], uint8_t const CRC4LUT[256], u
     cmdArray[1] = 0;
 
     //Checks to ensure a cell is not set in multiple bitmasks
-    //REVIST doesnt work for a 3 byte comparison
-    if ((chargeBM & dischargeSyncBM & dischargeNonBM) != 0){
+    if ((chargeBM & dischargeSyncBM) & (chargeBM & dischargeNonBM) & (dischargeSyncBM & dischargeNonBM) != 0){
         //A complete 0 BM will be returned.
         //Not only will this set all cells to do nothing, but the CRC would be incorrect, meaning that the command cannot change the operation)
+        cmdArray[0] = 0;
+        cmdArray[1] = 0;
         return false;
     }
 
@@ -114,4 +123,120 @@ bool LTC33002::generateBalCmd(uint8_t cmdArray[2], uint8_t const CRC4LUT[256], u
 
 
     return true;
+}
+
+LTC3300_2::LTC3300_2(uint8_t deviceAddress, uint8_t CRC4Poly, SPI_HandleTypeDef hspi, GPIO_TypeDef* CSPinGPIOx, uint16_t CSPin)
+{
+
+    Address = deviceAddress;
+    CRCPolynomial = CRC4Poly;
+    Balhspi = hspi;
+    BalCSPinGPIOx = CSPinGPIOx;
+    BalCSPin = CSPin;
+
+    //Data Handling
+    genCRC4LUT(CRCLUT, CRCPolynomial);
+
+}
+
+
+bool LTC3300_2::writeBalCommand(uint8_t chargeBM, uint8_t dischargeSyncBM, uint8_t dischargeNonBM)
+{
+    //Generates and saves the balance command to the second 2 bytes of the Tx buffer
+    if (!generateBalCmd(&TxBuff[1], CRCLUT, chargeBM, dischargeSyncBM, dischargeNonBM)) return false;
+
+    //Combines the address with the balance command
+    TxBuff[0] = (Address << 3) | writeBalCmdBM;
+    //Adds the parity bit
+    TxBuff[0] |= checkParity(TxBuff[0]);
+
+    //Writes to the SPI device
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_RESET);
+    if (HAL_SPI_Transmit(&Balhspi, TxBuff, 3, 1000) != HAL_OK) return false;
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_SET);
+    return true;
+}
+
+uint8_t* LTC3300_2::readbackBalCmd()
+{
+    //Adds the readback command to the Tx buffer with junk bytes
+    //Junk bytes are needed for the SPI device to return data
+    TxBuff[0] = (Address << 3) | readbackBalCmdBM;
+    TxBuff[0] |= checkParity(TxBuff[0]);
+    TxBuff[1] = 0x01;
+    TxBuff[2] = 0x01;
+
+
+    //Writes to the SPI device
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_RESET);
+
+    HAL_SPI_TransmitReceive(&Balhspi, TxBuff, RxBuff, 3, 1000);
+    // while (HAL_SPI_GetState(&hspi3) == HAL_SPI_STATE_BUSY);
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_SET);
+
+    return &RxBuff[1];
+
+}
+
+uint8_t* LTC3300_2::readBalanceStatus()
+{
+    //Adds the balance status command to the Tx buffer with junk bytes
+    //Junk bytes are needed for the SPI device to return data
+    TxBuff[0] = (Address << 3) | readBalStatusBM;
+    TxBuff[0] |= checkParity(TxBuff[0]);
+    TxBuff[1] = 0x02;
+    TxBuff[2] = 0x02;
+
+
+    //Writes to the SPI device
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_RESET);
+
+    HAL_SPI_TransmitReceive(&Balhspi, TxBuff, RxBuff, 3, 1000);
+    // while (HAL_SPI_GetState(&hspi3) == HAL_SPI_STATE_BUSY);
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_SET);
+
+    return &RxBuff[1];
+
+}
+
+void LTC3300_2::executeBalanceCommand()
+{
+    //Combines the address with the execute balance command
+    TxBuff[0] = (Address << 3) | executeBalCmdBM;
+    //Adds the parity bit
+    TxBuff[0] |= checkParity(TxBuff[0]);
+    TxBuff[1] = 0x03;
+    TxBuff[2] = 0x03;
+
+    //Writes to the SPI device
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&Balhspi, TxBuff, 3, 1000);
+    // if (HAL_SPI_Transmit(Balhspi, TxBuff, 3, 1000) != HAL_OK) return false;
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_SET);
+}
+
+void LTC3300_2::haltBalanceCommand()
+{
+    //Combines the address with the execute balance command
+    TxBuff[0] = (Address << 3) | executeBalCmdBM;
+    //Adds the opposite of the parity bit so that it is odd parity (pauses)
+    TxBuff[0] |= (!checkParity(TxBuff[0]));
+    TxBuff[1] = 0x04;
+    TxBuff[2] = 0x04;
+
+    //Writes to the SPI device
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&Balhspi, TxBuff, 3, 1000);
+    // if (HAL_SPI_Transmit(Balhspi, TxBuff, 3, 1000) != HAL_OK) return false;
+    HAL_GPIO_WritePin(nBalCS_GPIO_Port, nBalCS_Pin, GPIO_PIN_SET);
+}
+
+uint8_t* LTC3300_2::readRxBuffer()
+{
+    return &RxBuff[0];
+}
+
+uint8_t LTC3300_2::readAddress()
+{
+    return Address;
 }
