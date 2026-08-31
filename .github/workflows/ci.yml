@@ -74,6 +74,9 @@ jobs:
       - name: Build (${{ matrix.preset }})
         run: cmake --build --preset ${{ matrix.preset }} --target all
 
+      - name: Bootloader A/B unit tests
+        run: bash firmware/bootloader/tests/run_native.sh "${{ runner.temp }}/bl-tests"
+
       - name: Collect firmware artifacts
         if: always()
         run: |

@@ -1056,3 +1056,47 @@ description = "Radio-link health: TX-queue occupancy, dropped-frame counts, thro
   name  = "mean_interval_ms"
   type  = "uint16 LE"
   notes = "Mean gap between sent frames over the last ~1s window. 0 = link stalled."
+
+# -----------------------------------------------------------------------------
+# Bootloader (POC) — reserved 0x7E0–0x7E3, vehicle bus, classic 8-byte frames
+# -----------------------------------------------------------------------------
+# Host (normally Rear-VCU) sends commands on 0x7E0 and payload on 0x7E2.
+# Target bootloader replies on 0x7E1. Downloads always program the inactive
+# A/B slot. See firmware/bootloader/include/bl_config.h and README.md.
+
+[[message]]
+name       = "bl_command"
+id         = 0x7E0
+sender     = "bootloader-host"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 0
+source     = "firmware/bootloader/include/bl_config.h"
+trigger    = "host SELECT/ENTER/START/START2/ABORT/VERIFY/ACTIVATE/JUMP/STATUS"
+description = "Bootloader command. byte0=cmd, byte1=board_id. START: byte2=slot, bytes3-6=payload size LE. START2: bytes2-5=crc32 LE, bytes6-7=version LE."
+
+[[message]]
+name       = "bl_response"
+id         = 0x7E1
+sender     = "bootloader"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 0
+source     = "firmware/bootloader/include/bl_config.h"
+trigger    = "ACK/NAK/STATUS from the selected target"
+description = "Bootloader response. byte0=status (0=OK), byte1=cmd, byte2=board_id. STATUS: byte3=active_slot, byte4=last_confirmed, byte5=inactive_slot."
+
+[[message]]
+name       = "bl_data"
+id         = 0x7E2
+sender     = "bootloader-host"
+dlc        = 8
+id_type    = "standard"
+rtr        = "data"
+period_ms  = 0
+source     = "firmware/bootloader/include/bl_config.h"
+trigger    = "image payload after START2"
+description = "Bootloader data. bytes0-1=seq LE, bytes2-7=up to 6 payload bytes. Target ACKs on 0x7E1 every 8 frames."
+

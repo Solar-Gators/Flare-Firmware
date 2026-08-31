@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(FlareFirmware)
 
+add_subdirectory(firmware/bootloader)
 add_subdirectory(firmware/NUCLEOL476RG-FreeRTOS-ExampleProject)
 add_subdirectory(firmware/Telemetry)
 add_subdirectory(firmware/Telemetry-Sensors)
