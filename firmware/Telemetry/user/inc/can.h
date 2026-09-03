@@ -28,17 +28,16 @@ HAL_StatusTypeDef MPPT3OutputMeasurementsCallback(const sg::CANFrame& frame, voi
 inline sg::CANDevice can_device(
     &hfdcan1,
     {
-        // -- frames with dedicated handlers (also forwarded) --
-        {0x080, {&frontVCUThrottleMessageCallback, &radioTXCallback}},
-        {0x064, {&steeringRequestsCallback, &radioTXCallback}},
-        {0x040, {&bmsFaultsMessageCallback, &radioTXCallback}},
-
-        // -- MPPT sensor data (packed + forwarded via forwardMpptState) --
-        {MPPT1_BASE_ADDR, {&MPPT1InputMeasurementsCallback}},
-        {MPPT2_BASE_ADDR, {&MPPT2InputMeasurementsCallback}},
-        {MPPT3_BASE_ADDR, {&MPPT3InputMeasurementsCallback}},
-        {MPPT1_BASE_ADDR + 1, {&MPPT1OutputMeasurementsCallback}},
-        {MPPT2_BASE_ADDR + 1, {&MPPT2OutputMeasurementsCallback}},
-        {MPPT3_BASE_ADDR + 1, {&MPPT3OutputMeasurementsCallback}},
-    },
-    {});
+        {0x080, frontVCUThrottleMessageCallback},
+        {0x080, radioTXCallback},
+        {0x064, steeringRequestsCallback},
+        {0x064, radioTXCallback},
+        {0x040, bmsFaultsMessageCallback},
+        {0x040, radioTXCallback},
+        {MPPT1_BASE_ADDR, MPPT1InputMeasurementsCallback},
+        {MPPT2_BASE_ADDR, MPPT2InputMeasurementsCallback},
+        {MPPT3_BASE_ADDR, MPPT3InputMeasurementsCallback},
+        {MPPT1_BASE_ADDR + 1, MPPT1OutputMeasurementsCallback},
+        {MPPT2_BASE_ADDR + 1, MPPT2OutputMeasurementsCallback},
+        {MPPT3_BASE_ADDR + 1, MPPT3OutputMeasurementsCallback},
+    });
