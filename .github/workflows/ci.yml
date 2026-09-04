@@ -39,7 +39,9 @@ jobs:
           )
           mapfile -d '' -t SG_FILES < <(
             find \
-              resources/Drivers/SG_Drivers -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0
+              resources/Drivers/SG_Drivers \
+              -path 'resources/Drivers/SG_Drivers/CAN' -prune -o \
+              -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0
           )
           FILES=("${FILES[@]}" "${SG_FILES[@]}")
 
