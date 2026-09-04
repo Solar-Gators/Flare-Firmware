@@ -53,8 +53,8 @@ struct __attribute__((packed)) RadioStatsPacket
     uint32_t enqueued;          // 4  total frames queued
     uint32_t dropped;           // 4  total frames dropped (queue full)
     uint32_t sent;              // 4  total frames transmitted over UART
-    uint16_t mean_interval_ms;  // 2  mean gap between sent frames over last window
-};  // -> 19 bytes
+    uint16_t mean_interval_ms;  // 2  mean gap between sent frames over last window -> 19 bytes
+};
 static_assert(sizeof(RadioStatsPacket) <= max_radio_message_array_size,
               "RadioStatsPacket exceeds radio payload size");
 
