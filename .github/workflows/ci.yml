@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
 
       # Pin to the same major you use locally (rev v17.0.6 in pre-commit)
       - name: Install clang-format 17
@@ -36,7 +39,9 @@ jobs:
           )
           mapfile -d '' -t SG_FILES < <(
             find \
-              resources/Drivers/SG_Drivers -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0
+              resources/Drivers/SG_Drivers \
+              -path 'resources/Drivers/SG_Drivers/CAN' -prune -o \
+              -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0
           )
           FILES=("${FILES[@]}" "${SG_FILES[@]}")
 
@@ -57,6 +62,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install ARM GCC & build deps
         run: |

@@ -1,0 +1,3 @@
+[submodule "resources/Drivers/SG_Drivers/CAN"]
+	path = resources/Drivers/SG_Drivers/CAN
+	url = https://github.com/Solar-Gators/SG-CAN-Driver.git
