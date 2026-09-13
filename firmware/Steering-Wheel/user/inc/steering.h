@@ -17,6 +17,7 @@ void processTurnSignals();
 void processKill();
 void processCC();
 void processTimer();
+void sendTestMessage();
 
 inline uint32_t mitsuba_request_message_send_period_ms = 500;
 

@@ -24,6 +24,7 @@ struct RearVCUState
     std::atomic<flare_can::MCPowerMode> mc_power_mode_requested{};
     std::atomic<flare_can::CarKilledStatus> killed_status{};
     std::atomic<bool> kill_car_requested{};
+    std::atomic<bool> test{false};
 
     std::atomic<flare_can::ArrayContactors> array_contactors{flare_can::ArrayContactors::BOTH_OPEN};
 };

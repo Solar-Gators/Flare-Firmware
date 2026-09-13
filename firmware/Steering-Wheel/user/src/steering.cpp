@@ -88,6 +88,19 @@ void sendMitsubaRequestMessage()
     can_device.send(mitsuba_frame0_request);
 }
 
+void sendTestMessage()
+{
+    static sg::CANFrame test_frame{0x08850225,
+                                                sg::CANFrameIDType::STANDARD,
+                                                sg::CANFrameRTRMode::DATA,
+                                                sg::CANFrameLen::BYTES_8,
+                                                0,
+                                                {}};
+
+    test_frame.data[0] = true;
+    can_device.send(test_frame);
+}
+
 // TODO: some indicator for the button 7 light
 // TODO: important info not done: regenerative breaking
 void processScreen()

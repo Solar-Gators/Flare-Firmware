@@ -48,6 +48,13 @@ HAL_StatusTypeDef killCarMessageCallback(const sg::CANFrame& msg, void* ctx)
     return HAL_OK;
 }
 
+HAL_StatusTypeDef mitsubaFrameCallback(const sg::CANFrame& msg, void* ctx)
+{
+    state.test.store(msg.data[0]);
+
+    return HAL_OK;
+}
+
 void can_init()
 {
     // start

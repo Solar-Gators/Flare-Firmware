@@ -30,6 +30,7 @@ void startHeartbeatTask_user(void* argument)
         wdog1.Kick();
 
         steering::sendMitsubaRequestMessage();
+        steering::sendTestMessage();
 
         osDelay(steering::mitsuba_request_message_send_period_ms);
         osDelay(500);

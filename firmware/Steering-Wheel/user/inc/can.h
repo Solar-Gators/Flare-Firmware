@@ -31,5 +31,7 @@ inline sg::CANDevice can_device(&hfdcan1,
                                  {0x010, {&telemKillStatusMessageCallback}},
                                  {0x0A0, {&speedMessageCallback}},
                                  {0x040, {&bmsFaultMessageCallback}},
-                                 {0x080, {&frontVCUThrottleMessageCallback}}},
-                                {{0x08850225, {&mitsubaFrame0Callback}}});  // ext id callbacks
+                                 {0x080, {&frontVCUThrottleMessageCallback}},
+                                //{0x08850225, {&mitsubaFrame0Callback}},
+                                },
+                                {});  // ext id callbacks
