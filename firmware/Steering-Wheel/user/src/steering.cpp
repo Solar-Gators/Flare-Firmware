@@ -91,7 +91,7 @@ void sendMitsubaRequestMessage()
 void sendTestMessage()
 {
     static sg::CANFrame test_frame{0x08850225,
-                                                sg::CANFrameIDType::STANDARD,
+                                                sg::CANFrameIDType::EXTENDED,
                                                 sg::CANFrameRTRMode::DATA,
                                                 sg::CANFrameLen::BYTES_8,
                                                 0,

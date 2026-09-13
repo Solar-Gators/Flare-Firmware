@@ -16,9 +16,10 @@ inline sg::CANDevice can_device(&hfdcan1,
                                     {0x080, {&throttleMessageCallback}},
                                     {0x064, {&driverMessageCallback}},
                                     {0x010, {&killCarMessageCallback}},
-                                    {0x08850225, {&mitsubaFrameCallback}}
                                 },
-                                {});  // inline on variable declared in header file like this allows
+                                {
+                                    {0x08850225, {&mitsubaFrameCallback}},
+                                });  // inline on variable declared in header file like this allows
 // us to avoid odr when including in multiple cpp files, all references to it
 // will correctly refer to this single instance of the variable.
 
